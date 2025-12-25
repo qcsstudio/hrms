@@ -1,0 +1,147 @@
+.main{
+   /* border: 1px solid red;  */
+    /* height: 200px; */
+    display: flex;
+    width: 1280px;
+    margin: 0px auto;
+}
+.heading{
+ font-size: 17px;
+ color: #000000;
+ margin-top: 50px;
+ width: 80%;
+ /* border: 1px solid red;  */
+ 
+}
+.paragraph{
+    font-size: 16px;
+    color: #A7A7A7;
+    /* border: 1px solid red;  */
+
+}
+.form{
+    /* border: 1px solid red; */
+        /* height: 200px; */
+}
+.formbtn{
+  width: 100%;
+  height: 70px;
+  border: 1px solid #E7E7E7;
+  border-radius: 10px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+        
+}
+.formbtn button{
+  font-size: 16px;
+  color: #000000;
+  height: 70px;
+  border: none;
+  
+ 
+
+
+}
+.login{
+    font-size: 14px;
+
+    color: #CECECE;
+    /* border-right: 1px solid #CECECE; */
+      height: 50px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+   
+}
+.inputemail{
+    border: 1px solid #E7E7E7;
+    border-radius: 10px;
+    height: 70px;
+   display: flex;
+   align-items: center;
+    gap: 30px;
+    margin: 14px;
+    
+}
+.inputemail input{
+    color: #A7A7A7;
+    font-size: 16px;
+    border: none;
+}
+.emailiconBorder{
+  
+    border-top: none;
+    border-bottom: none;
+    border-right: 1px solid #CECECE;
+    border-left: none;
+    width: 50px;
+}
+.inputpasswordmain{
+border: 1px solid #E7E7E7;
+    border-radius: 10px;
+      height: 70px;
+         display: flex;
+   align-items: center;
+   gap: 30px;
+     margin: 14px;
+      
+}
+.inputpasswordmain input{
+    border: none;
+    color: #A7A7A7;
+    font-size: 14px;
+    /* border: 1px solid red; */
+}
+.inputpassword{
+    font-size: 16px;
+    color: #A7A7A7;
+    border: none;
+    
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-right: 30px;
+     
+}
+ 
+
+  
+
+.passwordiconBorder{
+  
+    border-top: none;
+    border-bottom: none;
+    border-right: 1px solid #CECECE;
+    border-left: none;
+    width: 60px;
+}
+.forgotpass{
+   display: flex;
+   justify-content: space-between;
+   /* border: 1px solid red; */
+   align-items: center;
+   margin: 14px;
+}
+.loginbtn{
+    background-color: #543FD3;
+       border-radius: 10px;
+       border: none;
+  
+       height: 70px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+         margin: 14px;
+       
+
+       
+}
+.loginbtn button{
+    background-color: #543FD3;
+    color: #FFFFFF;
+   border: none;
+
+}
