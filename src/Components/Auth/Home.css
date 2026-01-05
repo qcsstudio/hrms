@@ -1,0 +1,169 @@
+.homemain{
+    /* border:  1px solid red; */
+    justify-content: space-between  ;
+    display: flex;
+    width: 80%;
+    gap:20px
+}
+.maindiv{
+    /* border:  1px solid red; */
+    width: 100%;
+    background-color: #FFFFFF;
+    border-radius: 20px;
+}
+.totalcompanies{
+    display: flex;
+    
+   justify-content: space-between;
+}
+.totalcompaniesimg{
+    background-color: #F0F3FF;
+    height: 50px;
+    width: 50px;
+    text-align: center;
+}
+.monthlysectionmain{
+    width: 100%;
+     background-color: #FFFFFF;
+}
+.monthlysection{
+    display: flex;
+      justify-content: space-between;
+    
+}
+.monthlysectionimg{
+     background-color: #E9F9F3;
+    height: 50px;
+    width: 50px;
+    text-align: center;
+}
+
+.trailsmain{
+    width: 100%;
+     background-color: #FFFFFF;
+}
+
+.trails{
+    display: flex;
+      justify-content: space-between;
+}
+.trailsmainimg{
+     background-color: #EFEEFC;
+    height: 50px;
+    width: 50px;
+    text-align: center;
+}
+
+
+/* second section csss start */
+
+.secondsectionmain{
+    width: 1280px;
+}
+.secondsectionmainh1{
+    /* border: 1px solid red; */
+    display: flex;
+    justify-content: space-between;
+}
+.btn1{
+    background-color: #E4E9EE4D;
+       border-radius: 10px;
+          border: 1px solid #E3E5E8;
+          height: 40px;
+          width: 100px;
+}
+.btn2{
+    background-color: #0575E6;
+    color: white;
+    border-radius: 10px;
+     height: 40px;
+        width: 140px;
+}
+
+.secondsectionmainbtn{
+
+      display: flex;
+        justify-content: space-between;
+     
+
+}
+.buttonmain{
+  border: 2px solid #E3E5E8;
+     border-radius: 10px;
+  
+}
+.buttonmain button{
+    border: none;
+       height: 40px;
+       /* width: 70px; */
+}
+.sortbtn{
+     border: 2px solid #E3E5E8;
+       border-radius: 10px;
+} button{
+    border: none;
+}
+.sortbtn
+.secondsectionmainlist{
+    border-bottom:  4px solid #E3E5E8;
+}
+
+.secondsectionmainlist ul{
+    /* border:  2px solid red; */
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+}
+.detailssection{
+     border:  2px solid #E3E5E8;
+    display: flex;
+    justify-content: space-between;
+    width:100%;
+    border-radius: 20px;
+    margin: 30px 0px;
+}
+.detailssectionmain{
+    width: 20%;
+}
+.detailssectionhr{
+     width: 20%;   
+}
+.detailssectionbtn{
+        width: 20%;   
+        
+}
+.detailssectionbtn1{
+    border: 1px solid #D3F9D8;
+    background-color: #ECFDF3;
+    color: #2B8A3E;
+    
+}
+.detailssectionbtn2{
+    border: 1px solid #FFEEAB;
+    background-color: #FFF4C8;
+    color: #AB653B;
+   
+}
+.detailssectionbtn3{
+    border: 1px solid #D6E8FF;
+    background-color: #EFF6FF;
+    color: #1D4ED8;
+}
+.detailssectionemployee{
+    width: 20%;     
+}
+.detailssectionimg{
+    
+        /* border: 1px solid red; */
+        display: flex;
+        gap: 10px
+}
+.detailssection img{
+       height: 20px;
+    width: 20px;
+    display: flex;
+    gap: 10px;
+}
+.secondsectionmain p{
+    color: rgb(207, 206, 206) ;
+}

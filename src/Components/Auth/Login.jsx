@@ -1,15 +1,16 @@
 import React from 'react'
-import './Login.css'
+import './Login.css' 
 import { login_Google, } from '../../allAssetsImport/allAssets'
 import { login_Email } from '../../allAssetsImport/allAssets'
 import { Password } from '../../allAssetsImport/allAssets'
 import { Password_Show } from '../../allAssetsImport/allAssets'
 
 
+
 const Login = () => {
     return (
         <>
-            <div className="main">
+            <div className="mainnn">
                 <div style={{ width: "50%", marginTop:"50px"}}>
 
                     <div style={{width:"80%",margin:"0px auto",}}>
