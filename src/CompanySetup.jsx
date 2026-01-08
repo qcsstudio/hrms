@@ -1,103 +1,138 @@
 import React, { useState } from 'react'
-import './Companysetup.css'
 
 const CompanySetup = () => {
-    const [formData, setFormdata] = useState({
-        CompanyName: "",
-        Slug: "",
-        Country: "",
-        Time: "",
-        Currency: ""
+  const [formData, setFormdata] = useState({
+    CompanyName: "",
+    Slug: "",
+    Country: "",
+    Time: "",
+    Currency: ""
+  })
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormdata({
+      ...formData,
+      [name]: value
     })
+  }
 
-    const handleChange = (e) => {
-        const { name, value } = e.target
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    console.log(formData)
+    setFormdata({
+      CompanyName: "",
+      Slug: "",
+      Country: "",
+      Time: "",
+      Currency: ""
+    })
+  }
 
-        setFormdata({
-            ...formData,
-            [name]: value
+  return (
+    <div className="w-full bg-[#F9FAFB] p-6">
 
-        })
+      <form onSubmit={handleSubmit} className="space-y-6">
 
+        {/* Heading */}
+        <div>
+          <h1 className="text-[30px] font-semibold w-full">
+            Company Setup
+          </h1>
+          <p className="text-[22px] text-gray-600 w-full">
+            Add your company basics to configure default settings.
+          </p>
+        </div>
 
-    }
-    const handleSubmit = (a) => {
-        a.preventDefault()
+        {/* Company Name */}
+        <div>
+          <p className="text-[15px] text-black mb-1">
+            Company name
+          </p>
+          <input
+            type="text"
+            name="CompanyName"
+            placeholder="Choose Account"
+            value={formData.CompanyName}
+            onChange={handleChange}
+            className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
 
-        console.log("submitted")
+        {/* Slug & Country */}
+        <div className="flex gap-5 w-full">
+          <div className="flex-1">
+            <p className="mb-1">Slug</p>
+            <input
+              type="text"
+              name="Slug"
+              placeholder="Choose account"
+              value={formData.Slug}
+              onChange={handleChange}
+              className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
-        console.log(formData)
-        setFormdata({
-            CompanyName: "",
-            Slug: "",
-            Country: "",
-            Time: "",
-            Currency: ""
+          <div className="flex-1">
+            <p className="mb-1">Country</p>
+            <input
+              type="text"
+              name="Country"
+              placeholder="Choose account"
+              value={formData.Country}
+              onChange={handleChange}
+              className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
 
-        })
-    }
+        {/* Time & Currency */}
+        <div className="flex gap-5 w-full">
+          <div className="flex-1">
+            <p className="mb-1">Time</p>
+            <input
+              type="text"
+              name="Time"
+              placeholder="Choose Account"
+              value={formData.Time}
+              onChange={handleChange}
+              className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
-    return (
-        <>
-              <div className='main'>
+          <div className="flex-1">
+            <p className="mb-1">Currency</p>
+            <input
+              type="text"
+              name="Currency"
+              placeholder="Choose Account"
+              value={formData.Currency}
+              onChange={handleChange}
+              className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
 
-              
+        {/* Buttons */}
+        <div className="flex justify-between mt-5">
+          <button
+            type="button"
+            className="w-[100px] h-10 border border-[#30333D] rounded-lg bg-white"
+          >
+            Cancel
+          </button>
 
-            <form onSubmit={handleSubmit}>
-      
+          <button
+            type="submit"
+            className="w-[150px] h-10 border border-[#30333D] rounded-lg bg-white"
+          >
+            Continue setup
+          </button>
+        </div>
 
-          
-
-
-                    <div>
-                        <h1 className='CompanySetupH1'>Company Setup</h1>
-                        <p className='CompanySetupP'>Add your company basics to configure default settings.</p>
-                      </div>
-                        <div className='Companyname'>
-                            <p  className='CompanynameP'>Company name</p>
-                            <input  className='CompanynameInput' type='text' placeholder='Choose Account' name='CompanyName' value={formData.CompanyName} onChange={(handleChange)}></input>
-                        </div>
-                        <div className='Companysetupsecondinp'>
-                            <div>
-                            <p>Slug</p>
-                            <input className='SlugInput' type='text' placeholder='Choose account' name='Slug' value={formData.Slug} onChange={(handleChange)}></input>
-
-                            </div>
-                            
-                            <div>
-                            <p>Country</p>
-
-                            <input type='text' className='CountryInput' placeholder='Choose account' name='Country' value={formData.Country} onChange={(handleChange)}></input>
-                            </div>
-
-                        </div>
-                        <div className='CompanysetupthirddInp'>
-                            <div>
-                            <p>Time</p>
-                            <input className='TimeInput' type='text' placeholder='Choose Account' name='Time' value={formData.Time} onChange={(handleChange)}></input>
-
-                            </div>
-                            <div>
-                            <p>Currency</p>
-                            <input  className='CurrencyInput' type='text' placeholder='Choose Account' name='Currency' value={formData.Currency} onChange={(handleChange)}></input>
-
-                            </div>
-                        </div>
-                        <div className='companySetbtnclass'>
-                            <button className='cancelbtn'>Cancel</button>
-                            <button  type='submit' className='continuebtn' >Continue setup</button>
-                        </div>
-
-
-
-
-                
-                        
-            </form>
-
-            </div>
-        </>
-    )
+      </form>
+    </div>
+  )
 }
 
 export default CompanySetup

@@ -4,6 +4,7 @@
     display: flex;
     width: 1280px;
     margin: 0px auto;
+      background-color: #F9FAFB;
 }
 .heading{
  font-size: 17px;
