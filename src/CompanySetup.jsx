@@ -29,6 +29,9 @@ const CompanySetup = () => {
     })
   }
 
+  function handlenext() {
+   
+  }
   return (
     <div className="w-full bg-[#F9FAFB] p-6">
 
@@ -125,6 +128,7 @@ const CompanySetup = () => {
           <button
             type="submit"
             className="w-[150px] h-10 border border-[#30333D] rounded-lg bg-white"
+            onClick={handlenext}
           >
             Continue setup
           </button>
