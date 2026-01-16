@@ -5,18 +5,27 @@ import SuperAdminDashboard from '../Container/Dashboard/SuperAdminDashboard'
 import Dashboardemployee from '../Employee'
 import EmployeeDashboard1 from '../EmployeeDashboard1'
 import AddCompany from '../Container/AddCompany'
+import MainDashboardLayout from './mainLayout'
+import Admindashboard from '../Components/Auth/Admindashboard'
 
 const AppRoutes = () => {
   return (
     <>
-    <Routes>
+      <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/superadmin-dashboard" element={<SuperAdminDashboard />} />
+        {/* <Route path="/superadmin-dashboard" element={<SuperAdminDashboard />} /> */}
         <Route path="/employee-dashboard" element={<Dashboardemployee />} />
-        <Route path="/dashboard-employee" element={<EmployeeDashboard1 />} />
+        {/* <Route path="/dashboard-employee" element={<EmployeeDashboard1 />} /> */}
         <Route path="/add-company" element={<AddCompany />} />
-    </Routes>
-    
+        <Route path="/dashboard" element={<MainDashboardLayout />}>
+          <Route path="superadmin-dashboard" element={<Admindashboard />} />
+          {/* <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} /> */}
+
+          {/* <Route path="employee" element={<EmployeeDashboard1 />} /> */}
+          <Route path="employee" element={<Dashboardemployee />} />
+        </Route>
+      </Routes>
+
     </>
   )
 }

@@ -1,3 +1,9 @@
+import  navbarLogo from "../assets/images/navbarImages/qcslogonav.png"
+import  search from "../assets/images/navbarImages/search.svg"
+import notification from "../assets/images//navbarImages/notification.svg"
+import avatar from "../assets/images/navbarImages/avatar.svg"
+import downArrow from "../assets/images/navbarImages/arrowDown.svg"
+
 import login_Google from "/assets/Images/Google.png"
 import login_Email from "/assets/Images/Message.png"
 import Password from "/assets/Images/Password.png"
@@ -29,6 +35,7 @@ import kayecimage from "/assets/Images/kayec.png"
 
 
 export {
+   navbarLogo, search, notification, avatar, downArrow,
     login_Google,
     login_Email,
     Password,
