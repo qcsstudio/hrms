@@ -27,6 +27,9 @@ import TotalPayroll from "/assets/Images/TotalPayroll.png"
 import Processingstatus from "/assets/Images/Processingstatus.png"
 import paydate from "/assets/Images/Paydate.png"
 import kayecimage from "/assets/Images/kayec.png"
+import group from "/assets/Images/Group.png"
+import vector from "/assets/Images/vector.png"
+import vector2 from "/assets/Images/Vector(2).png"
 
 
 
@@ -58,7 +61,10 @@ export {
       TotalPayroll,
       Processingstatus,
       paydate,
-      kayecimage
+      kayecimage,
+      group,
+      vector,
+      vector2
       
 
 
