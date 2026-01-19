@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import CompanySetup from '../CompanySetup'
-import WorkSpaceSetup from '../WorkSpaceSetup'
-import Accountsetup from '../Accountsetup'
+
+import CompanySetup from './CompanySetup';
+import WorkSpaceSetup from './WorkSpaceSetup';
+import Accountsetup from './Accountsetup';
 
 const steps = ['Company Setup', 'Admin Account Setup', 'Workspace Setup'];;
 
