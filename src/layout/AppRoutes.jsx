@@ -3,10 +3,15 @@ import Login from '../Components/Auth/Login'
 import { Route, Routes } from 'react-router-dom'
 import SuperAdminDashboard from '../Container/Dashboard/SuperAdminDashboard'
 import Dashboardemployee from '../Employee'
-import EmployeeDashboard1 from '../EmployeeDashboard1'
+import EmployeeDashboard1 from '../Container/DashboardPages/Employee/DashboardEmployeeHr'
 import AddCompany from '../Container/AddCompany'
 import MainDashboardLayout from './mainLayout'
-import Admindashboard from '../Components/Auth/Admindashboard'
+import Admindashboard from '../Container/Dashboard/Admindashboard'
+import DashboardAttandance from '../DashboardAttandanceEmployee'
+import LeaveManagementHr from '../LeaveManagementHr'
+import DashboardPayroll1 from '../DashboardPayroll1'
+import DashboardEmployeeHr from '../Container/DashboardPages/Employee/DashboardEmployeeHr'
+import DashboardAttandanceEmployee from '../DashboardAttandanceEmployee'
 
 const AppRoutes = () => {
   return (
@@ -18,11 +23,14 @@ const AppRoutes = () => {
         {/* <Route path="/dashboard-employee" element={<EmployeeDashboard1 />} /> */}
         <Route path="/add-company" element={<AddCompany />} />
         <Route path="/dashboard" element={<MainDashboardLayout />}>
-          <Route path="superadmin-dashboard" element={<Admindashboard />} />
-          {/* <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} /> */}
+          {/* <Route path="superadmin-dashboard" element={<Admindashboard />} /> */}
+          <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
 
-          {/* <Route path="employee" element={<EmployeeDashboard1 />} /> */}
-          <Route path="employee" element={<Dashboardemployee />} />
+          <Route path="employee" element={<DashboardEmployeeHr />} />
+          {/* <Route path="employee" element={<Dashboardemployee />} /> */}
+          <Route path="attendance" element={<DashboardAttandanceEmployee />} />
+          <Route path="leave-management" element={<LeaveManagementHr />} />
+          <Route path="payroll" element={<DashboardPayroll1 />} />
         </Route>
       </Routes>
 

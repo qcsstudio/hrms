@@ -1,7 +1,4 @@
-import AppRoutes from "./layout/appRoutes"
-
-  
-
+import AppRoutes from "./layout/appRoutes";
 
 function App() {
   return (

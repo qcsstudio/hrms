@@ -96,100 +96,26 @@ const SideBar = () => {
       case "employee":
         navigate("/dashboard/employee");
         break;
-      // case "platform":
-      //   navigate("/dashboard/platform");
+      case "attendance":
+        navigate("/dashboard/attendance");
+        break;
+      case "leave-management":
+        navigate("/dashboard/leave-management");
+        break;
+      case "DashboardPayroll1":
+        navigate("/dashboard/payroll");
+        break;
+  
+      // case "billing":
+      //   navigate("/dashboard/settings/billing");
+      //   dispatch(setShowSettingsMenu(true));
       //   break;
-      case "calendar":
-        navigate("/dashboard/schedule-post");
-        break;
-      case "analytics":
-        navigate("/dashboard/analytics");
-        break;
-      case "inboxAndListing":
-        navigate("/dashboard/inbox");
-        break;
-      case "influencerSpace":
-        navigate("/dashboard/influencer-space");
-        break;
-      case "automation-rules":
-        navigate("/dashboard/automation-rules");
-        break;
-      case "account-setting":
-        navigate("/dashboard/settings/account-setting");
-        dispatch(setShowSettingsMenu(true));
-        break;
-      case "security":
-        navigate("/dashboard/settings/security");
-        dispatch(setShowSettingsMenu(true));
-        break;
-      case "user-roles":
-        navigate("/dashboard/settings/user-roles");
-        dispatch(setShowSettingsMenu(true));
-        break;
-      case "channel":
-        navigate("/dashboard/channel");
 
-        break;
-      case "billing":
-        navigate("/dashboard/settings/billing");
-        dispatch(setShowSettingsMenu(true));
-        break;
-      case "notification":
-        navigate("/dashboard/settings/notification");
-        dispatch(setShowSettingsMenu(true));
-        break;
-      case "help&support":
-        navigate("/dashboard/settings/help&support");
-        dispatch(setShowSettingsMenu(true));
-        break;
       default:
         navigate("/dashboard");
         break;
     }
   };
-
-  // const axiosInstance = createAxios();
-
-  // const logouthandle = async () => {
-  //   try {
-  //     // Call backend logout API
-  //     await axiosInstance.post("/api/auth/logout", {}, { withCredentials: true });
-
-  //     // Clear local storage
-  //     localStorage.removeItem("authToken");
-  //     localStorage.removeItem("authSteps");
-  //     localStorage.removeItem("role");
-
-  //     // Navigate to login page
-  //     navigate("/");
-  //   } catch (error) {
-  //     console.error("Logout failed:", error);
-  //     // Even if API call fails, clear local storage and redirect
-  //     localStorage.removeItem("authToken");
-  //     localStorage.removeItem("authSteps");
-  //     localStorage.removeItem("role");
-  //     navigate("/");
-  //   }
-  // };
-
-  const logouthandle = async () => {
-    try {
-      await axiosInstance.post("/api/auth/logout", {}, { withCredentials: true });
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      // Clear everything
-      localStorage.clear();
-      sessionStorage.clear();
-
-      // Optional: if using context, reset state here
-      // setAuth(null);
-
-      // Force reload to clear in-memory state
-      window.location.href = "/";
-    }
-  };
-
   const loacation = useLocation()
   return <>
 
@@ -226,7 +152,7 @@ const SideBar = () => {
               `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
                 'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-              onClick={() => changeTab('calendar')}>
+              onClick={() => changeTab('attendance')}>
               {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
                 {activeUrl === 'calendar' ? <img src={calenderactive} width={20} height={20} alt="calendar_icon" className="w-[100%] h-[100%]" /> :
                   <img src={calender} width={20} height={20} alt="calender_icon" className="w-[100%] h-[100%]" />}
@@ -237,7 +163,7 @@ const SideBar = () => {
               `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
                 'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-              onClick={() => changeTab('contentLibrary')}>
+              onClick={() => changeTab('DashboardPayroll1')}>
               {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
                 {activeUrl === 'contentLibrary' ? <img src={libraryactive} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" /> :
                   <img src={library} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" />}
@@ -248,7 +174,7 @@ const SideBar = () => {
               `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
                 'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-              onClick={() => changeTab('analytics')}>
+              onClick={() => changeTab('leave-management')}>
               {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
                 {activeUrl === 'analytics' ? <img src={analysisactive} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" /> :
                   <img src={analysis} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" />}
@@ -319,22 +245,6 @@ const SideBar = () => {
               </div> */}
               Channel
             </li>
-
-            {/* <li className={`transition-all duration-500 w-[100%] ${activeUrl === 'support' ?
-              `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-              onClick={() => changeTab('support')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'support' ? <img src={supportactive} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={support} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
-              </div>
-              <span>Support</span>
-            </li> */}
-            {/* //place company profile------------- */}
-
-
-
           </ul>}
 
         {/* settings tab */}

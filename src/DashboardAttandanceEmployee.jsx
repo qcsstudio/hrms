@@ -138,7 +138,7 @@ const myattandanceLog=[
 
 
 
-const DashboardAttandance = () => {
+const DashboardAttandanceEmployee = () => {
     return (
         <div className='p-[10px] bg-[#F8F9FA] '>
 
@@ -427,4 +427,4 @@ const DashboardAttandance = () => {
     )
 }
 
-export default DashboardAttandance
+export default DashboardAttandanceEmployee
