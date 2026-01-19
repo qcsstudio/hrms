@@ -1,9 +1,10 @@
 // import SideBar from "../components/common/SideBar";
-import Navbar from "../components/Navbar";
+// import Navbar from "../components/Navbar";
 import { useSelector } from "react-redux";
 import { setOpenMenu } from "../redux/sidebarSlice";
 import { Outlet } from "react-router-dom";
 import SideBar from "../Container/Sidebar/SideBar";
+import Navbar from "../components/Navbar";
 
 
 const Dashboardlayout = ({ children }) => {
@@ -27,7 +28,7 @@ const Dashboardlayout = ({ children }) => {
   return(
      <>
      <div className="mainContainer relative flex flex-col w-[100vw] h-[100vh] overflow-y-hidden bg-[#ffffff]">
-        <Navbar />
+        <Navbar/>
         {/* Lower Container - Modified for mobile */}
         <div className="lower w-full h-full flex flex-col md:flex-row relative overflow-y-hidden">
           {/* Mobile Sidebar Backdrop */}
