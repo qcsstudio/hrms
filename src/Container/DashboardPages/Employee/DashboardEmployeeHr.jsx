@@ -1,5 +1,5 @@
 import React from 'react'
-import { discardicon, statslogo1, statslogo2, statslogo3, statslogo4, action, action2, group, vector, vector2 } from './allAssetsImport/allAssets'
+import { discardicon, statslogo1, statslogo2, statslogo3, statslogo4, action, action2, group, vector, vector2 } from '../../../allAssetsImport/allAssets'
 
 
 const cards = [
@@ -73,7 +73,7 @@ const employee = [
   },
 ]
 
-const EmployeeDashboard1 = () => {
+const DashboardEmployeeHr = () => {
   return (
     <>
       <div className='bg-gray-50 p-5'>
@@ -231,4 +231,4 @@ const EmployeeDashboard1 = () => {
   )
 }
 
-export default EmployeeDashboard1
+export default DashboardEmployeeHr
