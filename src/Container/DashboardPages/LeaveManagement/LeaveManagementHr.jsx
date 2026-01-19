@@ -1,5 +1,5 @@
 import React from 'react'
-import {action }from './allAssetsImport/allAssets'
+import {action }from '../../../allAssetsImport/allAssets'
 
  const leavebalance=[
   {

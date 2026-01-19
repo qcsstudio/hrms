@@ -1,5 +1,5 @@
 import React from 'react'
-import { action, action2, group, vector, vector2 } from './allAssetsImport/allAssets'
+import { action, action2, group, vector, vector2 } from '../../../allAssetsImport/allAssets'
 
 
 

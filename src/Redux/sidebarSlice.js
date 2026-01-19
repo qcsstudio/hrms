@@ -25,6 +25,7 @@ const uiSlice = createSlice({
     setShowSettingsMenu: (state, action) => { state.showSettingsMenu = action.payload; },
 
     // Extra: toggleMenu (same as your setMenu function)
+    
     toggleMenu: (state) => {
       const updatedMenu = !state.openMenu;
       state.openMenu = updatedMenu;
