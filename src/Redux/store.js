@@ -1,6 +1,6 @@
-import { configureStore } from "@reduxjs/toolkit"
-import SidebarSlice from "./sidebarSlice"
-import UserSlice from "./userSlice"
+import { configureStore } from "@reduxjs/toolkit";
+import UserSlice from "./userSlice";
+import SidebarSlice from "./sidebarSlice";
 
 const store = configureStore({
     reducer:{
@@ -10,4 +10,4 @@ const store = configureStore({
 
     }
 })
-export default store
+export default store;
