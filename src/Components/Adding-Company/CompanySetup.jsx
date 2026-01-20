@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
+import createAxios from '../../utils/axios.config'
 
-const CompanySetup = ({onNext,onBack}) => {
+const CompanySetup = ({ onNext, onBack }) => {
   const [formData, setFormdata] = useState({
-    CompanyName: "",
-    Slug: "",
-    Country: "",
-    Time: "",
-    Currency: ""
+    name: "",
+    slug: "",
+    country: "",
+    timezone: "",
+    currency: ""
   })
+
+  const axiosInstance = createAxios()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -20,24 +23,38 @@ const CompanySetup = ({onNext,onBack}) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     console.log(formData)
+
     setFormdata({
-      CompanyName: "",
-      Slug: "",
-      Country: "",
-      Time: "",
-      Currency: ""
+      name: "",
+      slug: "",
+      country: "",
+      timezone: "",
+      currency: ""
     })
   }
 
-  function handlenext() {
-   
+  async function handlenext() {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const res = await axiosInstance.post(`companies`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log(res.data);
+      localStorage.setItem("companyId", res?.data?.companyId);
+      onNext()
+
+    } catch (error) {
+      console.log("API Error:", error);
+    }
   }
+
   return (
     <div className="w-full bg-[#F9FAFB] p-6">
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* Heading */}
         <div>
           <h1 className="text-[30px] font-semibold w-full">
             Company Setup
@@ -54,11 +71,11 @@ const CompanySetup = ({onNext,onBack}) => {
           </p>
           <input
             type="text"
-            name="CompanyName"
+            name="name"
             placeholder="Choose Account"
-            value={formData.CompanyName}
+            value={formData.name}
             onChange={handleChange}
-            className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full h-10 border border-black/10 rounded-lg px-3"
           />
         </div>
 
@@ -68,11 +85,11 @@ const CompanySetup = ({onNext,onBack}) => {
             <p className="mb-1">Slug</p>
             <input
               type="text"
-              name="Slug"
+              name="slug"
               placeholder="Choose account"
-              value={formData.Slug}
+              value={formData.slug}
               onChange={handleChange}
-              className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-10 border border-black/10 rounded-lg px-3"
             />
           </div>
 
@@ -80,26 +97,26 @@ const CompanySetup = ({onNext,onBack}) => {
             <p className="mb-1">Country</p>
             <input
               type="text"
-              name="Country"
+              name="country"
               placeholder="Choose account"
-              value={formData.Country}
+              value={formData.country}
               onChange={handleChange}
-              className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-10 border border-black/10 rounded-lg px-3"
             />
           </div>
         </div>
 
-        {/* Time & Currency */}
+        {/* Timezone & Currency */}
         <div className="flex gap-5 w-full">
           <div className="flex-1">
-            <p className="mb-1">Time</p>
+            <p className="mb-1">Timezone</p>
             <input
               type="text"
-              name="Time"
+              name="timezone"
               placeholder="Choose Account"
-              value={formData.Time}
+              value={formData.timezone}
               onChange={handleChange}
-              className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-10 border border-black/10 rounded-lg px-3"
             />
           </div>
 
@@ -107,16 +124,15 @@ const CompanySetup = ({onNext,onBack}) => {
             <p className="mb-1">Currency</p>
             <input
               type="text"
-              name="Currency"
+              name="currency"
               placeholder="Choose Account"
-              value={formData.Currency}
+              value={formData.currency}
               onChange={handleChange}
-              className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-10 border border-black/10 rounded-lg px-3"
             />
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="flex justify-between mt-5">
           <button
             type="button"
@@ -129,7 +145,7 @@ const CompanySetup = ({onNext,onBack}) => {
           <button
             type="submit"
             className="w-[150px] h-10 border border-[#30333D] rounded-lg bg-white"
-            onClick={onNext}
+            onClick={handlenext}
           >
             Continue setup
           </button>
