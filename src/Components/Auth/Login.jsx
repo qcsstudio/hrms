@@ -69,93 +69,97 @@ const Login = () => {
 
 
   return (
-    <div className="flex w-[1280px] mx-auto bg-gray-50">
+    <div className='flex h-screen items-center bg-white'>
 
-      <div className="w-1/2 mt-[50px]">
-        <div className="w-4/5 mx-auto">
 
-          <div className="mt-[50px]">
-            <h1 className="text-[17px] font-semibold text-black">
-              Welcome back, John
-            </h1>
-            <p className="text-[16px] text-gray-400 mt-1">
-              Welcome back! Please enter your details
-            </p>
-          </div>
+      <div className="flex w-[1280px] mx-auto bg-gray-50  ">
 
-          <div className="mt-8">
+        <div className="w-1/2 mt-[50px]">
+          <div className="w-4/5 mx-auto">
 
-            <button className="w-full h-[70px] border border-gray-200 rounded-xl bg-white flex items-center justify-center gap-3">
-              <img src={login_Google} alt="" />
-              <span className="text-[16px] text-black">
-                Log In with Google
-              </span>
-            </button>
-
-            <div className="h-[50px] flex items-center justify-center text-[14px] text-gray-300">
-              Or Log In with email
+            <div className="mt-[50px]">
+              <h1 className="text-[34px] font-semibold text-[#000000]">
+                Welcome back, John
+              </h1>
+              <p className="text-[16px] text-[#A7A7A7] mt-1">
+                Welcome back! Please enter your details
+              </p>
             </div>
 
-            {/* FORM START */}
-            <form onSubmit={handelSubmit}>
+            <div className="mt-8">
 
-              <div className="flex items-center h-[70px] border border-gray-200 rounded-xl gap-6 px-4 mb-4">
-                <div className="w-[50px] border-r border-gray-300 flex justify-center">
-                  <img src={login_Email} alt="" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="enter email"
-                  className="w-full outline-none text-[16px] text-gray-400"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+              {/* <button className="w-full h-[70px] border border-gray-200 rounded-xl bg-white flex items-center justify-center gap-3">
+                <img src={login_Google} alt="" />
+                <span className="text-[16px] text-black">
+                  Log In with Google
+                </span>
+              </button> */}
 
-              <div className="flex items-center h-[70px] border border-gray-200 rounded-xl gap-6 px-4 mb-4">
-                <div className="w-[60px] border-r border-gray-300 flex justify-center">
-                  <img src={Password} alt="" />
-                </div>
-                <div className="flex justify-between items-center w-full pr-6">
+              {/* <div className="h-[50px] flex items-center justify-center text-[14px] text-gray-300">
+                Or Log In with email
+              </div> */}
+
+              {/* FORM START */}
+              <form onSubmit={handelSubmit}>
+
+                <div className="flex items-center h-[70px] border border-gray-200 rounded-xl gap-6 px-4 mb-4">
+                  <div className="w-[60px] border-r border-gray-300 flex justify-between px-4">
+                    <img src={login_Email} alt="" />
+                  </div>
                   <input
-                    type="password"
-                    placeholder="password"
-                    className="outline-none text-[16px] text-gray-400"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    type="text"
+                    placeholder="Your Email"
+                    className="w-full outline-none text-[16px] text-[#A7A7A7]"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
-                  <img src={Password_Show} alt="" />
                 </div>
-              </div>
 
-              <div className="flex justify-between items-center text-[14px] mx-1 mb-4">
-                <p>
-                  remember me <span className="text-gray-300">(15 days)</span>
-                </p>
-                <u className="cursor-pointer">forgot password?</u>
-              </div>
+                <div className="flex items-center h-[70px] border border-gray-200 rounded-xl gap-6 px-4 mb-4">
+                  <div className="w-[60px] border-r border-gray-300 flex justify-between px-4">
+                    <img src={Password} alt="" />
+                  </div>
+                  <div className="flex justify-between items-center w-full ">
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      className="outline-none text-[16px] text-[#A7A7A7]  w-full"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <img src={Password_Show} alt="" />
+                  </div>
+                </div>
 
-              <div className="bg-[#543FD3] h-[70px] rounded-xl flex items-center justify-center">
-                <button
-                  type="submit"
-                  className="text-white text-[16px] font-medium w-full"
-                  disabled={isLoader}
-                >
-                  {isLoader ? "Logging in..." : "log in"}
-                </button>
-              </div>
+                <div className="flex justify-between items-center text-[14px] mx-1 mb-4">
+                  <p>
+                  Remember me  <span className="text-[#CECECE]">(15 days)</span>
+                  </p>
+                  <u className="cursor-pointer font-medium">Forgot Password?</u>
+                </div>
 
-            </form>
-            {/* FORM END */}
+                <div className="bg-[#543FD3] h-[70px] rounded-xl flex items-center justify-center">
+                  <button
+                    type="submit"
+                    className="text-white text-[16px]  w-full"
+                    disabled={isLoader}
+                  >
+                    {isLoader ? "Logging in..." : "Log in"}
+                  </button>
+                </div>
 
+              </form>
+              {/* FORM END */}
+
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="w-1/2 flex items-center justify-center">
-        <img src="/assets/Images/login-image.png" alt="login" />
-      </div>
+        <div className="w-1/2 flex items-center justify-center">
+          <img src="/assets/Images/login-image.png" alt="login" />
+        </div>
 
+      </div>
     </div>
   )
 }
