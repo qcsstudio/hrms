@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
+import createAxios from '../../utils/axios.config'
 
 const Accountsetup = ({ onNext, onBack }) => {
   const [formData, setData] = useState({
-    AdminFullname: "",
-    Mail: "",
-    Contact: ""
+    name: "",
+    email: "",
+    contact: ""
   })
 
   const handleChange = (e) => {
@@ -19,10 +20,27 @@ const Accountsetup = ({ onNext, onBack }) => {
     e.preventDefault()
     console.log(formData)
     setData({
-      AdminFullname: "",
-      Mail: "",
-      Contact: ""
+     name: "",
+    email: "",
+    contact: ""
     })
+  }
+  const axiosInstance = createAxios()
+   async function handlenext() {
+    try {
+      const token = localStorage.getItem("authToken");
+      const companyId = localStorage.getItem("companyId");
+
+      const res = await axiosInstance.post(`companies/${companyId}/admin`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log(res.data);
+      onNext()
+
+    } catch (error) {
+      console.log("API Error:", error);
+    }
   }
 
   return (
@@ -43,9 +61,9 @@ const Accountsetup = ({ onNext, onBack }) => {
           </p>
           <input
             type="text"
-            name="AdminFullname"
+            name="name"
             placeholder="Choose Account"
-            value={formData.AdminFullname}
+            value={formData.name}
             onChange={handleChange}
             className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
           />
@@ -57,9 +75,9 @@ const Accountsetup = ({ onNext, onBack }) => {
             <p className="mb-1">Mail</p>
             <input
               type="text"
-              name="Mail"
+              name="email"
               placeholder="Choose Account"
-              value={formData.Mail}
+              value={formData.email}
               onChange={handleChange}
               className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
             />
@@ -69,9 +87,9 @@ const Accountsetup = ({ onNext, onBack }) => {
             <p className="mb-1">Contact</p>
             <input
               type="text"
-              name="Contact"
+              name="contact"
               placeholder="Choose Account"
-              value={formData.Contact}
+              value={formData.contact}
               onChange={handleChange}
               className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
             />
@@ -91,7 +109,7 @@ const Accountsetup = ({ onNext, onBack }) => {
           <button
             type="submit"
             className="h-11 w-[170px] border border-[#30333D] rounded-lg bg-white"
-            onClick={onNext}
+            onClick={handlenext}
           >
             Continue Setup
           </button>

@@ -12,7 +12,7 @@ const userSlice = createSlice({
         setAddLoginData: (state, action) => {
             state.loginSpinner = false;
             state.user = action.payload.user;
-            state.token = action.payload.token;
+            // state.token = action.payload.token;
 
             console.log("Login Data Added to Redux:", state.user);
         }
