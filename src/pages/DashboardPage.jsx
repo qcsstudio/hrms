@@ -1,13 +1,12 @@
-// import SideBar from "../components/common/SideBar";
-// import Navbar from "../components/Navbar";
+
 import { useSelector } from "react-redux";
-import { setOpenMenu } from "../redux/sidebarSlice";
 import { Outlet } from "react-router-dom";
 import SideBar from "../Container/Sidebar/SideBar";
-import Navbar from "../components/Navbar";
+import Navbar from "../Components/Navbar";
+import { setOpenMenu } from "../redux/sidebarSlice";
 
 
-const Dashboardlayout = ({ children }) => {
+const Dashboardlayout = () => {
 
       const {openMenu} = useSelector((state) => state.sidebar)
 
