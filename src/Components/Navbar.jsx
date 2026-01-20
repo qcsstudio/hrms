@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {Link} from 'react-router-dom';
 // import { uiContext } from '@/Context/ui.context';
 // import { useReactDispatch, useReactSelector } from "../utils/hooks/customeHooks";
-import { toggleMenu } from "../redux/sidebarSlice";
+import { toggleMenu } from "../Redux/SidebarSlice";
 import { avatar, downArrow, navbarLogo, notification, search } from "../allAssetsImport/allAssets";
 import { useDispatch, useSelector } from "react-redux";
 // import { fetchCurrentUser } from "../utils/thunkApis/userThunkApis";
