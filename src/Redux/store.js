@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import SidebarSlice from "./SidebarSlice.js";
+import SidebarSlice from "./sidebarSlice.js";
 import UserSlice from "./userSlice.js";
 
 
