@@ -64,7 +64,6 @@ const AddCompany = () => {
                     <div className='w-1 h-1 rounded-full bg-white'></div>
                   )}
                 </div>
-
                 <p
                   className={`text-sm ${
                     isActive ? "font-bold text-black" : "text-gray-500"
