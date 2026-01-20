@@ -51,7 +51,7 @@ const CompanySetup = ({ onNext, onBack }) => {
   }
 
   return (
-    <div className="w-full bg-[#F9FAFB] p-6">
+    <div className="w-[1280px] bg-[#F9FAFB] p-6  mx-auto ">
 
       <form onSubmit={handleSubmit} className="space-y-6">
 

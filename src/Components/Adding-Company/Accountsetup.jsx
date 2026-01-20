@@ -44,7 +44,7 @@ const Accountsetup = ({ onNext, onBack }) => {
   }
 
   return (
-    <div className="bg-[#F9FAFB] p-6 rounded-lg max-w-full">
+    <div className="bg-[#F9FAFB] p-6 rounded-lg w-[1280px]">
       <h1 className="text-xl font-semibold mb-1">
         Admin Account Setup
       </h1>
