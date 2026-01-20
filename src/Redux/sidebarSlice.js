@@ -14,7 +14,7 @@ const initialState = {
 
 };
 
-const uiSlice = createSlice({
+const SidebarSlice = createSlice({
   name: "ui",
   initialState,
   reducers: {
@@ -54,6 +54,6 @@ export const {
   setOpenMenu,setActiveUrl,
   setShowSettingsMenu,
   toggleMenu, initializeMenuFromStorage
-} = uiSlice.actions;
+} = SidebarSlice.actions;
 
-export default uiSlice.reducer;
+export default SidebarSlice.reducer;

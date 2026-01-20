@@ -1,13 +1,14 @@
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 import SideBar from "../Container/Sidebar/SideBar";
 import Navbar from "../Components/Navbar";
-import { setOpenMenu } from "../redux/sidebarSlice";
+import { setOpenMenu } from "../Redux/SidebarSlice";
 
 
 const Dashboardlayout = () => {
 
+  const dispatch = useDispatch();
       const {openMenu} = useSelector((state) => state.sidebar)
 
     // const handleLogin = () => {
@@ -34,7 +35,7 @@ const Dashboardlayout = () => {
           {openMenu && (
             <div 
               className="md:hidden fixed  z-40"
-              onClick={() => setOpenMenu(false)}
+              onClick={() => dispatch(setOpenMenu(false))}
             ></div>
           )}
 
