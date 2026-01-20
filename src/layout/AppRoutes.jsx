@@ -24,7 +24,7 @@ const AppRoutes = () => {
         {/* <Route path="/superadmin-dashboard" element={<SuperAdminDashboard />} /> */}
         <Route path="/employee-dashboard" element={<Dashboardemployee />} />
         {/* <Route path="/dashboard-employee" element={<EmployeeDashboard1 />} /> */}
-        <Route path="/add-company" element={<AddCompany />} />
+        <Route path="/org-setup" element={<AddCompany />} />
         <Route path="/dashboard" element={<MainDashboardLayout />}>
           {/* <Route path="superadmin-dashboard" element={<Admindashboard />} /> */}
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />

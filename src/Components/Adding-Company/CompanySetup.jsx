@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const CompanySetup = () => {
+const CompanySetup = ({onNext,onBack}) => {
   const [formData, setFormdata] = useState({
     CompanyName: "",
     Slug: "",
@@ -121,6 +121,7 @@ const CompanySetup = () => {
           <button
             type="button"
             className="w-[100px] h-10 border border-[#30333D] rounded-lg bg-white"
+            onClick={onBack}
           >
             Cancel
           </button>
@@ -128,7 +129,7 @@ const CompanySetup = () => {
           <button
             type="submit"
             className="w-[150px] h-10 border border-[#30333D] rounded-lg bg-white"
-            onClick={handlenext}
+            onClick={onNext}
           >
             Continue setup
           </button>

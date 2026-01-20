@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const WorkSpaceSetup = () => {
+const WorkSpaceSetup = ({onBack}) => {
   const [formData, setformData] = useState({
     employeelist: "",
     Trial: "",
@@ -92,6 +92,7 @@ const WorkSpaceSetup = () => {
           <button
             type="button"
             className="h-11 w-[100px] border border-[#30333D] rounded-lg bg-white"
+            onClick={onBack}
           >
             Cancel
           </button>

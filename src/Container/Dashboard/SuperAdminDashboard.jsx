@@ -1,5 +1,6 @@
 import React from 'react'
 import { statslogo1, statslogo2, statslogo3, statslogo4, discardicon, CreateCompanycicon, employee, action, action2 } from '../../allAssetsImport/allAssets'
+import { Link } from 'react-router-dom'
 
 const SuperAdminDashboard = () => {
   return (
@@ -63,9 +64,9 @@ const SuperAdminDashboard = () => {
             <p className='text-sm text-gray-400'>Manage all tenants: onboarding, plans, status, and quick actions.</p>
           </div>
           <div className='flex gap-3'>
-            <button className='flex items-center gap-2 bg-gray-200 border border-gray-300 rounded-lg px-4 py-2'>
+            <Link className='flex items-center gap-2 bg-gray-200 border border-gray-300 rounded-lg px-4 py-2' to='/org-setup'>
               Discard <img src={discardicon} />
-            </button>
+            </Link>
             <button className='flex items-center gap-2 bg-blue-600 text-white rounded-lg px-4 py-2'>
               Create Company <img src={CreateCompanycicon} />
             </button>

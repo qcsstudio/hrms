@@ -6,7 +6,7 @@ import {
   Password_Show
 } from '../../allAssetsImport/allAssets'
 
-import { useNavigate  } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 // import { setAddLoginData } from "../../redux/slices/authSlice";
@@ -16,7 +16,7 @@ import { setAddLoginData } from '../../Redux/userSlice';
 
 const Login = () => {
 
-  const navigate  = useNavigate ();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const axiosInstance = createAxios()
@@ -26,48 +26,47 @@ const Login = () => {
   const [isLoader, setIsLoader] = useState(false);
 
   const handelSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
+    try {
+      setIsLoader(true);
 
-    setIsLoader(true);
+      const res = await axiosInstance.post("/auth/superadmin/login", {
+        email,
+        password
+      });
 
-    const res = await axiosInstance.post("/auth/superadmin/login", {
-      email,
-      password
-    });
-    console.log("res data:====", res.data);
+      const { token, user, message } = res.data;
 
-    if (res.status === 200) {
-      setIsLoader(false);
-
-      const token = res?.data?.token;
-
-      // ORIGINAL TOKEN STORE KARO
+      // Save tokens
       localStorage.setItem("authToken", token);
 
-      // Agar encryption chahiye to alag key me rakho
       const encryptedToken = encryptToken(token);
       localStorage.setItem("encAuthToken", encryptedToken);
 
+      // Redux store
       dispatch(setAddLoginData({
-        user: res.data.user,
-        token: token
+        user,
+        token
       }));
 
-      // toast.success("Login Successful");
-      alert("Login Successful");
+      toast.success(message || "Login Successful");
 
-      navigate("/dashboard/superadmin-dashboard");
+      if (user.role === "SUPER_ADMIN") {
+        navigate("/dashboard/superadmin-dashboard");
+      } else {
+        navigate("/");
+      }
+
+    } catch (error) {
+      let msg = error?.response?.data?.message || "Login failed";
+      toast.error(msg);
+      console.log("Login Error:", error);
+    } finally {
+      setIsLoader(false);
     }
+  };
 
-  } catch (error) {
-    setIsLoader(false);
-    let msg = error?.response?.data?.message || "Login failed";
-    toast.error(msg);
-    console.log(error, "error");
-  }
-};
 
   return (
     <div className="flex w-[1280px] mx-auto bg-gray-50">
