@@ -7,7 +7,7 @@ import { SlArrowLeft } from "react-icons/sl";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useState, useEffect, useRef } from "react";
-import { setActiveUrl, setOpenMenu, setShowSettingsMenu } from "../../Redux/SidebarSlice";
+import { setActiveUrl, setOpenMenu, setShowSettingsMenu } from "../../Redux/sidebarSlice";
 // import { analysis, analysisactive, automation, automationactive, calender, calenderactive, createpost, createpostActive, home, homeactive, inbox, inboxactive, influencer, influenceractive, library, libraryactive, reports, reportsactive, settings, settingsactive, support, supportactive } from "../../allAssetsImport/allAssets";
 // import createAxios from "../../utils/axios.config";
 // import { decryptToken } from "../../utils/cryptoEncrypt";

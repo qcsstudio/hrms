@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 import SideBar from "../Container/Sidebar/SideBar";
 import Navbar from "../Components/Navbar";
-import { setOpenMenu } from "../Redux/SidebarSlice";
+import { setOpenMenu } from "../Redux/sidebarSlice";
 
 
 const Dashboardlayout = () => {
