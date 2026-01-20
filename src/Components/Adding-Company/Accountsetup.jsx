@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const Accountsetup = () => {
+const Accountsetup = ({ onNext, onBack }) => {
   const [formData, setData] = useState({
     AdminFullname: "",
     Mail: "",
@@ -83,6 +83,7 @@ const Accountsetup = () => {
           <button
             type="button"
             className="h-11 w-[100px] border border-[#30333D] rounded-lg bg-white"
+            onClick={onBack}
           >
             Cancel
           </button>
@@ -90,6 +91,7 @@ const Accountsetup = () => {
           <button
             type="submit"
             className="h-11 w-[170px] border border-[#30333D] rounded-lg bg-white"
+            onClick={onNext}
           >
             Continue Setup
           </button>
