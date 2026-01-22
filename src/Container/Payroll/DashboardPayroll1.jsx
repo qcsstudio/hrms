@@ -1,161 +1,116 @@
-import React from 'react'
+import Summrycardcomponent from "./Summrycardcomponent";
 
-const payroll=[
-    {
-        name:"Next Pay Day",
-        date:"31-Jan-2016",
-        info:"Monthly payroll • Status: Processing"
-    },
-    {
-        name:"Estimated Net Pay (Jan)",
-        date:"₹ 78,420",
-        info:"May change based on LOP / variable pay"
-    },
-    {
-        name:"YTD Net Pay",
-        date:"₹ 6,88,120",
-        info:"Apr 2025 → Jan 2026"
-    },
-    {
-        name:"This Month Status",
-        date:"Processing",
-        info:"In Progress"
-    },
-]
+const salarystructure = [
+  { name: "Annual CTC", value: "12,00,000" },
+  { name: "Variable Bonus", value: "12,00,000" },
+  { name: "Fixed Pay", value: "12,00,000" },
+  { name: "Pay Cycle", value: "Monthly" },
+];
 
-const payrolllist=[
-    {
-            month:"Dec 2025",
-            value:"Gross: ₹ 1,05,000",
-            netpay:"78,420",
-            status:"paid",
-                paidon:"31 Dec 2025",
-                action:"open"
-    },
-    {
-            month:" Nov 2025",
-            value:"Gross: ₹ 1,02,000",
-            netpay:"80,420",
-            status:"paid",
-                paidon:"31 nov 2025",
-                action:"open"
-    },
-        {
-                month:"Oct 2025",
-                value:"Gross: ₹ 1,01,000",
-                netpay:"76  ,420",
-                status:"paid",
-                    paidon:"31 oct   2025",
-                    action:"open"
-        },
-]
+const Earnings = [
+  { name: "Basic", value: "35,000" },
+  { name: "HRA", value: "12,000" },
+  { name: "Special Allowance", value: "22,000" },
+  { name: "Conveyance", value: "2,000" },
+  { name: "Variable  (avg)", value: "12,500" },
+];
 
-const DashboardPayroll1 = () => {
+const Deductions = [
+  { name: "Employer PF", value: "4200" },
+  { name: "Insurance", value: "900" },
+  { name: "Gratuity", value: "1400" },
+  { name: "LOP  (If Any)", value: "1400" },
+  { name: "Other", value: "12,500" },
+];
+
+export default function DashboardPayroll1() {
   return (
-    <div className='p-[10px] bg-gray-50'> 
-             <div className='flex justify-between items-center'>
-                <div>
-                    <h1 className='font-medium text-[22px]'>Payroll</h1>
-                    <p className='text-[14px] text-gray-300'>Your payslips, salary structure, tax documents, and payroll support.</p>
-                </div>
-                <div className='flex gap-[10px]'>
-                    <button className='text-[#1677FF] border border-[#C4DBFF] font-medium bg-[#EAF2FF] rounded h-[40px] w-[93px]'>Policy</button>
-                    <button className='bg-[#0575E6] font-medium text-[#E4E9EE] rounded h-[40px] w-[110px]'>Raise Query</button>
-                </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Summary Card */}
+      <div>
+        <Summrycardcomponent />
+      </div>
+
+      {/* Header */}
+      <div className="mt-5">
+        <h1 className="font-bold text-[22px]">Payroll</h1>
+        <p className="text-[14px] text-gray-300">
+          Your payslips, salary structure, tax documents, and payroll support.
+        </p>
+      </div>
+
+      {/* Tabs + Dropdown */}
+      <div className="mt-5 flex flex-col md:flex-row md:justify-between gap-4">
+        <div className="flex flex-wrap md:flex-nowrap gap-2 border border-[#DEE2E6] bg-[#F3F3F4] rounded-md h-[40px]">
+          <button className="px-3">Package & Proration</button>
+          <button className="px-3">Payslips</button>
+          <button className="px-3">Attendance</button>
+          <button className="px-3">Tax & Docs</button>
+          <button className="px-3">Bank & Payment</button>
+          <button className="px-3">Claims</button>
+        </div>
+
+        <select className="border border-[#DEE2E6] bg-[#F3F3F4] rounded-md h-[40px] w-full md:w-[220px]">
+          <option>This month</option>
+          <option></option>
+        </select>
+      </div>
+
+      {/* Current Salary Structure */}
+      <div className="mt-5 bg-white p-4 rounded-md">
+        <p className="text-lg font-semibold">Current Salary Structure</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+          {salarystructure.map((item, index) => (
+            <div
+              key={index}
+              className="bg-[#F8F9FA] flex justify-between items-center h-[48px] rounded-md px-4"
+            >
+              <div className="text-[#000000] text-[12px]">{item.name}</div>
+              <div className="font-medium text-[#000000]">{item.value}</div>
             </div>
-            
-            <div className='mt-[20px]'>
-                <div className='flex justify-between'>
-                    {payroll.map((item,index)=>(
-                        <div key={index} className='w-[272px] bg-[white] h-[110px] '>
+          ))}
+        </div>
+      </div>
 
-                            <div className='fonr-medium text-[16px]'>
-                                {item.name}
-                            </div>
-                            <div className='font-bold text-[24px]'>
-                                {item.date}
-                            </div>
-                            <div className={`${item.info==="In Progress"?"text-[#F59E0B] w-[90px] text-center bg-[#FFF3D6]":"text-gray-300 text-[14px]"}`} >
-                                {item.info}
-                            </div>
-
-
-                        </div>
-                    ))}
-
+      {/* Monthly Components */}
+      <div className="mt-5 bg-white p-4 rounded-md">
+        <h1 className="font-bold text-[22px]">Monthly Components</h1>
+        <div className="mt-5 flex flex-col md:flex-row gap-4">
+          {/* Earnings */}
+          <div className="flex-1">
+            <p className="text-[14px] font-medium px-2">Earnings</p>
+            <div className="mt-2 space-y-3">
+              {Earnings.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-[#F8F9FA] flex justify-between items-center rounded-md h-[48px] px-4"
+                >
+                  <div className="text-[#000000] text-[12px]">{item.name}</div>
+                  <div className="font-medium text-[#000000]">{item.value}</div>
                 </div>
-                {/* 2222222222222222222222222222 */}
-
-                <div className='mt-[40px]'>
-                    <div>
-                        <h1 className='font-medium text-[22px]'>My Payroll</h1>
-                        <p className='text-[14px] text-gray-300'>Everything you need payslips, tax, attendance impact, and support.</p>
-                    </div>
-                    <div>
-                       <button className='border border-[#DEE2E6] w-[685px] items-center rounded-md h-[40px] bg-[#F4F4F5] flex  gap-[30px]'>
-                        <button className='pl-[10px]'>Payslips</button>
-                        <button className='bg-[white] rounded-md w-[140px] h-[33px]'>Salary Structure</button>
-                        <button>Attendance</button>
-                        <button>Tax & Docs</button>
-                        <button>Bank & Payment</button>
-                        <button>Claims</button>
-                       </button>
-
-                    </div>
-                    <div className='mt-[20px]'>
-                        <ul className='flex text-[#8F97A3] border-b-2 border-[#E3E5E8] justify-between px-[20px]'>
-                            <li className=' w-[215px]'>Month</li>
-                            <li className='  w-[60px] yy'>Net Pay</li>
-                            <li >Status</li>
-                            <li className='  w-[200px]'>Paid On</li>
-                            <li>Status/Action</li>
-                        </ul>
-
-
-                    </div>
-                    <div>
-       
-                    {payrolllist.map((item,index)=>(
-                        <div key={index} className='bg-[white] mt-[10px] h-[64px] items-center flex justify-between border border-[#0000001A] '>
-                            <div className='pl-[20px]'>
-                                <div  className='w-[200px]'>
-
-                                {item.month}
-                                <div className='text-gray-300 text-[14px]'>
-                                    
-                                {item.value}
-                                </div>
-                           
-                                </div>
-                            
-                            </div>
-                            <div>
-                                {item.netpay}
-                            </div>
-                            <div >
-                                {item.status}
-                            </div>
-                            <div className='     w-[250px]'>
-                                {item.paidon}
-                            </div>
-                            <div className='pr-[20px] '>
-                                {item.action}
-                            </div>
-                        </div>
-                    ))}
-
-
-                    </div>
-                </div>
-
-
-
-
+              ))}
             </div>
+          </div>
 
-     
+          {/* Deductions */}
+          <div className="flex-1">
+            <p className="text-[14px] font-medium px-2">Deductions</p>
+            <div className="mt-2 space-y-3">
+              {Deductions.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-[#F8F9FA] flex justify-between items-center rounded-md h-[48px] px-4"
+                >
+                  <div className="text-[#000000] text-[12px]">{item.name}</div>
+                  <div className="font-medium text-[#000000]">{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export default DashboardPayroll1
+
