@@ -6,7 +6,7 @@ import {
   Password_Show
 } from '../../allAssetsImport/allAssets'
 
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 // import { setAddLoginData } from "../../redux/slices/authSlice";
@@ -138,7 +138,7 @@ const Login = () => {
                   <u className="cursor-pointer font-medium">Forgot Password?</u>
                 </div>
 
-                <div className="bg-[#543FD3] h-[70px] rounded-xl flex items-center justify-center">
+                <div className="bg-[#0575E6] h-[70px] rounded-xl flex items-center justify-center">
                   <button
                     type="submit"
                     className="text-white text-[16px]  w-full"
@@ -150,6 +150,9 @@ const Login = () => {
 
               </form>
               {/* FORM END */}
+              <div className='mt-12 w-[70%] text-center mx-auto '>
+                <p>By Logging In, you agree to our <Link to="/" className="text-[#0575E6]">Terms of Service</Link> and <Link to="/" className="text-[#0575E6]">Privacy Policy</Link>.</p>
+              </div>
 
             </div>
           </div>

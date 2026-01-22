@@ -73,26 +73,32 @@ const employee = [
   },
 ]
 
+const filterData = {
+  
+    Department:[],
+    Role:[],
+    Location:[],
+    Status:[]
+
+  
+}
+
 const DashboardEmployeeHr = () => {
   return (
     <>
       <div className='bg-gray-50 p-5'>
-
-
-
-
         <div className='flex justify-between'>
           <div>
 
-            <h1>Employees</h1>
-            <p className='text-gray-200'>Manage employee directory, documents, and role-based actions.</p>
+            <h1 className='text-[20px] font-bold text-[#212529]'>Employees</h1>
+            <p className='text-[#000000]/35 text-[12px]'>Manage employee directory, documents, and role-based actions.</p>
           </div>
 
-          <button className="bg-[#0575E6] text-white px-4 py-2  rounded">
+          <button className="bg-[#0575E6] text-white px-4 py-2 rounded w-[198px]  h-[40px]n font-semibold text-sm">
             + Add Employees
           </button>
         </div>
-        <div className='m-5 border border-[#DEE2E6] w-[290px] flex justify-around rounded-md h-[40px]'>
+        <div className='my-5 border border-[#DEE2E6] w-[290px] flex justify-around rounded-md h-[40px] bg-[#F4F4F5]'>
           <button>All Employees</button>
           <button>My Team</button>
           <button>Me</button>
@@ -100,10 +106,10 @@ const DashboardEmployeeHr = () => {
 
         <div className='flex justify-between'>
           <div className='flex gap-3'>
-            <button className='border border-[#DEE2E6] text-left rounded-md w-[210px] h-[40px] bg-white '>Department</button>
+            {/* <button className='border border-[#DEE2E6] text-left rounded-md w-[210px] h-[40px] bg-white '>Department</button>
             <button className='border border-[#DEE2E6] text-left rounded-md w-[210px] h-[40px] bg-white'>Role</button>
             <button className='border border-[#DEE2E6] text-left rounded-md w-[210px] h-[40px] bg-white'>Location</button>
-            <button className='border border-[#DEE2E6] text-left rounded-md w-[210px] h-[40px] bg-white'>Status</button>
+            <button className='border border-[#DEE2E6] text-left rounded-md w-[210px] h-[40px] bg-white'>Status</button> */}
           </div>
           <div className='border border-[#DEE2E6] rounded-md w-[90px] h-[40px] flex items-center justify-evenly'>
             <button >clear</button>

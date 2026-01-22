@@ -4,8 +4,9 @@ import CompanySetup from './CompanySetup';
 import WorkSpaceSetup from './WorkSpaceSetup';
 import Accountsetup from './Accountsetup';
 import { IoIosCheckmarkCircle } from 'react-icons/io';
+import BrandAssetsUpload from './BrandAssetsUpload';
 
-const steps = ['Company Setup', 'Admin Account Setup', 'Workspace Setup'];
+const steps = ['Company Setup', 'Admin Account Setup','Branding', 'Workspace Setup'];
 
 const AddCompany = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -31,6 +32,8 @@ const AddCompany = () => {
       case 1:
         return <Accountsetup onNext={handleNext} onBack={handleBack} />;
       case 2:
+        return <BrandAssetsUpload onNext={handleNext} onBack={handleBack} />;
+      case 3:
         return <WorkSpaceSetup onBack={handleBack} />;
       default:
         return null;
@@ -51,14 +54,14 @@ const AddCompany = () => {
             <div key={index} className="flex flex-col w-full ">
               <div
                 className={`rounded-full h-1 mb-2 
-                  ${isCompleted ? "bg-gray-400" : isActive ? "bg-blue-400" : "bg-gray-200"}
+                  ${isCompleted ? "bg-gray-400" : isActive ? "bg-blue-400 " : "bg-gray-200"}
                 `}
               />
 
               <div className="flex flex-row gap-4 px-1 items-center">
                 <div
                   className={`w-5 h-5 flex items-center justify-center rounded-full  
-                    ${isCompleted ? "bg-white" : isActive ? "bg-blue-400 text-white" : "bg-gray-300"}
+                    ${isCompleted ? "bg-white" : isActive ? "bg-blue-400 " : "bg-gray-300"}
                   `}
                 >
                   {isCompleted ? (
@@ -69,7 +72,7 @@ const AddCompany = () => {
                 </div>
                 <p
                   className={`text-sm ${
-                    isActive ? "font-bold text-black" : "text-gray-500"
+                    isActive ? "font-medium text-[#3C4257]" : "text-gray-500"
                   }`}
                 >
                   {label}

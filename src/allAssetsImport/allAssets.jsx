@@ -31,6 +31,8 @@ import group from "/assets/Images/Group.png"
 import vector from "/assets/Images/vector.png"
 import vector2 from "/assets/Images/Vector(2).png"
 
+import create_company from "/assets/Images/create-company-logo.png"
+
 
 
 
@@ -38,7 +40,7 @@ import vector2 from "/assets/Images/Vector(2).png"
 
 
 export {
-   navbarLogo, search, notification, avatar, downArrow,
+   navbarLogo, search, notification, avatar, downArrow,create_company,
     login_Google,
     login_Email,
     Password,
