@@ -15,6 +15,7 @@ import DashboardEmployeeHr from '../Container/DashboardPages/Employee/DashboardE
 import LeaveManagementHr from '../Container/DashboardPages/LeaveManagement/LeaveManagementHr'
 import DashboardPayroll1 from '../Container/Payroll/DashboardPayroll1'
 import DashboardAttandanceEmployee from '../Container/DashboardPages/Attendance/DashboardAttandanceEmployee'
+import PrivateRoute from './privateRoute'
 
 const AppRoutes = () => {
   return (
@@ -25,14 +26,18 @@ const AppRoutes = () => {
         <Route path="/employee-dashboard" element={<Dashboardemployee />} />
         {/* <Route path="/dashboard-employee" element={<EmployeeDashboard1 />} /> */}
         <Route path="/org-setup" element={<AddCompany />} />
-        <Route path="/dashboard" element={<MainDashboardLayout />}>
+        <Route path="/dashboard" element={
+          <PrivateRoute >
+            <MainDashboardLayout />
+          </PrivateRoute>
+        }>
           {/* <Route path="superadmin-dashboard" element={<Admindashboard />} /> */}
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
 
           <Route path="employee" element={<DashboardEmployeeHr />} />
           {/* <Route path="employee" element={<Dashboardemployee />} /> */}
           <Route path="attendance" element={<DashboardAttandanceEmployee />} />
-          <Route path="leave-management" element={<LeaveManagementHr/>} />
+          <Route path="leave-management" element={<LeaveManagementHr />} />
           <Route path="payroll" element={<DashboardPayroll1 />} />
         </Route>
       </Routes>
