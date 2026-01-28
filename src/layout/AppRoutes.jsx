@@ -2,7 +2,7 @@ import React from 'react'
 import Login from '../Components/Auth/Login'
 import { Route, Routes } from 'react-router-dom'
 import SuperAdminDashboard from '../Container/Dashboard/SuperAdminDashboard'
-import Dashboardemployee from '../Employee'
+// import Dashboardemployee from '../Employee'
 // import EmployeeDashboard1 from '../Container/DashboardPages/Employee/DashboardEmployeeHr'
 import AddCompany from '../Components/Adding-Company/AddCompany'
 import MainDashboardLayout from './mainLayout'
@@ -10,12 +10,16 @@ import MainDashboardLayout from './mainLayout'
 // import DashboardAttandance from '../DashboardAttandanceEmployee'
 // import LeaveManagementHr from '../LeaveManagementHr'
 // import DashboardPayroll1 from '../DashboardPayroll1'
-import DashboardEmployeeHr from '../Container/DashboardPages/Employee/DashboardEmployeeHr'
 // import DashboardAttandanceEmployee from '../DashboardAttandanceEmployee'
 import LeaveManagementHr from '../Container/DashboardPages/LeaveManagement/LeaveManagementHr'
 import DashboardPayroll1 from '../Container/Payroll/DashboardPayroll1'
-import DashboardAttandanceEmployee from '../Container/DashboardPages/Attendance/DashboardAttandanceEmployee'
 import PrivateRoute from './privateRoute'
+import Employee from '../Container/DashboardPages/Employee/Employee'
+import EmployeeHrTL from '../Container/DashboardPages/Employee/EmployeeHrTL'
+import EmployeeHr from '../Container/DashboardPages/Employee/EmployeeHr'
+import AttendanceEmployee from '../Container/DashboardPages/Attendance/AttendanceEmployee'
+import DashboardAttandance2 from '../Container/DashboardPages/Attendance/AttendanceHrTL'
+import AttendanceHrTL from '../Container/DashboardPages/Attendance/AttendanceHrTL'
 
 const AppRoutes = () => {
   return (
@@ -23,7 +27,7 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         {/* <Route path="/superadmin-dashboard" element={<SuperAdminDashboard />} /> */}
-        <Route path="/employee-dashboard" element={<Dashboardemployee />} />
+        {/* <Route path="/employee-dashboard" element={<Dashboardemployee />} /> */}
         {/* <Route path="/dashboard-employee" element={<EmployeeDashboard1 />} /> */}
         <Route path="/org-setup" element={<AddCompany />} />
         <Route path="/dashboard" element={
@@ -31,13 +35,18 @@ const AppRoutes = () => {
             <MainDashboardLayout />
           </PrivateRoute>
         }>
-          {/* <Route path="superadmin-dashboard" element={<Admindashboard />} /> */}
+          {/* <Route path="Companyadmin-dashboard" element={<Admindashboard />} /> */}
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
 
-          <Route path="employee" element={<DashboardEmployeeHr />} />
-          {/* <Route path="employee" element={<Dashboardemployee />} /> */}
-          <Route path="attendance" element={<DashboardAttandanceEmployee />} />
+          {/* <Route path="employee" element={<EmployeeHrTL />} /> */}
+          {/* <Route path="employee" element={<Employee />} /> */}
+          <Route path="employee" element={<EmployeeHr />} />
+
+          <Route path="attendance" element={<AttendanceEmployee />} />
+          {/* <Route path="attendance" element={<AttendanceHrTL />} /> */}
+
           <Route path="leave-management" element={<LeaveManagementHr />} />
+
           <Route path="payroll" element={<DashboardPayroll1 />} />
         </Route>
       </Routes>

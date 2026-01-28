@@ -53,8 +53,8 @@ const Dashboardlayout = () => {
        
           <div className={`
             w-full md:${openMenu ? 'w-[85%]' : 'w-[94%]'} 
-            transition-all duration-300 h-full bg-[#f5f9ff] 
-            rounded-tl-[.5rem] overflow-y-auto
+            transition-all duration-300 h-full bg-[#F8F9FA] 
+            rounded-tl-[.5rem] overflow-y-auto p-2
           `}>
            {/* <ChatBotLauncher/> */}
               <Outlet/>

@@ -3,7 +3,7 @@ import {
   employee,
   action,
   action2,
-  create_company
+  create_company,statslogo1, statslogo2, statslogo3, statslogo4 
 } from '../../allAssetsImport/allAssets'
 import { Link } from 'react-router-dom'
 import { FaAngleDown, FaPlus } from 'react-icons/fa'
@@ -44,6 +44,48 @@ const SuperAdminDashboard = () => {
       status: 'Draft',
       statusStyle: 'bg-blue-100 text-blue-700 border-blue-200',
       emp: '---'
+    }
+  ]
+  const statsData = [
+    {
+      title: (
+        <>
+          Total<br />Companies
+        </>
+      ),
+      value: '257',
+      subtitle: '+08 this month',
+      icon: statslogo1,
+      bg: 'bg-indigo-100'
+    },
+    {
+      title: (
+        <>
+          Active<br />Companies
+        </>
+      ),
+      value: '89',
+      subtitle: '76% activation rate',
+      icon: statslogo2,
+      bg: 'bg-indigo-100'
+    },
+    {
+      title: 'Trials',
+      value: '5',
+      subtitle: 'Expiring in 3 days',
+      icon: statslogo3,
+      bg: 'bg-indigo-100'
+    },
+    {
+      title: (
+        <>
+          Monthly<br />Subscription Revenue
+        </>
+      ),
+      value: '23',
+      subtitle: '+08 this month',
+      icon: statslogo4,
+      bg: 'bg-emerald-100'
     }
   ]
 
@@ -89,7 +131,7 @@ const SuperAdminDashboard = () => {
 
   return (
     <div className="w-full p-5 bg-gray-50">
-      <Statics />
+      <Statics data={statsData}/>
 
       {/* Companies Header */}
       <div className="mt-10">
