@@ -1,5 +1,5 @@
 import React from 'react'
-import { statslogo1, statslogo2, statslogo3, statslogo4 } from './allAssetsImport/allAssets'
+import { statslogo1, statslogo2, statslogo3, statslogo4 } from '../../../allAssetsImport/allAssets'
 
 const employee = [
     {
@@ -13,7 +13,7 @@ const employee = [
         value: "12.2",
         status: "1 Pending",
         icon: statslogo2
-    },  
+    },
     {
         title: "late marks",
         value: "2",
@@ -47,55 +47,52 @@ const actionss = [
 ]
 
 
-const EmployeeDashboard2 = () => {
+const Employee = () => {
     return (
         <>
             <div className='bg-gray-50 p-5'>
-                <div className='flex justify-between w-full m-[14px] '>
+                <div className='flex justify-between  p-[14px] '>
                     <div>
+                        <h1 className='font-bold text-[20px] text-[#212529]'>Employees</h1>
+                        <p className='text-[12px] text-[#000000]/35'>Manage employee directory, documents, and role-based actions.</p>
+                    </div>
 
-                        <h1 className='font-medium text-[20px]'>Employees</h1>
-                        <p>Manage employee directory, documents, and role-based actions.</p>
-                    </div>
-                    <div>
-                        <button className='bg-[#0575E6] text-[#FFFFFF]  rounded-md w-[150px] h-[40px]'>Apply Leave</button>
-                    </div>
+                    <button className='bg-[#0575E6] text-[#FFFFFF]  rounded-md w-[150px] h-[40px]'>Apply Leave</button>
+
                 </div>
                 <div className='flex gap-3 bg-[white] m-[20px]'>
-
-
-
                     <div>
                         <img className='w-[76px] h-[76px] bg-[#F0F3FF] p-[10px]' src={statslogo1} />
                     </div>
-                    <div>
-                        <h1 className=' text-[15px] font-medium'>Natasia Bunny</h1>
-                        <p className='text-[12px] text-gray-400'>EMP-1003 • Team Lead (Sales) • Bengaluru<br />Reports to Sarah Johnson • Status: Active • Employment: Full-time</p>
+                    <div className='space-y-2'>
+                        <h1 className=' text-[14px] font-medium text-[#000000]/45'>Natasia Bunny</h1>
+                        <p className='text-[12px] text-[#000000]/35'>EMP-1003 • Team Lead (Sales) • Bengaluru<br />Reports to Sarah Johnson • Status: Active • Employment: Full-time</p>
                         <p className='text-[#1E3A8A] bg-[#F1F5FF] w-[190px] text-center'>natasia@company.com</p>
                     </div>
                 </div>
-
-                <div className='flex'>
-                    <div className='flex flex-wrap w-[548px] gap-[20px] m-[20px]'>
+                <div className='flex '>
+                    <div className='grid grid-cols-2 gap-[20px] w-[60%] m-[20px] '>
                         {employee.map((item, index) => (
-                            <div key={index} className='flex w-[264px] bg-[white] flex-wrap h-[137px] justify-between items-center '>
+                            <div
+                                key={index}
+                                className='flex bg-white h-[137px] justify-between items-center p-5'
+                            >
                                 <div>
                                     <div className='font-medium'>{item.title}</div>
-                                    <div className='text-[22px] font-bold   '>{item.value}</div>
-                                    <div className='bg-[#E9FFEF] rounded-md w-24  h-6 text-center border-[#C5F5D5] text-[#10B981]'>{item.status}</div>
-
+                                    <div className='text-[22px] font-bold'>{item.value}</div>
+                                    <div className='bg-[#E9FFEF] rounded-md w-24 h-6 text-center border-[#C5F5D5] text-[#10B981]'>
+                                        {item.status}
+                                    </div>
                                 </div>
-                                <div className='w-[50px] h-[50px]'>
-                                    <img src={item.icon} />
-                                    {/* <img src={item.icon}/>
-                             <img src={item.icon}/>
-                             <img src={item.icon}/>     */}
 
+                                <div className='w-[50px] h-[50px]'>
+                                    <img src={item.icon} alt="" />
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <div className='m-[20px] bg-[white]'>
+
+                    <div className='m-[20px] w-[40%] bg-[white]'>
                         <div className='p-[10px]'>
                             <h1>My Actions</h1>
                             <p className='text-gray-300 text-[14px]'>Self-service actions only.</p>
@@ -149,4 +146,4 @@ const EmployeeDashboard2 = () => {
     )
 }
 
-export default EmployeeDashboard2
+export default Employee
