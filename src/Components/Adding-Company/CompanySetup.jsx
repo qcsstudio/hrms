@@ -13,19 +13,27 @@ const CompanySetup = ({ onNext, onBack }) => {
     industryType: ""
   })
 
-  const [showOtpModal, setShowOtpModal] = useState(false)
+    const [showOtpModal, setShowOtpModal] = useState(false)
   const [isOtpVerified, setIsOtpVerified] = useState(false)
 
   const axiosInstance = createAxios()
 
   // 🔥 Page load ke 2 second baad OTP popup
   useEffect(() => {
+    if (isOtpVerified) return
+
     const timer = setTimeout(() => {
       setShowOtpModal(true)
     }, 2000)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [isOtpVerified])
+
+   const handleOtpVerified = () => {
+    setIsOtpVerified(true)
+    setShowOtpModal(false)
+  }
+
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -60,13 +68,8 @@ const CompanySetup = ({ onNext, onBack }) => {
   return (
     <>
       {/* 🔐 OTP Modal */}
-      {showOtpModal && !isOtpVerified && (
-        <OTPModal
-          onVerify={() => {
-            setIsOtpVerified(true)
-            setShowOtpModal(false)
-          }}
-        />
+     {showOtpModal && !isOtpVerified && (
+        <OTPModal onVerify={handleOtpVerified} />
       )}
 
       {/* ✅ PAGE ALWAYS VISIBLE */}
