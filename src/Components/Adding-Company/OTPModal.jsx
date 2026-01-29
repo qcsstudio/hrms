@@ -38,7 +38,7 @@ const OTPModal = ({ onVerify }) => {
         token
       })
 
-      if (res.data.success) {
+      if (res.status === 200) {
         onVerify() // ✅ THIS CLOSES MODAL
       } else {
         alert("Invalid OTP")
