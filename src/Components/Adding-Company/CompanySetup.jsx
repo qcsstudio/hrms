@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import createAxios from '../../utils/axios.config'
-import OTPModal from './OTPModal '
+import OTPModal from './OTPModal'
 
 const CompanySetup = ({ onNext, onBack }) => {
   const [formData, setFormdata] = useState({
@@ -19,15 +19,13 @@ const CompanySetup = ({ onNext, onBack }) => {
   const axiosInstance = createAxios()
 
   // 🔥 Page load ke 2 second baad OTP popup
-  useEffect(() => {
-    if (isOtpVerified) return
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setShowOtpModal(true)
+  }, 2000)
 
-    const timer = setTimeout(() => {
-      setShowOtpModal(true)
-    }, 2000)
-
-    return () => clearTimeout(timer)
-  }, [isOtpVerified])
+  return () => clearTimeout(timer)
+}, [])
 
    const handleOtpVerified = () => {
     setIsOtpVerified(true)
