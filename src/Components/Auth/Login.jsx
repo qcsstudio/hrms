@@ -9,7 +9,6 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-// import { setAddLoginData } from "../../redux/slices/authSlice";
 import { encryptToken } from '../../utils/cryptoEncrypt';
 import createAxios from '../../utils/axios.config';
 import { setAddLoginData } from '../../Redux/userSlice';
@@ -36,23 +35,18 @@ const Login = () => {
         password
       });
 
-      const { token, user, message } = res.data;
-
-      // Save tokens
-      localStorage.setItem("authToken", token);
-
-      const encryptedToken = encryptToken(token);
-      localStorage.setItem("encAuthToken", encryptedToken);
+      // const encryptedToken = encryptToken(token);
+      // localStorage.setItem("encAuthToken", encryptedToken);
 
       // Redux store
-      dispatch(setAddLoginData({
-        user,
-        token
-      }));
+      dispatch(setAddLoginData(
+        res.data
+      ));
+      console.log( "after login response",res.data)
 
-      toast.success(message || "Login Successful");
+      const role = res?.data?.role;
 
-      if (user.role === "SUPER_ADMIN") {
+      if (role === "SUPER_ADMIN") {
         navigate("/dashboard/superadmin-dashboard");
       } else {
         navigate("/");
@@ -87,17 +81,6 @@ const Login = () => {
             </div>
 
             <div className="mt-8">
-
-              {/* <button className="w-full h-[70px] border border-gray-200 rounded-xl bg-white flex items-center justify-center gap-3">
-                <img src={login_Google} alt="" />
-                <span className="text-[16px] text-black">
-                  Log In with Google
-                </span>
-              </button> */}
-
-              {/* <div className="h-[50px] flex items-center justify-center text-[14px] text-gray-300">
-                Or Log In with email
-              </div> */}
 
               {/* FORM START */}
               <form onSubmit={handelSubmit}>
