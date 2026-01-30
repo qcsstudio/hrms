@@ -20,22 +20,26 @@ import EmployeeHr from '../Container/DashboardPages/Employee/EmployeeHr'
 import AttendanceEmployee from '../Container/DashboardPages/Attendance/AttendanceEmployee'
 import DashboardAttandance2 from '../Container/DashboardPages/Attendance/AttendanceHrTL'
 import AttendanceHrTL from '../Container/DashboardPages/Attendance/AttendanceHrTL'
+import Admindashboard from '../Container/Dashboard/Admindashboard'
+import PrivateRouteOrg from './privateRouteOrg'
 
 const AppRoutes = () => {
   return (
     <>
       <Routes>
         <Route path="/" element={<Login />} />
-        {/* <Route path="/superadmin-dashboard" element={<SuperAdminDashboard />} /> */}
-        {/* <Route path="/employee-dashboard" element={<Dashboardemployee />} /> */}
-        {/* <Route path="/dashboard-employee" element={<EmployeeDashboard1 />} /> */}
-        <Route path="/org-setup" element={<AddCompany />} />
+   
+        <Route path="/org-setup" element={
+           <PrivateRouteOrg >
+            <AddCompany />
+           </PrivateRouteOrg>
+          } />
         <Route path="/dashboard" element={
           <PrivateRoute >
             <MainDashboardLayout />
           </PrivateRoute>
         }>
-          {/* <Route path="Companyadmin-dashboard" element={<Admindashboard />} /> */}
+          <Route path="Companyadmin-dashboard" element={<Admindashboard />} />
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
 
           {/* <Route path="employee" element={<EmployeeHrTL />} /> */}
