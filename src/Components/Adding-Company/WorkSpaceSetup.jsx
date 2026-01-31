@@ -1,28 +1,79 @@
 import React, { useState } from 'react'
 import { IoCloudUploadOutline } from 'react-icons/io5'
+import createAxios from '../../utils/axios.config'
+import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
 const WorkSpaceSetup = ({ onBack }) => {
+  const { token, companyId } = useSelector((state) => state.user)
+
   const [file, setFile] = useState(null)
+  const [loading, setLoading] = useState(false)
 
+  const navigate = useNavigate()
+  const axiosInstance = createAxios()
+
+  // ✅ FILE CHANGE (Only Excel allowed)
   const handleFileChange = (e) => {
-    setFile(e.target.files[0])
-    console.log(e.target.files[0])
+    const selectedFile = e.target.files[0]
+    if (!selectedFile) return
+
+    const allowedTypes = [
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ]
+
+    if (!allowedTypes.includes(selectedFile.type)) {
+      alert('Only Excel files (.xls, .xlsx) are allowed')
+      e.target.value = ''
+      return
+    }
+
+    setFile(selectedFile)
   }
-    const axiosInstance = createAxios()
-   async function handlenext() {
+
+  // ✅ CONTINUE SETUP (100% HIT GUARANTEE)
+  const handlenext = async () => {
+    console.log('CLICKED → Continue Setup')
+
+    if (!file) {
+      alert('Please upload an Excel file first')
+      return
+    }
+
+    if (!token || !companyId) {
+      alert('Authentication or Company missing')
+      return
+    }
+
     try {
-      const token = localStorage.getItem("authToken");
-      const companyId = localStorage.getItem("companyId");
+      setLoading(true)
 
-      const res = await axiosInstance.post(`companies/${companyId}/workspace`, file, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const formData = new FormData()
+      formData.append('file', file)
 
-      console.log(res.data);
-      onNext()
+      const res = await axiosInstance.post(
+        `/companies/${companyId}/bulk-upload-employees`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      console.log('UPLOAD SUCCESS:', res.data)
+
+      navigate('/')
 
     } catch (error) {
-      console.log("API Error:", error);
+      console.error('UPLOAD ERROR:', error.response || error)
+      alert(
+        error?.response?.data?.message ||
+        'Bulk upload failed'
+      )
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -41,23 +92,19 @@ const WorkSpaceSetup = ({ onBack }) => {
       >
         <IoCloudUploadOutline className="text-[35px] text-gray-300 mb-1" />
 
-        <p className="text-sm text-gray-600">
-          Drop your files here
-        </p>
-        <p className="text-sm text-gray-500">
-          or click to browse
-        </p>
+        <p className="text-sm text-gray-600">Drop your files here</p>
+        <p className="text-sm text-gray-500">or click to browse</p>
 
-        {/* Hidden Input */}
         <input
           id="bulkUpload"
           type="file"
           className="hidden"
+          accept=".xls,.xlsx"
           onChange={handleFileChange}
         />
       </label>
 
-      {/* Selected File Name */}
+      {/* Selected File */}
       {file && (
         <p className="mt-3 text-sm text-gray-600">
           Selected file: <span className="font-medium">{file.name}</span>
@@ -67,15 +114,38 @@ const WorkSpaceSetup = ({ onBack }) => {
       {/* Buttons */}
       <div className="flex gap-4 mt-6">
         <button
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
+          type="button"
+          className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium"
+          disabled
         >
           Upload
         </button>
 
         <button
+          type="button"
           className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-100 transition"
         >
           Download Template
+        </button>
+      </div>
+
+      {/* Footer Buttons */}
+      <div className="flex justify-between mt-8">
+        <button
+          type="button"
+          className="h-11 w-[100px] border rounded-lg"
+          onClick={onBack}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="h-11 w-[170px] border rounded-lg"
+          onClick={handlenext}
+          disabled={loading}
+        >
+          {loading ? 'Uploading...' : 'Continue Setup'}
         </button>
       </div>
     </div>

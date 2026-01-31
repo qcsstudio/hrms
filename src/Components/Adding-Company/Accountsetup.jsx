@@ -45,8 +45,8 @@ const Accountsetup = ({ onNext, onBack }) => {
       });
 
       console.log(res.data);
-      navigate('/');
-      // onNext()
+      onNext()
+      // navigate('/');
 
     } catch (error) {
       console.log("API Error:", error);
