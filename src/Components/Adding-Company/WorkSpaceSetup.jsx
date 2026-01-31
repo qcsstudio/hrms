@@ -10,6 +10,9 @@ const WorkSpaceSetup = ({ onBack }) => {
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
 
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+
+
   const navigate = useNavigate()
   const axiosInstance = createAxios()
 
@@ -63,8 +66,8 @@ const WorkSpaceSetup = ({ onBack }) => {
       )
 
       console.log('UPLOAD SUCCESS:', res.data)
-
-      navigate('/')
+setShowSuccessPopup(true)
+      // navigate('/')
 
     } catch (error) {
       console.error('UPLOAD ERROR:', error.response || error)
@@ -148,6 +151,33 @@ const WorkSpaceSetup = ({ onBack }) => {
           {loading ? 'Uploading...' : 'Continue Setup'}
         </button>
       </div>
+
+{showSuccessPopup && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-[350px] text-center shadow-lg">
+      
+      <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        Upload Successful 
+      </h3>
+
+      <p className="text-sm text-gray-600 mb-5">
+        Please check your email for further instructions.
+      </p>
+
+      {/* <button
+        onClick={() => {
+          setShowSuccessPopup(false)
+          // navigate('/')   // ya next page
+        }}
+        className="w-full bg-blue-600 text-white py-2 rounded-lg"
+      >
+        Okay
+      </button> */}
+    </div>
+  </div>
+)}
+
+
     </div>
   )
 }
