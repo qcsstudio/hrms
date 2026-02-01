@@ -6,7 +6,8 @@ import axios from "axios"; // ------------ New
 const createAxios = () => {
   const instance = axios.create({
     // baseURL: "http://localhost:4000",
-    baseURL: "http://13.127.109.214:4000",
+    // baseURL: "http://13.127.109.214:4000",
+    baseURL: "https://api.qcsstudios.com",
     // baseURL: "https://hrms.qcsstudio.com",
     withCredentials: true,
   });
