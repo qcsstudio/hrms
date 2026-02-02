@@ -1,26 +1,47 @@
-import axios from "axios"; // ------------ New
+import axios from "axios";
 
-// local == http://localhost:4000
-// ip address = http://13.127.109.214:4000
+const getBaseURL = () => {
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+
+  // MAIN WEBSITE
+  if (hostname === "www.qcsstudios.com") {
+    return `${protocol}//api.qcsstudios.com`;
+  }
+  // COMPANY SUBDOMAIN WITH www
+  if (hostname.startsWith("www.") && hostname.endsWith(".qcsstudios.com")) {
+    const company = hostname.replace("www.", "").replace(".qcsstudios.com", "");
+    return `${protocol}//${company}.qcsstudios.com`;
+  }
+
+  // COMPANY SUBDOMAIN WITHOUT www
+  if (hostname.endsWith(".qcsstudios.com")) {
+    return `${protocol}//${hostname}`;
+  }
+
+  // LOCAL / FALLBACK
+  return "http://localhost:4000";
+};
 
 const createAxios = () => {
   const instance = axios.create({
-    // baseURL: "http://localhost:4000",
-    // baseURL: "http://13.127.109.214:4000",
-    baseURL: "https://api.qcsstudios.com",
-    // baseURL: "https://hrms.qcsstudio.com",
+    baseURL: getBaseURL(),
     withCredentials: true,
   });
 
-  // Add token dynamically before each request
   instance.interceptors.request.use((config) => {
-    const authToken = localStorage.getItem("authToken");
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   });
+
   return instance;
 };
 
 export default createAxios;
+// GIT_TEST_CHANGE
+
+
