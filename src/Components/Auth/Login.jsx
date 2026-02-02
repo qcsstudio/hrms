@@ -61,7 +61,7 @@ const Login = () => {
         email,
         password
       });
-
+      
       dispatch(setAddLoginData(res.data));
       console.log("After login response:", res.data);
 
@@ -72,7 +72,6 @@ const Login = () => {
       } else {
         navigate("/dashboard/Companyadmin-dashboard");
       }
-
     } catch (error) {
       let msg = error?.response?.data?.message || "Login failed";
       toast.error(msg);
