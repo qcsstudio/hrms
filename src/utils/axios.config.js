@@ -1,28 +1,70 @@
 import axios from "axios";
 
-const getBaseURL = () => {
-  const protocol = window.location.protocol;
+/**
+ * 🔹 Extract company slug from hostname
+ * Examples:
+ *  - abc.qcsstudios.com      → abc
+ *  - www.abc.qcsstudios.com  → abc
+ *  - qcsstudios.com         → null
+ *  - www.qcsstudios.com     → null
+ *  - localhost              → null
+ */
+const getSlug = () => {
   const hostname = window.location.hostname;
 
-  // MAIN WEBSITE
-  if (hostname === "www.qcsstudios.com") {
-    return `${protocol}//api.qcsstudios.com`;
-  }
-  // COMPANY SUBDOMAIN WITH www
-  if (hostname.startsWith("www.") && hostname.endsWith(".qcsstudios.com")) {
-    const company = hostname.replace("www.", "").replace(".qcsstudios.com", "");
-    return `${protocol}//${company}.qcsstudios.com`;
+  // localhost = always main website
+  if (hostname === "localhost") return null;
+
+  const parts = hostname.split(".");
+
+  // www.abc.qcsstudios.com
+  if (parts.length === 4 && parts[0] === "www") {
+    return parts[1];
   }
 
-  // COMPANY SUBDOMAIN WITHOUT www
-  if (hostname.endsWith(".qcsstudios.com")) {
-    return `${protocol}//${hostname}`;
+  // abc.qcsstudios.com
+  if (parts.length === 3) {
+    return parts[0];
   }
 
-  // LOCAL / FALLBACK
-  return "http://localhost:4000";
+  return null;
 };
 
+/**
+ * 🔹 Decide API base URL
+ */
+const getBaseURL = () => {
+  const protocol = window.location.protocol;
+  const slug = getSlug();
+
+  // MAIN WEBSITE
+  if (!slug) {
+    return `${protocol}//api.qcsstudios.com`;
+  }
+
+  // TENANT WEBSITE
+  return `${protocol}//${slug}.qcsstudios.com`;
+};
+
+/**
+ * 🔹 Tenant information for headers
+ */
+const getTenantInfo = () => {
+  const slug = getSlug();
+
+  if (!slug) {
+    return { isTenant: false };
+  }
+
+  return {
+    isTenant: true,
+    tenantUrl: `https://${slug}.qcsstudios.com`,
+  };
+};
+
+/**
+ * 🔹 Axios instance (FINAL)
+ */
 const createAxios = () => {
   const instance = axios.create({
     baseURL: getBaseURL(),
@@ -30,9 +72,18 @@ const createAxios = () => {
   });
 
   instance.interceptors.request.use((config) => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const { isTenant, tenantUrl } = getTenantInfo();
+
+    if (isTenant) {
+      // 🏢 TENANT FLOW
+      config.headers["x-tenant"] = tenantUrl;
+      delete config.headers.Authorization;
+    } else {
+      // 🔐 MAIN WEBSITE AUTH FLOW
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
 
     return config;
@@ -42,6 +93,3 @@ const createAxios = () => {
 };
 
 export default createAxios;
-// GIT_TEST_CHANGE
-
-
