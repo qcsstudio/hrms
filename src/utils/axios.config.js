@@ -1,19 +1,19 @@
 import axios from "axios";
 
 /**
- * 🔹 Extract company slug from hostname
- * Examples:
- *  - abc.qcsstudios.com      → abc
- *  - www.abc.qcsstudios.com  → abc
- *  - qcsstudios.com         → null
- *  - www.qcsstudios.com     → null
- *  - localhost              → null
+ * 🔹 Extract tenant slug from hostname
  */
 const getSlug = () => {
   const hostname = window.location.hostname;
 
-  // localhost = always main website
-  if (hostname === "localhost") return null;
+  // localhost OR main domain
+  if (
+    hostname === "localhost" ||
+    hostname === "qcsstudios.com" ||
+    hostname === "www.qcsstudios.com"
+  ) {
+    return null;
+  }
 
   const parts = hostname.split(".");
 
@@ -31,59 +31,28 @@ const getSlug = () => {
 };
 
 /**
- * 🔹 Decide API base URL
- */
-const getBaseURL = () => {
-  const protocol = window.location.protocol;
-  const slug = getSlug();
-
-  // MAIN WEBSITE
-  if (!slug) {
-    return `${protocol}//api.qcsstudios.com`;
-  }
-
-  // TENANT WEBSITE
-  return `${protocol}//${slug}.qcsstudios.com`;
-};
-
-/**
- * 🔹 Tenant information for headers
- */
-const getTenantInfo = () => {
-  const slug = getSlug();
-
-  if (!slug) {
-    return { isTenant: false };
-  }
-
-  return {
-    isTenant: true,
-    tenantUrl: `https://${slug}.qcsstudios.com`,
-  };
-};
-
-/**
- * 🔹 Axios instance (FINAL)
+ * 🔹 Axios instance
  */
 const createAxios = () => {
   const instance = axios.create({
-    baseURL: getBaseURL(),
+    baseURL: "https://api.qcsstudios.com", // 🔥 ALWAYS SAME
     withCredentials: true,
   });
 
   instance.interceptors.request.use((config) => {
-    const { isTenant, tenantUrl } = getTenantInfo();
+    const slug = getSlug();
 
-    if (isTenant) {
-      // 🏢 TENANT FLOW
-      config.headers["x-tenant"] = tenantUrl;
+    if (slug) {
+      // 🏢 TENANT REQUEST
       delete config.headers.Authorization;
+      config.headers["x-tenant"] = `https://${slug}.qcsstudios.com`;
     } else {
-      // 🔐 MAIN WEBSITE AUTH FLOW
+      // 🔐 MAIN WEBSITE REQUEST
       const token = localStorage.getItem("authToken");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      delete config.headers["x-tenant"];
     }
 
     return config;
