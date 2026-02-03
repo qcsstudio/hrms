@@ -57,7 +57,7 @@ const Login = () => {
     try {
       setIsLoader(true);
 
-      const res = await axiosInstance.post("/auth/superadmin/login", {
+      const res = await axiosInstance.post("/auth/login", {
         email,
         password
       });
