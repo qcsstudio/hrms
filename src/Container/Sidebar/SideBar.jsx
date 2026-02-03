@@ -77,6 +77,36 @@ const SideBar = () => {
     }
   }, []);
 
+  const getCompanySlug = () => {
+  const hostname = window.location.hostname;
+
+  // main domains (NO SLUG)
+  if (
+    hostname === "qcsstudios.com" ||
+    hostname === "www.qcsstudios.com" ||
+    hostname === "localhost"
+  ) {
+    return null;
+  }
+
+  // company subdomain
+  // example: abc.qcsstudios.com OR www.abc.qcsstudios.com
+  const parts = hostname.split(".");
+
+  if (parts.length === 3) {
+    // abc.qcsstudios.com
+    return parts[0];
+  }
+
+  if (parts.length === 4 && parts[0] === "www") {
+    // www.abc.qcsstudios.com
+    return parts[1];
+  }
+
+  return null;
+};
+
+
 
   // Change Tab
   const changeTab = (tabName) => {
@@ -91,7 +121,13 @@ const SideBar = () => {
 
     switch (tabName) {
       case "home":
+         if (slug) {
+        // ✅ company admin
+        navigate("/dashboard/companyadmin-dashboard");
+      } else {
+        // ✅ super admin
         navigate("/dashboard/superadmin-dashboard");
+      }
         break;
       case "employee":
         navigate("/dashboard/employee");
