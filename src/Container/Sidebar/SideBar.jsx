@@ -118,7 +118,7 @@ const SideBar = () => {
       dispatch(setShowSettingsMenu(false));
     }
     dispatch(setActiveUrl(tabName));
-
+ const slug = getCompanySlug();
     switch (tabName) {
       case "home":
          if (slug) {
