@@ -11,7 +11,7 @@ const CompanySetup = ({ onNext, onBack }) => {
       const dispatch = useDispatch();
 
   const [formData, setFormdata] = useState({
-    companyName: "",
+    name: "",
     // customUrl: "",
     slug: "",
     country: "",
@@ -115,7 +115,7 @@ const CompanySetup = ({ onNext, onBack }) => {
           </div>
           <div>
             <p className="text-[15px] mb-1">Company name</p>
-            <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} className="w-full h-10 border border-black/10 rounded-lg px-3" />
+            <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full h-10 border border-black/10 rounded-lg px-3" />
           </div>
           {/* <div>
             <p className="text-[15px] mb-1">Custom URL</p>
