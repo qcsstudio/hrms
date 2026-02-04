@@ -12,6 +12,7 @@ import {
   vector2
 } from '../../../allAssetsImport/allAssets'
 import Statics from '../../Dashboard/Statics'
+import { useNavigate } from 'react-router-dom'
 
 /* -------------------- EMPLOYEE DATA -------------------- */
 
@@ -123,6 +124,7 @@ const EmployeeHrTL = () => {
     (!filters.status || item.Status === filters.status)
   )
 
+  const navigate = useNavigate()
   return (
     <div className='bg-gray-50 p-5'>
 
@@ -135,7 +137,7 @@ const EmployeeHrTL = () => {
           </p>
         </div>
 
-        <button className="bg-[#0575E6] text-white px-4 py-2 rounded w-[198px] h-[40px] font-semibold text-sm">
+        <button className="bg-[#0575E6] text-white px-4 py-2 rounded w-[198px] h-[40px] font-semibold text-sm" onClick={()=> navigate('/dashboard/employee/add-Employee')}>
           + Add Employee
         </button>
       </div>
