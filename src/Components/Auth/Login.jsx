@@ -186,7 +186,7 @@ const Login = () => {
 
         {/* RIGHT SIDE */}
         <div className="w-1/2 flex items-center justify-center">
-          <img src="/assets/Images/login-image.png" alt="login" />
+          <img src={companyData?.loginImage || "/assets/Images/login-image.png"} alt="login" />
         </div>
 
       </div>
