@@ -7,6 +7,7 @@ import { getSlug } from '../../../Components/CompanySlug'
 
 const EmployeeHr = () => {
     const { token } = useSelector((state) => state.user)
+    console.log("admin token",token)
 
     // const
 

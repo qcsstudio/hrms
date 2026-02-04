@@ -43,6 +43,7 @@ const Login = () => {
           );
 
           console.log("Branding API Response:", res.data);
+          localStorage.setItem("authToken",res.data.token)
           setCompanyData(res?.data)
         } catch (error) {
           console.log("Branding API Error:", error);
