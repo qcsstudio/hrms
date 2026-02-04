@@ -1,31 +1,40 @@
 import React, { useRef, useState } from 'react'
 import discardicon from "/assets/Images/discardicon.png"
 import { FiPlus, FiUpload } from 'react-icons/fi'
+import createAxios from '../../../utils/axios.config'
+import { useSelector } from 'react-redux'
+import { getSlug } from '../../../Components/CompanySlug'
 
 const EmployeeHr = () => {
+    const { token } = useSelector((state) => state.user)
+
+    // const
 
     const [formData, setFormData] = useState({
         fullName: "",
         workEmail: "",
-        Phone: "",
+        phone: "",
         employeeId: "",
         department: "",
-        Designaition: "",
-        // reportingManagrr:"",
-        location: "",
-        joiningDate: "",
-        EmployeeTyepe: "",
-        Shift: "",
-        ProbationEndDate: "",
-        systemRole: "",
-        reportingManagrr: "",
+        designation: "",
+        reportingManager: "",
         locationBranch: "",
-        whitelabel: false
+        joiningDate: "",
+        employeeType: "",
+        shift: "",
+        probation: "",
+        systemRole: "",
+
+        createLogin: false,
+        sendInvite: false,
+
+        method: "",
+        inviteMessage: ""
 
     })
     const [importOpen, setImportOpen] = useState(false)
     const [file, setFile] = useState(null)
-    const [sendInvite, setSendInvite] = useState(false)
+    const [sendInvitelink, setSendInvitelink] = useState(false)
     const fileRef = useRef(null)
 
     const handleFileChange = (e) => {
@@ -46,35 +55,75 @@ const EmployeeHr = () => {
         }
 
         console.log("Uploaded file:", file)
-        console.log("Send invite:", sendInvite)
+        console.log("Send invite:", sendInvitelink)
 
         setImportOpen(false)
         setFile(null)
-        setSendInvite(false)
+        setSendInvitelink(false)
     }
 
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        console.log("submitted")
-        console.log(formData)
-        setFormData({
-            fullName: "",
-            workEmail: "",
-            Phone: "",
-            employeeId: "",
-            department: "",
-            Designaition: "",
+    // const handleSubmit = (e) => {
+    //     e.preventDefault()
 
-            location: "",
-            joiningDate: "",
-            EmployeeTyepe: "",
-            Shift: "",
-            ProbationEndDate: "",
-            systemRole: "",
-            reportingManagrr: "",
-            locationBranch: ""
-        })
+
+    //     console.log("submitted")
+    //     console.log(formData)
+
+    // }
+
+    const axiosInstance = createAxios()
+
+    async function handleSubmit(e) {
+        e.preventDefault()
+        const slug = getSlug();
+
+        try {
+            const res = await axiosInstance.post(
+                `/employees`,
+                { ...formData },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        // 'Content-Type': 'multipart/form-data',
+                        "x-tenant": `https://${slug}.qcsstudios.com`,
+                    },
+                }
+            )
+
+
+            console.log(res.data)
+            setFormData({
+                fullName: "",
+                workEmail: "",
+                phone: "",
+                employeeId: "",
+                department: "",
+                designation: "",
+                reportingManager: "",
+                locationBranch: "",
+
+
+                joiningDate: "",
+                employeeType: "",
+                shift: "",
+                probation: "",
+                systemRole: "",
+                createLogin: false,
+                sendInvite: false,
+                method: "",
+                inviteMessage: ""
+            })
+
+        } catch (error) {
+            console.log('API Error:', error)
+        }
+    }
+    const toggle = (key) => {
+        setFormData(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }))
     }
 
 
@@ -90,7 +139,7 @@ const EmployeeHr = () => {
                     <div className='w-[300px] flex gap-[30px]'>
                         <button className='border border-[#E7EBEd] bg-[#E4E9EE4D] text-[#344054] w-[167px] h-[40px] font-medium rounded-md flex items-center justify-center gap-2' onClick={() => setImportOpen(true)} ><FiPlus /> Import Employees</button>
                         <div className='border border-[#E7EBEd] items-center justify-evenly flex bg-[#E4E9EE4D] font-medium text-[#344054] w-[100px] h-[40px] rounded-md' >
-                            <button >Cancel</button>
+                            <button onClick={() => nav}>Cancel</button>
                             <img className='w-[20px] h-[20px]' src={discardicon} />
 
                         </div>
@@ -110,11 +159,12 @@ const EmployeeHr = () => {
                             </div>
                             <div className='w-[100%]'>
                                 <h1 className='mt-[9px] text-[15px]'>Work Email</h1>
-                                <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='workEmail' value={formData.workEmail} onChange={handleChange}  >
+                                {/* <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='workEmail' value={formData.workEmail} onChange={handleChange}  >
                                     <option value="" className='text-8xl[gray-200]'>choose account</option>
                                     <option>1</option>
                                     <option>12</option>
-                                </select>
+                                </select> */}
+                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='email' placeholder='Enter work email' name='workEmail' value={formData.workEmail} onChange={handleChange}></input>
                             </div>
                         </div>
 
@@ -124,16 +174,17 @@ const EmployeeHr = () => {
                             <div className='w-[100%] '>
 
 
-                                <h1 className='mt-[9px] text-[15px]' >Phone</h1>
-                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='Phone' value={formData.Phone} onChange={handleChange}></input>
+                                <h1 className='mt-[9px] text-[15px]' >phone</h1>
+                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='phone' value={formData.phone} onChange={handleChange}></input>
                             </div>
                             <div className='w-[100%]'>
                                 <h1 className='mt-[9px] text-[15px]' >Employee ID</h1>
-                                <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='employeeId' value={formData.employeeId} onChange={handleChange}  >
+                                {/* <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='employeeId' value={formData.employeeId} onChange={handleChange}  >
                                     <option value="" className='text-8xl[gray-200]'>choose account</option>
                                     <option>1</option>
                                     <option>12</option>
-                                </select>
+                                </select> */}
+                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='Enter Employee ID' name='employeeId' value={formData.employeeId} onChange={handleChange}></input>
                             </div>
                         </div>
 
@@ -148,14 +199,14 @@ const EmployeeHr = () => {
 
                                 <h1 className='mt-[9px] text-[15px]' >Department</h1>
                                 <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='department' value={formData.department} onChange={handleChange}  >
-                                    <option value="" className='text-8xl[gray-200]'>choose account</option>
-                                    <option>1</option>
-                                    <option>12</option>
+                                    <option value="" className='text-8xl[gray-200]'>choose Department</option>
+                                    <option value="Engineering">Engineering</option>
+                                    {/* <option>12</option> */}
                                 </select>                </div>
                             <div className='w-[100%]'>
                                 <h1 className='mt-[9px] text-[15px]' >Designation/Role</h1>
 
-                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='Designaition' value={formData.Designaition} onChange={handleChange} ></input>
+                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='designation' value={formData.designation} onChange={handleChange} ></input>
 
                             </div>
                         </div>
@@ -170,14 +221,13 @@ const EmployeeHr = () => {
 
 
                                 <h1 className='mt-[9px] text-[15px]' >Reporting Manager</h1>
-                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='reportingManagrr' value={formData.reportingManagrr} onChange={handleChange}></input>
+                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='reportingManager' value={formData.reportingManager} onChange={handleChange}></input>
                             </div>
                             <div className='w-[100%]'>
                                 <h1 className='mt-[9px] text-[15px]' >Location/Branch</h1>
-                                <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='location' value={formData.location} onChange={handleChange}  >
+                                <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='locationBranch' value={formData.locationBranch} onChange={handleChange}  >
                                     <option value="" className='text-8xl[gray-200]'>choose account</option>
-                                    <option>1</option>
-                                    <option>12</option>
+                                    <option value="Mumbai">Mumbai</option>
                                 </select>
                             </div>
                         </div> <div className='flex gap-3'>
@@ -191,38 +241,36 @@ const EmployeeHr = () => {
 
 
                                 <h1 className='mt-[9px] text-[15px]' >Joining Date</h1>
-                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='joiningDate' value={formData.joiningDate} onChange={handleChange}></input>
+                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='date' placeholder='choose Account' name='joiningDate' value={formData.joiningDate} onChange={handleChange}></input>
                             </div>
                             <div className='w-[100%]'>
                                 <h1 className='mt-[9px] text-[15px]' >Employee Type</h1>
-                                <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='EmployeeTyepe' value={formData.EmployeeTyepe} onChange={handleChange}  >
+                                <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='employeeType' value={formData.employeeType} onChange={handleChange}  >
                                     <option value="" className='text-8xl[gray-200]'>choose account</option>
-                                    <option>1</option>
-                                    <option>12</option>
+                                    <option value="FULL_TIME">FULL_TIME</option>
+                                    {/* <option>12</option> */}
                                 </select>
                             </div>
                         </div>
-                        <div className='flex gap-3'>
+                        <div className='flex gap-3 border'>
                             <div className='w-[100%] '>
-
-
-
-
-
-
-
-                                <h1 className='mt-[9px] text-[15px]' >Shift</h1>
-                                <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='Shift' value={formData.Shift} onChange={handleChange}  >
-                                    <option value="" className='text-8xl[gray-200]'>choose account</option>
-                                    <option>1</option>
-                                    <option>12</option>
+                                <h1 className='mt-[9px] text-[15px]' >shift</h1>
+                                <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='shift' value={formData.shift} onChange={handleChange}  >
+                                    <option value="">choose shift</option>
+                                    <option value="Morning">Morning</option>
+                                    {/* <option>12</option> */}
                                 </select>
                             </div>
                             <div className='w-[100%]'>
-                                <h1 className='mt-[9px] text-[15px]' >Probation End Date</h1>
+                                <h1 className='mt-[9px] text-[15px]' >Probation</h1>
 
-                                <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='ProbationEndDate' value={formData.ProbationEndDate} onChange={handleChange}></input>
-
+                                {/* <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='probation' value={formData.probation} onChange={handleChange}></input> */}
+                                <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='probation' value={formData.probation} onChange={handleChange}  >
+                                    <option value="" className='text-8xl[gray-200]'>choose month</option>
+                                    <option value="30">1 month</option>
+                                    <option value="60">2 month</option>
+                                    <option value="90">3 month</option>
+                                </select>
                             </div>
                         </div>
 
@@ -233,17 +281,74 @@ const EmployeeHr = () => {
                         <div className='w-full'>
                             <h1 className='mt-[9px] text-[15px]'>System Role</h1>
                             <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='systemRole' value={formData.systemRole} onChange={handleChange}  >
-                                <option value="">choose account</option>
-                                <option>1</option>
-                                <option>12</option>
+                                <option value="">choose Role</option>
+                                <option value="HR">HR</option>
+                                <option value="TL">TL</option>
                             </select>
+                        </div>
+                    </div>
+
+
+                    <div className="flex gap-4 mt-2">
+                        {/* Toggle Card 1 */}
+                        <div className="flex items-center justify-between w-full  px-4 py-3 border border-gray-200 rounded-lg">
+                            <span className="text-sm text-gray-800">
+                                Create login for this employee
+                            </span>
+
+                            <button
+                                type='button'
+                                onClick={() => toggle("createLogin")}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${formData.createLogin ? "bg-green-500" : "bg-gray-300"
+                                    }`}
+                            >
+                                <span
+                                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${formData.createLogin ? "translate-x-5" : "translate-x-1"
+                                        }`}
+                                />
+                            </button>
+                        </div>
+
+                        {/* Toggle Card 2 */}
+                        <div className="flex items-center justify-between w-full  px-4 py-3 border border-gray-200 rounded-lg">
+                            <span className="text-sm text-gray-800">
+                                Send invite now
+                            </span>
+
+                            <button
+                                type="button"
+                                onClick={() => toggle("sendInvite")}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${formData.sendInvite ? "bg-green-500" : "bg-gray-300"
+                                    }`}
+                            >
+                                <span
+                                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${formData.sendInvite ? "translate-x-5" : "translate-x-1"
+                                        }`}
+                                />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className='flex gap-3'>
+                        <div className='w-[100%] '>
+                            <h1 className='mt-[9px] text-[15px]' >Invite Method</h1>
+                            <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='method' value={formData.method} onChange={handleChange}  >
+                                <option value="" className='text-8xl[gray-200]'>choose method</option>
+                                <option>via Email</option>
+                                <option>via SMS</option>
+                            </select>                </div>
+                        <div className='w-[100%]'>
+                            <h1 className='mt-[9px] text-[15px]' >Invite message</h1>
+
+                            <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='inviteMessage' value={formData.inviteMessage} onChange={handleChange} ></input>
+
                         </div>
                     </div>
 
 
                 </div>
 
-                <div className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]  text-[15px] mt-[10px] flex justify-between'>
+                {/* <div className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]  text-[15px] mt-[10px] flex justify-between'>
                     <span> white Label</span>
                     <button
                         type="button"
@@ -261,36 +366,9 @@ const EmployeeHr = () => {
                                 }`}
                         />
                     </button>
-                </div>
-                <div className='flex gap-3 mt-[10px]'>
-                    <div className='w-[100%] '>
-
-
-
-
-
-
-
-                        <h1 className='mt-[9px] text-[15px]'>Reporting manager</h1>
-                        <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='choose Account' name='reportingManagrr' value={formData.reportingManagrr} onChange={handleChange}></input>
-
-
-                    </div>
-                    <div className='w-[100%] '>
-                        <h1 className='mt-[9px] text-[15px]' >Location/Branch</h1>
-
-                        <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='locationBranch' value={formData.locationBranch} onChange={handleChange}  >
-                            <option value="" className=''>choose account</option>
-                            <option>1</option>
-                            <option>12</option>
-                        </select>
-                    </div>
-                </div>
-
-
+                </div> */}
 
                 <div className=' text-end sticky bottom-0 bg-transparent backdrop-blur-sm'>
-
                     <button type='submit' className=' px-5 py-1 rounded-md my-4 bg-[#0575E6] text-white'>submit</button>
                 </div>
             </div>
@@ -372,12 +450,12 @@ const EmployeeHr = () => {
                             </div>
 
                             <button
-                                onClick={() => setSendInvite(!sendInvite)}
-                                className={`w-10 h-6 rounded-full transition ${sendInvite ? 'bg-[#2563EB]' : 'bg-[#D0D5DD]'
+                                onClick={() => setSendInvitelink(!sendInvitelink)}
+                                className={`w-10 h-6 rounded-full transition ${sendInvitelink ? 'bg-[#2563EB]' : 'bg-[#D0D5DD]'
                                     }`}
                             >
                                 <div
-                                    className={`w-5 h-5 bg-white rounded-full transition ${sendInvite ? 'translate-x-4' : 'translate-x-1'
+                                    className={`w-5 h-5 bg-white rounded-full transition ${sendInvitelink ? 'translate-x-4' : 'translate-x-1'
                                         }`}
                                 />
                             </button>
@@ -386,6 +464,7 @@ const EmployeeHr = () => {
                         {/* FOOTER */}
                         <div className="flex items-center justify-between mt-6">
                             <button
+                            type='button'
                                 onClick={() => setImportOpen(false)}
                                 className="px-4 py-2 border border-[#D0D5DD] rounded-lg text-sm font-medium text-[#344054]"
                             >

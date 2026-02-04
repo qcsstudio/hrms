@@ -42,9 +42,10 @@ const AppRoutes = () => {
           <Route path="Companyadmin-dashboard" element={<Admindashboard />} />
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
 
-          {/* <Route path="employee" element={<EmployeeHrTL />} /> */}
+          <Route path="employee" element={<EmployeeHrTL />} />
+          <Route path="employee/add-Employee" element={<EmployeeHr />} />
           {/* <Route path="employee" element={<Employee />} /> */}
-          <Route path="employee" element={<EmployeeHr />} />
+          {/* <Route path="employee" element={<EmployeeHr />} /> */}
 
           <Route path="attendance" element={<AttendanceEmployee />} />
           {/* <Route path="attendance" element={<AttendanceHrTL />} /> */}
