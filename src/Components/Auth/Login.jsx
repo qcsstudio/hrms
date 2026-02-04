@@ -22,6 +22,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoader, setIsLoader] = useState(false);
 
+  const [companyData,setCompanyData] = useState(null)
+
   // 🔹 PAGE LOAD SE PEHLE BRANDING API
   useEffect(() => {
     const hostname = window.location.hostname;
@@ -41,6 +43,7 @@ const Login = () => {
           );
 
           console.log("Branding API Response:", res.data);
+          setCompanyData(res?.data)
         } catch (error) {
           console.log("Branding API Error:", error);
         }
@@ -92,7 +95,7 @@ const Login = () => {
 
             <div className="mt-[50px]">
               <h1 className="text-[34px] font-semibold text-[#000000]">
-                Welcome back, John
+                Welcome back, {companyData.name}
               </h1>
               <p className="text-[16px] text-[#A7A7A7] mt-1">
                 Welcome back! Please enter your details
