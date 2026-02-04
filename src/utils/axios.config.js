@@ -45,7 +45,7 @@ const createAxios = () => {
 
     if (slug) {
       // 🏢 TENANT REQUEST
-      delete config.headers.Authorization;
+      // delete config.headers.Authorization;
       config.headers["x-tenant"] = `https://${slug}.qcsstudios.com`;
     } else {
       // 🔐 MAIN WEBSITE REQUEST
