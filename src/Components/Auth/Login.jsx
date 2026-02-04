@@ -22,7 +22,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoader, setIsLoader] = useState(false);
 
-  const [companyData,setCompanyData] = useState(null)
+  const [companyData, setCompanyData] = useState(null)
 
   // 🔹 PAGE LOAD SE PEHLE BRANDING API
   useEffect(() => {
@@ -64,7 +64,7 @@ const Login = () => {
         email,
         password
       });
-      
+
       dispatch(setAddLoginData(res.data));
       console.log("After login response:", res.data);
 
@@ -94,9 +94,23 @@ const Login = () => {
           <div className="w-4/5 mx-auto">
 
             <div className="mt-[50px]">
-              <h1 className="text-[34px] font-semibold text-[#000000]">
-                Welcome back, {companyData.name}
-              </h1>
+              {companyData?.logo &&
+                <img src={companyData?.logo || "/assets/Images/company-logo.png"} alt="company-logo" className='w-[280px] h-[110px] object-contain border' />
+              }
+
+              {
+                companyData?.name &&
+                <h1 className="text-[34px] font-semibold text-[#000000]">
+                  Welcome back, {companyData?.name}
+                </h1>
+              }
+              {
+                !companyData?.name &&
+                <h1 className="text-[34px]  font-semibold text-[#000000]">
+                  Welcome
+                </h1>
+              }
+
               <p className="text-[16px] text-[#A7A7A7] mt-1">
                 Welcome back! Please enter your details
               </p>
