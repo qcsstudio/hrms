@@ -94,18 +94,18 @@ const Login = () => {
           <div className="w-4/5 mx-auto">
 
             <div className="mt-[50px]">
-              {companyData?.logo &&
-                <img src={companyData?.logo || "/assets/Images/company-logo.png"} alt="company-logo" className='w-[280px] h-[110px] object-contain border' />
+              {companyData?.company?.logo &&
+                <img src={companyData?.company?.logo || "/assets/Images/company-logo.png"} alt="company-logo" className='w-[280px] h-[110px] object-contain border' />
               }
 
               {
-                companyData?.name &&
+                companyData?.company?.name &&
                 <h1 className="text-[34px] font-semibold text-[#000000]">
-                  Welcome back, {companyData?.name}
+                  Welcome back, {companyData?.company?.name}
                 </h1>
               }
               {
-                !companyData?.name &&
+                !companyData?.company?.name &&
                 <h1 className="text-[34px]  font-semibold text-[#000000]">
                   Welcome
                 </h1>
@@ -186,7 +186,7 @@ const Login = () => {
 
         {/* RIGHT SIDE */}
         <div className="w-1/2 flex items-center justify-center">
-          <img src={companyData?.loginImage || "/assets/Images/login-image.png"} alt="login" />
+          <img src={companyData?.company?.loginImage || "/assets/Images/login-image.png"} alt="login" />
         </div>
 
       </div>
