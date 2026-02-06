@@ -1,12 +1,11 @@
 import React, { useRef, useState } from 'react'
 import { IoClose } from 'react-icons/io5'
 import { useSelector } from 'react-redux'
-import axiosInstance from '../../utils/axios.config'
 import createAxios from '../../utils/axios.config'
 
 const BrandAssetsUpload = ({ onNext, onBack }) => {
   const { token, companyId } = useSelector((state) => state.user)
- 
+
 
   const logoRef = useRef(null)
   const coverRef = useRef(null)
@@ -23,20 +22,64 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
     cover: null,
   })
 
+  // const handleFile = (e, type) => {
+  //   const file = e.target.files[0]
+  //   if (!file) return
+
+  //   setData((prev) => ({
+  //     ...prev,
+  //     [type]: file,
+  //   }))
+
+  //   setPreview((prev) => ({
+  //     ...prev,
+  //     [type]: URL.createObjectURL(file),
+  //   }))
+  // }
+
+  const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2 MB
+
   const handleFile = (e, type) => {
     const file = e.target.files[0]
     if (!file) return
 
-    setData((prev) => ({
-      ...prev,
-      [type]: file,
-    }))
+    // ❌ size validation (BLOCKING)
+    if (file.size > MAX_FILE_SIZE) {
+      alert("File size should not exceed 2 MB")
+      e.target.value = ""
+      return
+    }
 
-    setPreview((prev) => ({
-      ...prev,
-      [type]: URL.createObjectURL(file),
-    }))
+    // 🔍 dimension check (NON-BLOCKING)
+    const img = new Image()
+    img.src = URL.createObjectURL(file)
+
+    img.onload = () => {
+      const { width, height } = img
+      const recommended = RECOMMENDED_SIZES[type]
+
+      if (
+        width !== recommended.width ||
+        height !== recommended.height
+      ) {
+        alert(
+          `⚠ Recommended size for ${type === "logo" ? "Logo" : "Cover Image"} is ${recommended.width}×${recommended.height}px.\nYou can continue, but better results ke liye image change karein.`
+        )
+      }
+
+      // ✅ file set ho jayegi chahe alert aaye
+      setData((prev) => ({
+        ...prev,
+        [type]: file,
+      }))
+
+      setPreview((prev) => ({
+        ...prev,
+        [type]: URL.createObjectURL(file),
+      }))
+    }
   }
+
 
   const removeFile = (type) => {
     setData((prev) => ({
@@ -49,11 +92,11 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
       [type]: null,
     }))
   }
-  const axiosInstance = createAxios()
+  const axiosInstance = createAxios(token)
 
   async function handlenext() {
-     console.log(token,"000000000000000000000000")
-  console.log(companyId,"1111111111111111111")
+    console.log(token, "000000000000000000000000")
+    console.log(companyId, "1111111111111111111")
     try {
       const payload = new FormData()
       if (formData.logo) payload.append('brand-logo', formData.logo)
@@ -62,12 +105,16 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
       const res = await axiosInstance.post(
         `/companies/${companyId}/company-brandlogoandimage`,
         payload,
+        // {
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //     'Content-Type': 'multipart/form-data',
+        //   },
+        // }
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
+          meta: { auth: "ADMIN_AUTH" }
         }
+
       )
 
       console.log(res.data)

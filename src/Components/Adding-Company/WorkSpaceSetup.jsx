@@ -58,15 +58,19 @@ const WorkSpaceSetup = ({ onBack }) => {
       const res = await axiosInstance.post(
         `/companies/${companyId}/bulk-upload-employees`,
         formData,
+        // {
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //   },
+        // }
+        // {
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          meta: { auth: "ADMIN_AUTH" }
         }
       )
 
       console.log('UPLOAD SUCCESS:', res.data)
-setShowSuccessPopup(true)
+      setShowSuccessPopup(true)
       // navigate('/')
 
     } catch (error) {
@@ -82,7 +86,7 @@ setShowSuccessPopup(true)
 
   return (
     <div className="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-sm p-6">
-      
+
       {/* Header */}
       <h2 className="text-lg font-semibold text-gray-800 mb-4">
         Bulk Upload
@@ -152,19 +156,19 @@ setShowSuccessPopup(true)
         </button>
       </div>
 
-{showSuccessPopup && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl p-6 w-[350px] text-center shadow-lg">
-      
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">
-        Upload Successful 
-      </h3>
+      {showSuccessPopup && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-[350px] text-center shadow-lg">
 
-      <p className="text-sm text-gray-600 mb-5">
-        Please check your email for further instructions.
-      </p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Upload Successful
+            </h3>
 
-      {/* <button
+            <p className="text-sm text-gray-600 mb-5">
+              Please check your email for further instructions.
+            </p>
+
+            {/* <button
         onClick={() => {
           setShowSuccessPopup(false)
           // navigate('/')   // ya next page
@@ -173,9 +177,9 @@ setShowSuccessPopup(true)
       >
         Okay
       </button> */}
-    </div>
-  </div>
-)}
+          </div>
+        </div>
+      )}
 
 
     </div>

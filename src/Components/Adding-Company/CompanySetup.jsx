@@ -17,7 +17,7 @@ const CompanySetup = ({ onNext, onBack }) => {
 
   const { token } = useSelector((state) => state.user)
   const dispatch = useDispatch()
-
+  
   const [formData, setFormdata] = useState({
     name: "",
     slug: "",
@@ -29,61 +29,60 @@ const CompanySetup = ({ onNext, onBack }) => {
 
   const [showOtpModal, setShowOtpModal] = useState(false)
   const [isOtpVerified, setIsOtpVerified] = useState(false)
-
+  
   const [searchParams] = useSearchParams()
   const inviteToken = searchParams.get("token")
-
-  const axiosInstance = createAxios()
-
+  
+  
   useEffect(() => {
     if (!inviteToken) return
     const timer = setTimeout(() => setShowOtpModal(true), 2000)
     return () => clearTimeout(timer)
   }, [inviteToken])
-
+  
   const handleOtpVerified = () => {
     setIsOtpVerified(true)
     setShowOtpModal(false)
   }
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormdata(prev => ({ ...prev, [name]: value }))
   }
-
+  
   // 🌍 COUNTRY → TIMEZONE + CURRENCY
   const handleCountrySelect = (selected) => {
     if (!selected) return
-
+    
     const countryCode = selected.value
 
     const timezone =
       ct.getCountry(countryCode)?.timezones?.[0] || ""
 
-    const countryData =
+      const countryData =
       countries.find(c => c.cca2 === countryCode)
-
-    const currency =
+      
+      const currency =
       countryData?.currencies
-        ? Object.keys(countryData.currencies)[0]
-        : ""
-
-    setFormdata(prev => ({
-      ...prev,
-      country: countryCode,
-      timezone,
-      currency
-    }))
-  }
-
-  // 🌍 Country options
-  const countryOptions = countries.map(c => ({
-    value: c.cca2,
+      ? Object.keys(countryData.currencies)[0]
+      : ""
+      
+      setFormdata(prev => ({
+        ...prev,
+        country: countryCode,
+        timezone,
+        currency
+      }))
+    }
+    
+    // 🌍 Country options
+    const countryOptions = countries.map(c => ({
+      value: c.cca2,
     label: c.name.common
   }))
-
+  
   const selectedCountry =
-    countryOptions.find(c => c.value === formData.country) || null
+  countryOptions.find(c => c.value === formData.country) || null
 
   // ✅ FIXED OPTION COMPONENT (THIS WAS THE BUG)
   const CountryOption = (props) => {
@@ -116,12 +115,15 @@ const CompanySetup = ({ onNext, onBack }) => {
       </components.SingleValue>
     )
   }
+  const axiosInstance = createAxios(token,inviteToken)
+
 
   const handleSubmitSuperAdmin = async () => {
     try {
       const res = await axiosInstance.post("companies", formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    meta: { auth: "ADMIN_AUTH" }
+  }
+)
       dispatch(setCompanyData(res.data))
       onNext()
     } catch (error) {
@@ -134,10 +136,16 @@ const CompanySetup = ({ onNext, onBack }) => {
       alert("Please verify OTP first")
       return
     }
+    
     try {
-      await axiosInstance.post("/invites/company-setup", formData, {
-        headers: { "x-invite-token": inviteToken },
-      })
+      await axiosInstance.post("/invites/company-setup", formData,
+      //    {
+      //   headers: { "x-invite-token": inviteToken },
+      // }
+      {
+    meta: { auth: "X_TENANT_TOKEN" }
+  }
+    )
       onNext()
     } catch (error) {
       console.log("API Error:", error)

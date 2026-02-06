@@ -1,59 +1,45 @@
+// utils/axios.config.js
 import axios from "axios";
 import { getSlug } from "../Components/CompanySlug";
 
-/**
- * 🔹 Extract tenant slug from hostname
- */
-// const getSlug = () => {
-//   const hostname = window.location.hostname;
-
-//   // localhost OR main domain
-//   if (
-//     hostname === "localhost" ||
-//     hostname === "qcsstudios.com" ||
-//     hostname === "www.qcsstudios.com"
-//   ) {
-//     return null;
-//   }
-
-//   const parts = hostname.split(".");
-
-//   // www.abc.qcsstudios.com
-//   if (parts.length === 4 && parts[0] === "www") {
-//     return parts[1];
-//   }
-
-//   // abc.qcsstudios.com
-//   if (parts.length === 3) {
-//     return parts[0];
-//   }
-
-//   return null;
-// };
-
-/**
- * 🔹 Axios instance
- */
-const createAxios = () => {
+const createAxios = (token,inviteToken) => {
   const instance = axios.create({
-    baseURL: "https://api.qcsstudios.com", // 🔥 ALWAYS SAME
+    baseURL: "https://api.qcsstudios.com",
     withCredentials: true,
   });
 
   instance.interceptors.request.use((config) => {
     const slug = getSlug();
+    const auth = config.meta?.auth; // 👈 component se aata hai
 
-    if (slug) {
-      // 🏢 TENANT REQUEST
-      // delete config.headers.Authorization;
-      config.headers["x-tenant"] = `https://${slug}.qcsstudios.com`;
-    } else {
-      // 🔐 MAIN WEBSITE REQUEST
-      const token = localStorage.getItem("authToken");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      delete config.headers["x-tenant"];
+    switch (auth) {
+      case "TENANT_AUTH":
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        config.headers["x-tenant"] = `https://${slug}.qcsstudios.com`;
+        break;
+
+      case "ADMIN_AUTH":
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        delete config.headers["x-tenant"];
+        break;
+
+      case "TENANT_ONLY":
+        config.headers["x-tenant"] = `https://${slug}.qcsstudios.com`;
+        delete config.headers.Authorization;
+        break;
+      case "X_TENANT_TOKEN":
+        config.headers["x-invite-token"] = `${inviteToken}`;
+        delete config.headers.Authorization;
+        break;
+
+      case "PUBLIC":
+      default:
+        delete config.headers.Authorization;
+        delete config.headers["x-tenant"];
     }
 
     return config;

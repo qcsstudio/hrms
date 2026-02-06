@@ -7,7 +7,7 @@ import { getSlug } from '../../../Components/CompanySlug'
 
 const EmployeeHr = () => {
     const { token } = useSelector((state) => state.user)
-    console.log("admin token",token)
+    console.log("admin token", token)
 
     // const
 
@@ -73,7 +73,7 @@ const EmployeeHr = () => {
 
     // }
 
-    const axiosInstance = createAxios()
+    const axiosInstance = createAxios(token)
 
     async function handleSubmit(e) {
         e.preventDefault()
@@ -83,13 +83,17 @@ const EmployeeHr = () => {
             const res = await axiosInstance.post(
                 `/employees`,
                 { ...formData },
+                // {
+                //     headers: {
+                //         Authorization: `Bearer ${token}`,
+                //         "x-tenant": `https://${slug}.qcsstudios.com`,
+                //     },
+                // }
+
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        // 'Content-Type': 'multipart/form-data',
-                        "x-tenant": `https://${slug}.qcsstudios.com`,
-                    },
+                    meta: { auth: "TENANT_AUTH" }
                 }
+
             )
 
 
@@ -465,7 +469,7 @@ const EmployeeHr = () => {
                         {/* FOOTER */}
                         <div className="flex items-center justify-between mt-6">
                             <button
-                            type='button'
+                                type='button'
                                 onClick={() => setImportOpen(false)}
                                 className="px-4 py-2 border border-[#D0D5DD] rounded-lg text-sm font-medium text-[#344054]"
                             >

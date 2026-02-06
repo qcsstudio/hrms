@@ -3,14 +3,18 @@ import {
   employee,
   action,
   action2,
-  create_company,statslogo1, statslogo2, statslogo3, statslogo4 
+  create_company, statslogo1, statslogo2, statslogo3, statslogo4
 } from '../../allAssetsImport/allAssets'
 import { Link } from 'react-router-dom'
 import { FaAngleDown, FaPlus } from 'react-icons/fa'
 import createAxios from '../../utils/axios.config'
 import Statics from './Statics'
+import { useSelector } from 'react-redux'
 
 const SuperAdminDashboard = () => {
+  const { token } = useSelector((state) => state.user)
+
+
   const [openInviteModal, setOpenInviteModal] = useState(false)
   const [activeFilter, setActiveFilter] = useState('All')
 
@@ -21,7 +25,7 @@ const SuperAdminDashboard = () => {
     linkExpiryHours: ''
   })
 
-  const axiosInstance = createAxios()
+  const axiosInstance = createAxios(token)
 
   const companiesData = [
     {
@@ -94,8 +98,8 @@ const SuperAdminDashboard = () => {
     activeFilter === 'All'
       ? companiesData
       : companiesData.filter(
-          (item) => item.status === activeFilter
-        )
+        (item) => item.status === activeFilter
+      )
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -110,7 +114,7 @@ const SuperAdminDashboard = () => {
 
   async function handlesetuplink() {
     try {
-      const token = localStorage.getItem('authToken')
+      // const token = localStorage.getItem('authToken')
 
       const payload = {
         email: formData.email,
@@ -118,9 +122,15 @@ const SuperAdminDashboard = () => {
         linkExpiry: calculateExpiry(formData.linkExpiryHours)
       }
 
-      await axiosInstance.post('invites/send-setup-link', payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await axiosInstance.post('invites/send-setup-link', payload,
+        //   {
+        //   headers: { Authorization: `Bearer ${token}` }
+        // }
+
+        {
+          meta: { auth: "ADMIN_AUTH" }
+        }
+      )
 
       setOpenInviteModal(false)
       setFormData({ email: '', trialDuration: '', linkExpiryHours: '' })
@@ -131,7 +141,7 @@ const SuperAdminDashboard = () => {
 
   return (
     <div className="w-full p-5 bg-gray-50">
-      <Statics data={statsData}/>
+      <Statics data={statsData} />
 
       {/* Companies Header */}
       <div className="mt-10">
@@ -167,11 +177,10 @@ const SuperAdminDashboard = () => {
               <button
                 key={item}
                 onClick={() => setActiveFilter(item)}
-                className={`px-4 py-2 text-[#212529] ${
-                  activeFilter === item
+                className={`px-4 py-2 text-[#212529] ${activeFilter === item
                     ? ' bg-white rounded-lg'
                     : ''
-                }`}
+                  }`}
               >
                 {item}
               </button>
