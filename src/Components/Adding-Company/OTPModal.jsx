@@ -47,7 +47,8 @@ const OTPModal = ({ onVerify }) => {
         alert("Invalid OTP")
       }
     } catch (err) {
-      alert(res.data.message)
+      alert(res?.data?.message)
+      alert("Error: ",err)
     } finally {
       setLoading(false)
     }
