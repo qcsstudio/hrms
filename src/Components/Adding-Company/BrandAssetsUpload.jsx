@@ -38,47 +38,51 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
   // }
 
   const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2 MB
+  const RECOMMENDED_SIZES = {
+  logo: { width: 280, height: 110 },
+  cover: { width: 720, height: 788 },
+}
 
-  const handleFile = (e, type) => {
-    const file = e.target.files[0]
-    if (!file) return
+ const handleFile = (e, type) => {
+  const file = e.target.files[0]
+  if (!file) return
 
-    // ❌ size validation (BLOCKING)
-    if (file.size > MAX_FILE_SIZE) {
-      alert("File size should not exceed 2 MB")
-      e.target.value = ""
-      return
-    }
-
-    // 🔍 dimension check (NON-BLOCKING)
-    const img = new Image()
-    img.src = URL.createObjectURL(file)
-
-    img.onload = () => {
-      const { width, height } = img
-      const recommended = RECOMMENDED_SIZES[type]
-
-      if (
-        width !== recommended.width ||
-        height !== recommended.height
-      ) {
-        alert(
-          `⚠ Recommended size for ${type === "logo" ? "Logo" : "Cover Image"} is ${recommended.width}×${recommended.height}px.\nYou can continue, but better results ke liye image change karein.`
-        )
-      }
-
-      // ✅ file set ho jayegi chahe alert aaye
-      setData((prev) => ({
-        ...prev,
-        [type]: file,
-      }))
-
-      setPreview((prev) => ({
-        ...prev,
-        [type]: URL.createObjectURL(file),
-      }))
-    }
+  // ❌ size validation (BLOCKING)
+  if (file.size > MAX_FILE_SIZE) {
+    alert("File size should not exceed 2 MB")
+    e.target.value = ""
+    return
   }
+
+  // ✅ STATE IMMEDIATELY SET (IMPORTANT)
+  setData((prev) => ({
+    ...prev,
+    [type]: file,
+  }))
+
+  const previewURL = URL.createObjectURL(file)
+  setPreview((prev) => ({
+    ...prev,
+    [type]: previewURL,
+  }))
+
+  // 🔍 dimension check (NON-BLOCKING)
+  const img = new Image()
+  img.src = previewURL
+
+  img.onload = () => {
+    const { width, height } = img
+    const recommended = RECOMMENDED_SIZES[type]
+
+    if (width !== recommended.width || height !== recommended.height) {
+      alert(
+        `⚠ Recommended size for ${type === "logo" ? "Logo" : "Cover Image"} is ${recommended.width}×${recommended.height}px.\nYou can continue, but better results ke liye image change karein.`
+      )
+    }
+
+    URL.revokeObjectURL(previewURL)
+  }
+}
 
 
   const removeFile = (type) => {
