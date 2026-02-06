@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 const Accountsetup = ({ onNext, onBack }) => {
-      const { token,companyId} = useSelector((state) => state.user) // get superAdmintoken from redux store
-      console.log(companyId,"11111111111111")
+  const { token, companyId } = useSelector((state) => state.user) // get superAdmintoken from redux store
+  console.log(companyId, "11111111111111")
 
   const [formData, setData] = useState({
     fullName: "",
@@ -33,15 +33,12 @@ const Accountsetup = ({ onNext, onBack }) => {
     })
   }
   const navigate = useNavigate();
-  const axiosInstance = createAxios()
+  const axiosInstance = createAxios(token)
   //  async function handleSuperAdmin() {
   async function handlenext() {
     try {
-      // const token = localStorage.getItem("authToken");
-      // const companyId = localStorage.getItem("companyId");
-
       const res = await axiosInstance.post(`companies/${companyId}/admin`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
+        meta: { auth: "ADMIN_AUTH" }
       });
 
       console.log(res.data);
