@@ -98,7 +98,7 @@ const OTPModal = ({ onVerify }) => {
         onVerify()
       }
     } catch (err) {
-      inputRefs.current[otp.length - 1]?.focus()
+      alert("OTP Verification Failed")
     } finally {
       setLoading(false)
     }
