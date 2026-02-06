@@ -14,7 +14,7 @@ const WorkSpaceSetup = ({ onBack }) => {
 
 
   const navigate = useNavigate()
-  const axiosInstance = createAxios()
+  const axiosInstance = createAxios(token)
 
   // ✅ FILE CHANGE (Only Excel allowed)
   const handleFileChange = (e) => {
