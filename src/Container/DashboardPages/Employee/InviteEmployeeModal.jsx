@@ -1,8 +1,42 @@
 import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
+import createAxios from "../../../utils/axios.config";
 
 const InviteEmployeeModal = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState("email");
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const axiosInstance = createAxios();
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    const payload = {
+      fullName,
+      inviteType: activeTab,
+      ...(activeTab === "email"
+        ? { email }
+        : { phone }),
+    };
+
+    try {
+      const res = await axiosInstance.post(
+        "/employee-invites",
+        payload,
+        {
+          meta: { auth: "TENANT_AUTH" },
+        }
+      );
+
+      console.log("Invite sent:", res.data);
+      onClose();
+    } catch (error) {
+      console.log("API Error:", error);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
@@ -61,6 +95,8 @@ const InviteEmployeeModal = ({ onClose }) => {
               type="text"
               placeholder="Choose Account"
               className="mt-1 w-full border border-[#D0D5DD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
             />
           </div>
 
@@ -73,6 +109,8 @@ const InviteEmployeeModal = ({ onClose }) => {
                 type="email"
                 placeholder="Choose Account"
                 className="mt-1 w-full border border-[#D0D5DD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
 
               <p className="text-[12px] text-[#667085] mt-1">
@@ -94,6 +132,8 @@ const InviteEmployeeModal = ({ onClose }) => {
                 type="text"
                 placeholder="+91 XXXXX XXXXX"
                 className="mt-1 w-full border border-[#D0D5DD] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
           )}
@@ -110,6 +150,7 @@ const InviteEmployeeModal = ({ onClose }) => {
 
           <button
             className="px-5 py-2 bg-[#2563EB] text-white rounded-lg text-sm font-medium"
+            onClick={handleSubmit}
           >
             Send Setup Link
           </button>
