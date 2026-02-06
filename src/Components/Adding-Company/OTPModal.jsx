@@ -40,14 +40,14 @@ const OTPModal = ({ onVerify }) => {
       })
 
       // setApiresponse(res.data.message)
-      alert(res.data.message)
+      // alert(res.data.message)
       if (res.status === 200) {
         onVerify() // ✅ THIS CLOSES MODAL
       } else {
         alert("Invalid OTP")
       }
     } catch (err) {
-      alert("OTP verification failed")
+      alert(res.data.message)
     } finally {
       setLoading(false)
     }
