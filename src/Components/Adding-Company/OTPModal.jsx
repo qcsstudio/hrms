@@ -6,7 +6,7 @@ const OTPModal = ({ onVerify }) => {
   const [otp, setOtp] = useState(["", "", "", ""])
   const [loading, setLoading] = useState(false)
   const [searchParams] = useSearchParams()
-  // const [apiResponse,setApiresponse] = useState(null)
+  const [apiResponse,setApiresponse] = useState(null)
 
   const token = searchParams.get("token")
   const axiosInstance = createAxios()
@@ -39,16 +39,16 @@ const OTPModal = ({ onVerify }) => {
         token
       })
 
-      // setApiresponse(res.data.message)
-      // alert(res.data.message)
+      setApiresponse(res?.data?.message)
+      console.log("api response of otp:",apiResponse)
+      
       if (res.status === 200) {
         onVerify() // ✅ THIS CLOSES MODAL
       } else {
-        alert("Invalid OTP")
+        alert(apiResponse)
       }
     } catch (err) {
-      alert(res?.data?.message)
-      alert("Error: ",err)
+      alert("OTP verification failed")
     } finally {
       setLoading(false)
     }
