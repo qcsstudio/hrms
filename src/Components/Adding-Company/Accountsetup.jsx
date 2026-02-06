@@ -130,7 +130,7 @@ const Accountsetup = ({ onNext, onBack }) => {
           >
             <option value="">Select Role</option>
             <option value="COMPANY_ADMIN">Admin</option>
-            <option value="SUPER_ADMIN">Super Admin</option>
+            {/* <option value="SUPER_ADMIN">Super Admin</option> */}
           </select>
         </div>
 
