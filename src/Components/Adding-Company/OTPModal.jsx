@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useRef, useState } from "react"
 import createAxios from "../../utils/axios.config"
 import { useSearchParams } from "react-router-dom"
 
@@ -6,11 +6,12 @@ const OTPModal = ({ onVerify }) => {
   const [otp, setOtp] = useState(["", "", "", ""])
   const [loading, setLoading] = useState(false)
   const [searchParams] = useSearchParams()
-  const [apiResponse,setApiresponse] = useState(null)
 
+  const inputRefs = useRef([])
   const token = searchParams.get("token")
   const axiosInstance = createAxios()
 
+  // 🔹 Handle input change
   const handleChange = (value, index) => {
     if (!/^\d?$/.test(value)) return
 
@@ -19,13 +20,68 @@ const OTPModal = ({ onVerify }) => {
     setOtp(newOtp)
 
     if (value && index < 3) {
-      document.getElementById(`otp-${index + 1}`)?.focus()
+      inputRefs.current[index + 1]?.focus()
     }
   }
 
+  // 🔹 CTRL + A → select all OTP boxes
+  const handleKeyDown = (e, index) => {
+
+    // CTRL + A → select all
+    if (e.ctrlKey && e.key.toLowerCase() === "a") {
+      e.preventDefault()
+      inputRefs.current.forEach((input) => input?.select())
+      return
+    }
+
+    // BACKSPACE behavior
+    if (e.key === "Backspace") {
+      e.preventDefault()
+
+      setOtp((prev) => {
+        const copy = [...prev]
+
+        // agar current box me value hai → sirf wahi clear
+        if (copy[index]) {
+          copy[index] = ""
+        }
+        // warna previous box pe jao aur clear karo
+        else if (index > 0) {
+          copy[index - 1] = ""
+          setTimeout(() => {
+            inputRefs.current[index - 1]?.focus()
+          }, 0)
+        }
+
+        return copy
+      })
+    }
+  }
+
+  // 🔹 Clear OTP one-by-one (last → first)
+  const clearOtpOneByOne = () => {
+    let index = otp.length - 1
+
+    const interval = setInterval(() => {
+      setOtp((prev) => {
+        const copy = [...prev]
+        copy[index] = ""
+        return copy
+      })
+
+      inputRefs.current[index]?.focus()
+      index--
+
+      if (index < 0) {
+        clearInterval(interval)
+        inputRefs.current[0]?.focus()
+      }
+    }, 120)
+  }
+
+  // 🔹 Verify OTP
   const handleVerify = async () => {
     const enteredOtp = otp.join("")
-
     if (enteredOtp.length !== 4) {
       alert("Enter valid OTP")
       return
@@ -33,22 +89,16 @@ const OTPModal = ({ onVerify }) => {
 
     try {
       setLoading(true)
-
       const res = await axiosInstance.post("/invites/validate-otp", {
         otp: enteredOtp,
         token
       })
 
-      setApiresponse(res?.data?.message)
-      console.log("api response of otp:",apiResponse)
-      
       if (res.status === 200) {
-        onVerify() // ✅ THIS CLOSES MODAL
-      } else {
-        alert(apiResponse)
+        onVerify()
       }
     } catch (err) {
-      alert("OTP verification failed")
+      inputRefs.current[otp.length - 1]?.focus()
     } finally {
       setLoading(false)
     }
@@ -56,33 +106,57 @@ const OTPModal = ({ onVerify }) => {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 z-40" />
+      {/* Overlay */}
+      <div className="fixed inset-0 bg-black/50 z-40" />
 
+      {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50">
-        <div className="bg-white w-[420px] rounded-xl p-6">
+        <div className="bg-white w-[460px] rounded-2xl px-8 py-6 shadow-xl">
 
-          <h2 className="text-xl font-bold mb-4">Enter OTP</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Enter OTP
+          </h2>
+          <p className="text-sm text-gray-400 mt-1 mb-6">
+            We have sent a OTP to your mobile number
+          </p>
 
-          <div className="flex gap-2 mb-4">
+          {/* OTP Inputs */}
+          <div className="flex items-center justify-center gap-3 mb-6">
             {otp.map((digit, index) => (
               <input
                 key={index}
                 id={`otp-${index}`}
+                ref={(el) => (inputRefs.current[index] = el)}
                 value={digit}
                 maxLength={1}
                 onChange={(e) => handleChange(e.target.value, index)}
-                className="w-12 h-12 border text-center text-lg"
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                className="w-14 h-12 border border-gray-300 rounded-lg 
+             text-center text-lg font-medium 
+             focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+
             ))}
           </div>
 
+          {/* Verify Button */}
           <button
             onClick={handleVerify}
             disabled={loading}
-            className="w-full bg-blue-600 text-white h-10 rounded"
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 
+                       text-white rounded-xl text-sm font-semibold 
+                       transition disabled:opacity-60"
           >
             {loading ? "Verifying..." : "Verify"}
           </button>
+
+          {/* Resend */}
+          <p className="text-center text-sm text-gray-400 mt-5">
+            Didn’t receive code?{" "}
+            <span className="text-blue-600 font-medium cursor-pointer hover:underline">
+              Resend OTP
+            </span>
+          </p>
 
         </div>
       </div>
