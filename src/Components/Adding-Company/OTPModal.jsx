@@ -117,7 +117,7 @@ const OTPModal = ({ onVerify }) => {
             Enter OTP
           </h2>
           <p className="text-sm text-gray-400 mt-1 mb-6">
-            We have sent a OTP to your mobile number
+            We have sent a OTP to your Email.
           </p>
 
           {/* OTP Inputs */}
