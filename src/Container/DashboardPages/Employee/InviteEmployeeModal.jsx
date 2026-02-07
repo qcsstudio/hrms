@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import createAxios from "../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const InviteEmployeeModal = ({ onClose }) => {
+
+    const { token } = useSelector((state) => state.user)
   const [activeTab, setActiveTab] = useState("email");
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
-  const axiosInstance = createAxios();
+  const axiosInstance = createAxios(token);
 
   async function handleSubmit(e) {
     e.preventDefault();

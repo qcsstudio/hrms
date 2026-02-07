@@ -1,5 +1,5 @@
-import  navbarLogo from "../assets/images/navbarImages/qcslogonav.png"
-import  search from "../assets/images/navbarImages/search.svg"
+import navbarLogo from "../assets/images/navbarImages/qcslogonav.png"
+import search from "../assets/images/navbarImages/search.svg"
 import notification from "../assets/images//navbarImages/notification.svg"
 import avatar from "../assets/images/navbarImages/avatar.svg"
 import downArrow from "../assets/images/navbarImages/arrowDown.svg"
@@ -40,23 +40,23 @@ import create_company from "/assets/Images/create-company-logo.png"
 
 
 export {
-   navbarLogo, search, notification, avatar, downArrow,create_company,
-    login_Google,
-    login_Email,
-    Password,
-    Password_Show,
-    statslogo1,
-    statslogo2,
-    statslogo3,
-    statslogo4,
-    discardicon,
-    CreateCompanycicon,
-    employee,
-    action,
-    action2,
-    Add_employees,
-    Post_job,
-     Approve_leave,
+      navbarLogo, search, notification, avatar, downArrow, create_company,
+      login_Google,
+      login_Email,
+      Password,
+      Password_Show,
+      statslogo1,
+      statslogo2,
+      statslogo3,
+      statslogo4,
+      discardicon,
+      CreateCompanycicon,
+      employee,
+      action,
+      action2,
+      Add_employees,
+      Post_job,
+      Approve_leave,
       Run_payroll,
       Announcement,
       Run_reports,
@@ -67,15 +67,6 @@ export {
       group,
       vector,
       vector2
-      
-
-
-
-
-
-
-
-
 
 }
 
