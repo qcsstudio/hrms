@@ -160,7 +160,7 @@ const CompanySetup = ({ onNext, onBack }) => {
   return (
     <>
       {inviteToken && showOtpModal && !isOtpVerified && (
-        <OTPModal onVerify={handleOtpVerified} />
+        <OTPModal onVerify={handleOtpVerified} api="/invites/validate-otp" />
       )}
 
       <div className="w-[1280px] bg-[#F9FAFB] p-6 mx-auto">

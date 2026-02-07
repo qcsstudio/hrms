@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
 import createAxios from "../../../utils/axios.config";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const InviteEmployeeModal = ({ onClose }) => {
 
@@ -11,6 +12,8 @@ const InviteEmployeeModal = ({ onClose }) => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+
+  const navigate = useNavigate()
 
   const axiosInstance = createAxios(token);
 
@@ -35,7 +38,8 @@ const InviteEmployeeModal = ({ onClose }) => {
       );
 
       console.log("Invite sent:", res.data);
-      onClose();
+      navigate('/Addingyourself')
+      // onClose();
     } catch (error) {
       console.log("API Error:", error);
     }
