@@ -63,8 +63,7 @@ const Addingyourself = () => {
      {inviteToken && showOtpModal && !isOtpVerified && (
         <OTPModal onVerify={handleOtpVerified} api="/employee-invites/verify" />
       )}
-    
-   
+  
     <div className="p-10 max-w-[1100px]">
       {/* Heading */}
       <p className="text-black font-semibold text-[30px] max-w-[850px] leading-tight">
