@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react"
 import createAxios from "../../utils/axios.config"
 import { useSearchParams } from "react-router-dom"
 
-const OTPModal = ({ onVerify }) => {
+const OTPModal = ({ onVerify, api }) => {
   const [otp, setOtp] = useState(["", "", "", ""])
   const [loading, setLoading] = useState(false)
   const [searchParams] = useSearchParams()
@@ -89,7 +89,8 @@ const OTPModal = ({ onVerify }) => {
 
     try {
       setLoading(true)
-      const res = await axiosInstance.post("/invites/validate-otp", {
+      // const res = await axiosInstance.post("/invites/validate-otp", {
+      const res = await axiosInstance.post(`${api}`, {
         otp: enteredOtp,
         token
       })
