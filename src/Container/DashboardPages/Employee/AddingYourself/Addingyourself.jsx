@@ -5,11 +5,11 @@ import OTPModal from "../../../../Components/Adding-Company/OTPModal";
 import { useSelector } from "react-redux"
 
 const Addingyourself = () => {
-const otpData = useSelector((state) => state.otp.otpData)
-const isVerified = useSelector((state) => state.otp.verified)
+  const otpData = useSelector((state) => state.otp.otpData)
+  const isVerified = useSelector((state) => state.otp.verified)
 
-console.log("otpData:===",otpData)
-console.log("isVerified:==",isVerified)
+  console.log("otpData:===", otpData)
+  console.log("isVerified:==", isVerified)
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -33,8 +33,8 @@ console.log("isVerified:==",isVerified)
     return () => clearTimeout(timer)
   }, [inviteToken])
 
-   const handleOtpVerified = () => {
-    setIsOtpVerified(true)
+  const handleOtpVerified = () => {
+    setIsOtpVerified(isVerified)
     setShowOtpModal(false)
   }
 
@@ -48,13 +48,27 @@ console.log("isVerified:==",isVerified)
 
   const axiosInstance = createAxios()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     try {
-      const res = axiosInstance.post('/employee-invites/complete', formData)
-      console.log(res)
-      navigate('/personal-profile')
+
+      const payload = {
+        ...formData,
+        inviteId: otpData?.inviteId
+        
+      }
+
+      const res = await axiosInstance.post('/employee-invites/complete', payload)
+      console.log("employee-invites/complete=====",res)
+
+      if(res.status === 200){
+
+        navigate('/personal-profile')
+      }
+      else{
+        alert("API is not working")
+      }
 
 
     } catch (error) {
@@ -67,97 +81,97 @@ console.log("isVerified:==",isVerified)
 
   return (
     <>
-     {inviteToken && showOtpModal && !isOtpVerified && (
+      {inviteToken && showOtpModal && !isOtpVerified && (
         <OTPModal onVerify={handleOtpVerified} api="/employee-invites/verify" />
       )}
-  
-    <div className="p-10 max-w-[1100px]">
-      {/* Heading */}
-      <p className="text-black font-semibold text-[30px] max-w-[850px] leading-tight">
-        You are adding yourself as an employee of QuantumCrafters Studio.
-      </p>
-      <p className="text-[#6B6B6B] text-[16px] mt-2">
-        Please complete the below profile completely or click on “Let me in”.
-      </p>
 
-      {/* Full Name */}
-      <div className="mt-8">
-        <label className="text-[14px] text-black block mb-1">
-          Full Name
-        </label>
-        <input
-          type="text"
-          name="fullName"
-          value={formData.fullName}
-          onChange={handleChange}
-          placeholder="Enter your name"
-          className="w-full h-[44px] rounded-[10px] border border-[#0000001A] px-4 outline-none"
-        />
-      </div>
+      <div className="p-10 max-w-[1100px]">
+        {/* Heading */}
+        <p className="text-black font-semibold text-[30px] max-w-[850px] leading-tight">
+          You are adding yourself as an employee of QuantumCrafters Studio.
+        </p>
+        <p className="text-[#6B6B6B] text-[16px] mt-2">
+          Please complete the below profile completely or click on “Let me in”.
+        </p>
 
-      {/* Date of Birth */}
-      <div className="mt-5">
-        <label className="text-[14px] text-black block mb-1">
-          Date of Birth
-        </label>
-        <input
-          type="date"
-          name="dob"
-          value={formData.dob}
-          onChange={handleChange}
-          placeholder="Enter your DOB"
-          className="w-full h-[44px] rounded-[10px] border border-[#0000001A] px-4 outline-none"
-        />
-      </div>
-
-      {/* Email & Phone */}
-      <div className="flex gap-6 mt-5">
-        <div className="flex-1">
+        {/* Full Name */}
+        <div className="mt-8">
           <label className="text-[14px] text-black block mb-1">
-            Email
+            Full Name
           </label>
           <input
-            type="email"
-            name="email"
-            value={formData.email}
+            type="text"
+            name="fullName"
+            value={formData.fullName}
             onChange={handleChange}
-            placeholder="Enter your email"
+            placeholder="Enter your name"
             className="w-full h-[44px] rounded-[10px] border border-[#0000001A] px-4 outline-none"
           />
         </div>
 
-        <div className="flex-1">
+        {/* Date of Birth */}
+        <div className="mt-5">
           <label className="text-[14px] text-black block mb-1">
-            Phone Number
+            Date of Birth
           </label>
           <input
-            name="phone"
-            placeholder="Enter your Phone number"
-            value={formData.phone}
+            type="date"
+            name="dob"
+            value={formData.dob}
             onChange={handleChange}
-            className="w-full h-[44px] rounded-[10px] border border-[#0000001A] px-4 outline-none bg-white"
+            placeholder="Enter your DOB"
+            className="w-full h-[44px] rounded-[10px] border border-[#0000001A] px-4 outline-none"
           />
+        </div>
 
+        {/* Email & Phone */}
+        <div className="flex gap-6 mt-5">
+          <div className="flex-1">
+            <label className="text-[14px] text-black block mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Enter your email"
+              className="w-full h-[44px] rounded-[10px] border border-[#0000001A] px-4 outline-none"
+            />
+          </div>
+
+          <div className="flex-1">
+            <label className="text-[14px] text-black block mb-1">
+              Phone Number
+            </label>
+            <input
+              name="phone"
+              placeholder="Enter your Phone number"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full h-[44px] rounded-[10px] border border-[#0000001A] px-4 outline-none bg-white"
+            />
+
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-between mt-14">
+          <button
+            className="px-8 py-2 rounded-lg border border-[#E4E9EE] bg-[#F7F9FB] text-[#2D2D2D]"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={handleSubmit}
+            className="px-8 py-2 rounded-lg border border-[#E4E9EE] bg-[#F7F9FB] text-[#2D2D2D]"
+          >
+            Continue Setup
+          </button>
         </div>
       </div>
-
-      {/* Buttons */}
-      <div className="flex justify-between mt-14">
-        <button
-          className="px-8 py-2 rounded-lg border border-[#E4E9EE] bg-[#F7F9FB] text-[#2D2D2D]"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={handleSubmit}
-          className="px-8 py-2 rounded-lg border border-[#E4E9EE] bg-[#F7F9FB] text-[#2D2D2D]"
-        >
-          Continue Setup
-        </button>
-      </div>
-    </div>
-     </>
+    </>
   );
 };
 
