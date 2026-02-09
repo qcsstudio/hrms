@@ -1,6 +1,8 @@
 import React, { useRef, useState } from "react"
 import createAxios from "../../utils/axios.config"
 import { useSearchParams } from "react-router-dom"
+import { useDispatch } from "react-redux"
+import { setOtpVerified } from "../../Redux/otpSlice"
 
 const OTPModal = ({ onVerify, api }) => {
   const [otp, setOtp] = useState(["", "", "", ""])
@@ -10,6 +12,7 @@ const OTPModal = ({ onVerify, api }) => {
   const inputRefs = useRef([])
   const token = searchParams.get("token")
   const axiosInstance = createAxios()
+  const dispatch = useDispatch()
 
   // 🔹 Handle input change
   const handleChange = (value, index) => {
@@ -96,6 +99,7 @@ const OTPModal = ({ onVerify, api }) => {
       })
 
       if (res.status === 200) {
+         dispatch(setOtpVerified(res.data))
         onVerify()
       }
     } catch (err) {
