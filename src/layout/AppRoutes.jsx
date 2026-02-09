@@ -23,7 +23,8 @@ import AttendanceHrTL from '../Container/DashboardPages/Attendance/AttendanceHrT
 import Admindashboard from '../Container/Dashboard/Admindashboard'
 import PrivateRouteOrg from './privateRouteOrg'
 import Addingyourself from '../Container/DashboardPages/Employee/AddingYourself/Addingyourself'
-import PersonalProfile from '../Container/DashboardPages/Employee/AddingYourself/PersonalProfile'
+// import PersonalProfile from '../Container/DashboardPages/Employee/AddingYourself/PersonalProfile'
+import EmployeeProfile from '../Container/DashboardPages/Employee/AddingYourself/EmployeeProfile'
 
 const AppRoutes = () => {
   return (
@@ -57,7 +58,7 @@ const AppRoutes = () => {
           <Route path="payroll" element={<DashboardPayroll1 />} />
         </Route>
           <Route path="/Addingyourself" element={<Addingyourself />} />
-          <Route path="/personal-profile" element={<PersonalProfile />} />
+          <Route path="/employee-Profile" element={<EmployeeProfile />} />
 
         
       </Routes>
