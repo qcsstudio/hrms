@@ -2,8 +2,15 @@ import React, { useEffect, useState } from "react";
 import createAxios from "../../../../utils/axios.config";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OTPModal from "../../../../Components/Adding-Company/OTPModal";
+import { useSelector } from "react-redux"
 
 const Addingyourself = () => {
+const otpData = useSelector((state) => state.otp.otpData)
+const isVerified = useSelector((state) => state.otp.verified)
+
+console.log("otpData:===",otpData)
+console.log("isVerified:==",isVerified)
+
   const [formData, setFormData] = useState({
     fullName: "",
     dob: "",
