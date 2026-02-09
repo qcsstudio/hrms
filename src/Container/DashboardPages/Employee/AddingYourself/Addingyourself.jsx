@@ -64,7 +64,7 @@ const Addingyourself = () => {
 
       if(res.status === 200){
 
-        navigate('/personal-profile')
+        navigate('/employee-Profile')
       }
       else{
         alert("API is not working")
