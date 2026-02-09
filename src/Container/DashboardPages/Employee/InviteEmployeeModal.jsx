@@ -3,6 +3,7 @@ import { IoClose } from "react-icons/io5";
 import createAxios from "../../../utils/axios.config";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { getSlug } from "../../../Components/CompanySlug";
 
 const InviteEmployeeModal = ({ onClose }) => {
 
@@ -18,6 +19,8 @@ const InviteEmployeeModal = ({ onClose }) => {
 
   const navigate = useNavigate()
 
+  const slug = getSlug()
+
   const axiosInstance = createAxios(token);
 
   async function handleSubmit(e) {
@@ -29,6 +32,7 @@ const InviteEmployeeModal = ({ onClose }) => {
       ...(activeTab === "email"
         ? { email }
         : { phone }),
+       slug
     };
 
     try {

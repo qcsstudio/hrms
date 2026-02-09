@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import createAxios from "../../../../utils/axios.config";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OTPModal from "../../../../Components/Adding-Company/OTPModal";
