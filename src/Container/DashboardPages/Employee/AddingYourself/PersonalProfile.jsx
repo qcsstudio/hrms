@@ -276,7 +276,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                 className={`transition-transform ${dropsection.contact ? "rotate-180" : ""
                   }`} />
             </div>
-             <hr className='border-black/20' />
+            <hr className='border-black/20' />
             {dropsection.contact && (
               <div className='space-y-3 mt-3'>
                 <div className="grid grid-cols-2 gap-4">
@@ -373,7 +373,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
 
               </div>
             )}
-           
+
 
 
             {/* Bio Data */}
@@ -384,7 +384,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                 className={`transition-transform ${dropsection.biodata ? "rotate-180" : ""
                   }`} />
             </div>
-              <hr className='border-black/20' />
+            <hr className='border-black/20' />
             {dropsection.biodata && (
               <div className='space-y-3 mt-3'>
 
@@ -425,7 +425,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-gray-900 text-sm mb-1.5">Gender pronoun (Optional)</label>
-                   
+
                     <input type='text'
                       className='w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500'
                       placeholder="Enter biodata genderPronoun"
@@ -436,14 +436,32 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                   </div>
                   <div>
                     <label className="block text-gray-900 text-sm mb-1.5">Challenge (Optional)</label>
-                    
-                    <input type='text'
+
+                    {/* <input type='text'
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
                       placeholder="Enter biodata challenged"
                       value={formData.biodata.challenged}
                       onChange={(e) =>
                         handleChange(["biodata", "challenged"], e.target.value)
-                      } />
+                      } /> */}
+
+                    <select
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
+                      value={String(formData.biodata.challenged)}
+                      onChange={(e) =>
+                        handleChange(
+                          ["biodata", "challenged"],
+                          e.target.value === "true"
+                        )
+                      }
+                    >
+                      <option value="" disabled hidden>
+                        Is differently abled?
+                      </option>
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+
                   </div>
                   <div>
                     <label className="block text-gray-900 text-sm mb-1.5">Marital status (Optional)</label>
@@ -475,7 +493,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
 
               </div>
             )}
-          
+
 
             {/* Important Dates */}
             <div className='flex justify-between cursor-pointer  mt-5' onClick={() => toggleSection("importantDates")}>
@@ -493,14 +511,14 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                   <div>
                     <label className="block text-gray-900 text-sm  mb-1.5">Birth Date</label>
                     <input
-                     type='date' 
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
+                      type='date'
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
                       value={formData.importantDates.birthDate}
                       onChange={(e) =>
                         handleChange(["importantDates", "birthDate"], e.target.value)
-                      }/>
-                      
-                  
+                      } />
+
+
                   </div>
                   <div>
                     <label className="block text-gray-900 text-sm  mb-1.5">Your partner birth date</label>
@@ -528,7 +546,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
 
               </div>
             )}
-            
+
 
 
             {/* Dependents */}
@@ -551,7 +569,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                       placeholder="Full Name"
                       value={formData.dependents[0].fullName}
                       onChange={(e) =>
-                        handleChange(["dependents", 0, "fullname"], e.target.value)
+                        handleChange(["dependents", 0, "fullName"], e.target.value)
                       }
                     />
                   </div>
