@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import createAxios from "../../../../utils/axios.config";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import OTPModal from "../../../../Components/Adding-Company/OTPModal";
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
+import { completeInviteFailure, completeInviteSuccess } from "../../../../Redux/employeeInviteSlice";
 
 const Addingyourself = () => {
   const otpData = useSelector((state) => state.otp.otpData)
@@ -45,28 +46,27 @@ const Addingyourself = () => {
       [name]: value,
     }));
   };
-
+  const dispatch = useDispatch();
   const axiosInstance = createAxios()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     try {
-
       const payload = {
         ...formData,
         inviteId: otpData?.inviteId
-        
       }
 
       const res = await axiosInstance.post('/employee-invites/complete', payload)
-      console.log("employee-invites/complete=====",res)
+      console.log("employee-invites/complete=====", res)
 
-      if(res.status === 200){
-
+      if (res.status === 200) {
+        dispatch(completeInviteSuccess(res.data))
         navigate('/employee-Profile')
       }
-      else{
+      else {
+        dispatch(completeInviteFailure("Something went wrong"))
         alert("API is not working")
       }
 

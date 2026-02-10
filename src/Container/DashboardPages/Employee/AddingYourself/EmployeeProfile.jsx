@@ -1,15 +1,31 @@
 import React, { useState } from 'react'
 import PersonalProfile from './PersonalProfile';
 import { Link } from 'react-router-dom';
+import WorkProfile from './WorkProfile';
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState('Personal');
   
   const tabs = ['Personal', 'Work Profile', 'Education', 'Documents'];
-   function changeTab() {
 
+ const goToNextTab = () => {
+    const currentIndex = tabs.indexOf(activeTab)
+    if (currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1])
+    }
+  }
+
+ const goToPreviousTab = () => {
+    const currentIndex = tabs.indexOf(activeTab)
+    if (currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex - 1])
+    }
+  }
+
+
+   function changeTab() {
     switch(activeTab){
       case "Personal" :
-        return <PersonalProfile/>
+        return <PersonalProfile  onSuccess={goToNextTab} onPrevious={goToPreviousTab}/>
         break;
       case "Work Profile" :
         return <WorkProfile/>
