@@ -139,8 +139,10 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                     onChange={(e) =>
                       handleChange(["about", "salutation"], e.target.value)
                     }
-                    >
-                    <option>Salutation</option>
+                  >
+                    <option value="" hidden disabled>Salutation</option>
+                    <option value="Mr">Mr</option>
+                    <option value="Mrs">Mrs</option>
                   </select>
                 </div>
                 {/* Full Name */}
@@ -192,7 +194,10 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                     onChange={(e) =>
                       handleChange(["addresses", 0, "addressType"], e.target.value)
                     }>
-                    <option>Address Type</option>
+                    <option value="" disabled hidden>Address Type</option>
+                    <option value="Present">Present</option>
+                    <option value="Permanent">Permanent</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
                 {/* Address Lines */}
@@ -231,7 +236,8 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                       onChange={(e) =>
                         handleChange(["addresses", 0, "country"], e.target.value)
                       }>
-                      <option>Select Country</option>
+                      <option value="" disabled hidden>Select Country</option>
+                      <option value="India">India</option>
                     </select>
                   </div>
                   <div>
@@ -241,7 +247,9 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                       onChange={(e) =>
                         handleChange(["addresses", 0, "state"], e.target.value)
                       }>
-                      <option>Select Province</option>
+                      <option value="" disabled hidden>Select Province</option>
+                      <option value="Karnataka">Karnataka</option>
+                      <option value="punjab">Punjab</option>
                     </select>
                   </div>
                   <div>
@@ -251,7 +259,8 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                       onChange={(e) =>
                         handleChange(["addresses", 0, "city"], e.target.value)
                       }>
-                      <option>Select City</option>
+                      <option value="" hidden disabled>Select City</option>
+                      <option value="Bangalore">Bangalore</option>
                     </select>
                   </div>
                 </div>
@@ -267,6 +276,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                 className={`transition-transform ${dropsection.contact ? "rotate-180" : ""
                   }`} />
             </div>
+             <hr className='border-black/20' />
             {dropsection.contact && (
               <div className='space-y-3 mt-3'>
                 <div className="grid grid-cols-2 gap-4">
@@ -277,7 +287,22 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                       onChange={(e) =>
                         handleChange(["contacts", 0, "contactType"], e.target.value)
                       }>
-                      <option>Contact Type</option>
+                      <option value="" disabled hidden>Contact Type</option>
+                      <option value="Email">Email</option>
+                      <option value="Mobile">Mobile</option>
+                      <option value="Desk Phone">Desk Phone</option>
+                      <option value="Skype">Skype</option>
+                      <option value="Hangout">Hangout</option>
+                      <option value="Slack">Slack</option>
+                      <option value="Facebook">Facebook</option>
+                      <option value="Twitter">Twitter</option>
+                      <option value="LinkedIn">LinkedIn</option>
+                      <option value="Behance">Behance</option>
+                      <option value="Dribble">Dribble</option>
+                      <option value="Git Hub">Git Hub</option>
+                      <option value="Quora">Quora</option>
+                      <option value="Personal Blog">Personal Blog</option>
+                      <option value="Whatsapp">Whatsapp</option>
                     </select>
                   </div>
 
@@ -288,7 +313,10 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                       onChange={(e) =>
                         handleChange(["contacts", 0, "contactTag"], e.target.value)
                       }>
-                      <option>Select</option>
+                      <option value="" disabled hidden>Select Contact Tag</option>
+                      <option value="Work ">Work</option>
+                      <option value="Personal ">Personal</option>
+                      <option value="Other ">Other</option>
                     </select>
                   </div>
                 </div>
@@ -315,7 +343,8 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                         handleChange(["contacts", 0, "country"], e.target.value)
                       }
                     >
-                      <option>Select Country</option>
+                      <option value="" disabled hidden>Select Country</option>
+                      <option value="india" >India</option>
                     </select>
                   </div>
                   <div>
@@ -325,7 +354,8 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                       onChange={(e) =>
                         handleChange(["contacts", 0, "state"], e.target.value)
                       }>
-                      <option>Select Province</option>
+                      <option value="" disabled hidden>Select Province</option>
+                      <option value="karnatka" >karnatka</option>
                     </select>
                   </div>
                   <div>
@@ -335,14 +365,15 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                       onChange={(e) =>
                         handleChange(["contacts", 0, "city"], e.target.value)
                       }>
-                      <option>Select City</option>
+                      <option value="" disabled hidden>Select City</option>
+                      <option value="Banglore">Banglore</option>
                     </select>
                   </div>
                 </div>
 
               </div>
             )}
-            <hr className='border-black/20' />
+           
 
 
             {/* Bio Data */}
@@ -353,6 +384,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                 className={`transition-transform ${dropsection.biodata ? "rotate-180" : ""
                   }`} />
             </div>
+              <hr className='border-black/20' />
             {dropsection.biodata && (
               <div className='space-y-3 mt-3'>
 
@@ -360,21 +392,32 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                   <div>
                     <label className="block text-gray-900 text-sm mb-1.5">Gender</label>
                     <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
-                      value={formData.biodata[0].gender}
+                      value={formData.biodata.gender}
                       onChange={(e) =>
-                        handleChange(["biodata", 0, "gender"], e.target.value)
+                        handleChange(["biodata", "gender"], e.target.value)
                       }>
-                      <option>Gender</option>
+                      <option value="" disabled hidden>Gender</option>
+                      <option value="MALE">MALE</option>
+                      <option value="FEMALE">FEMALE</option>
+                      <option value="other">Other</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-gray-900 text-sm mb-1.5">Blood Group (optional)</label>
                     <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
-                      value={formData.biodata[0].bloodGroup}
+                      value={formData.biodata.bloodGroup}
                       onChange={(e) =>
-                        handleChange(["biodata", 0, "bloodGroup"], e.target.value)
+                        handleChange(["biodata", "bloodGroup"], e.target.value)
                       }>
-                      <option>Select</option>
+                      <option value="" disabled hidden>Select blood group</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
                     </select>
                   </div>
                 </div>
@@ -382,32 +425,37 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-gray-900 text-sm mb-1.5">Gender pronoun (Optional)</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
-                      value={formData.biodata[0].genderPronoun}
+                   
+                    <input type='text'
+                      className='w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500'
+                      placeholder="Enter biodata genderPronoun"
+                      value={formData.biodata.genderPronoun}
                       onChange={(e) =>
-                        handleChange(["biodata", 0, "genderPronoun"], e.target.value)
-                      }>
-                      <option>Select</option>
-                    </select>
+                        handleChange(["biodata", "genderPronoun"], e.target.value)
+                      } />
                   </div>
                   <div>
                     <label className="block text-gray-900 text-sm mb-1.5">Challenge (Optional)</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
-                      value={formData.biodata[0].challenged}
+                    
+                    <input type='text'
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
+                      placeholder="Enter biodata challenged"
+                      value={formData.biodata.challenged}
                       onChange={(e) =>
-                        handleChange(["biodata", 0, "challenged"], e.target.value)
-                      }>
-                      <option>Select</option>
-                    </select>
+                        handleChange(["biodata", "challenged"], e.target.value)
+                      } />
                   </div>
                   <div>
                     <label className="block text-gray-900 text-sm mb-1.5">Marital status (Optional)</label>
                     <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
-                      value={formData.biodata[0].maritalStatus}
+                      value={formData.biodata.maritalStatus}
                       onChange={(e) =>
-                        handleChange(["biodata", 0, "maritalStatus"], e.target.value)
+                        handleChange(["biodata", "maritalStatus"], e.target.value)
                       }>
-                      <option>Select</option>
+                      <option value="" disabled hidden>Select Marital Status</option>
+                      <option value="Married">Married</option>
+                      <option value="Unmarried">Unmarried</option>
+                      <option value="Partnered">Partnered</option>
                     </select>
                   </div>
                 </div>
@@ -418,16 +466,16 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
                     placeholder="Enter name"
-                    value={formData.biodata[0].spouseOrPartnerName}
+                    value={formData.biodata.spouseOrPartnerName}
                     onChange={(e) =>
-                      handleChange(["biodata", 0, "spouseOrPartnerName"], e.target.value)
+                      handleChange(["biodata", "spouseOrPartnerName"], e.target.value)
                     }
                   />
                 </div>
 
               </div>
             )}
-            <hr className='border-black/20' />
+          
 
             {/* Important Dates */}
             <div className='flex justify-between cursor-pointer  mt-5' onClick={() => toggleSection("importantDates")}>
@@ -437,28 +485,31 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                 className={`transition-transform ${dropsection.importantDates ? "rotate-180" : ""
                   }`} />
             </div>
+            <hr className='border-black/20' />
             {dropsection.importantDates && (
               <div className='space-y-3 mt-3'>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-gray-900 text-sm  mb-1.5">Birth Date</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
-                      value={formData.importantDates[0].birthDate}
+                    <input
+                     type='date' 
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
+                      value={formData.importantDates.birthDate}
                       onChange={(e) =>
-                        handleChange(["importantDates", 0, "birthDate"], e.target.value)
-                      }>
-                      <option>Birth Date</option>
-                    </select>
+                        handleChange(["importantDates", "birthDate"], e.target.value)
+                      }/>
+                      
+                  
                   </div>
                   <div>
                     <label className="block text-gray-900 text-sm  mb-1.5">Your partner birth date</label>
                     <input
                       type="date"
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 text-gray-500"
-                      value={formData.importantDates[0].partnerBirthDate}
+                      value={formData.importantDates.partnerBirthDate}
                       onChange={(e) =>
-                        handleChange(["importantDates", 0, "partnerBirthDate"], e.target.value)
+                        handleChange(["importantDates", "partnerBirthDate"], e.target.value)
                       }
                     />
                   </div>
@@ -467,9 +518,9 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                     <input
                       type="date"
                       className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 text-gray-500"
-                      value={formData.importantDates[0].marriageAnniversary}
+                      value={formData.importantDates.marriageAnniversary}
                       onChange={(e) =>
-                        handleChange(["importantDates", 0, "marriageAnniversary"], e.target.value)
+                        handleChange(["importantDates", "marriageAnniversary"], e.target.value)
                       }
                     />
                   </div>
@@ -477,7 +528,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
 
               </div>
             )}
-            <hr className='border-black/20' />
+            
 
 
             {/* Dependents */}
@@ -511,7 +562,13 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                       onChange={(e) =>
                         handleChange(["dependents", 0, "relationship"], e.target.value)
                       }>
-                      <option>Select</option>
+                      <option value="" disabled hidden>Select Relationship</option>
+                      <option value="Father">Father</option>
+                      <option value="Mother">Mother</option>
+                      <option value="Brother">Brother</option>
+                      <option value="Sister">Sister</option>
+                      <option value="Wife">Wife</option>
+                      <option value="Son">Son</option>
                     </select>
                   </div>
                 </div>
@@ -544,15 +601,15 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
 
               </div>
             )}
-            <div className='flex justify-between'>
+            <div className='flex justify-between sticky bottom-0 mt-5'>
 
               <div>
-                <button type='button' onClick={onPrevious}>previous</button>
+                <button type='button' className='border px-4 py-2 border-[#D1D3D8] bg-[#E2E4E7] rounded-md' onClick={onPrevious}>previous</button>
               </div>
 
               <div className='flex gap-2'>
-                <button type='button' onClick={handleSkip} className='border px-4 py-2 border-[#D1D3D8] bg-[#E2E4E7]'>Skip</button>
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2">
+                <button type='button' onClick={handleSkip} className='border px-4 py-2 border-[#D1D3D8] bg-[#E2E4E7] rounded-md'>Skip</button>
+                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md">
                   Save & Continue
                 </button>
               </div>
