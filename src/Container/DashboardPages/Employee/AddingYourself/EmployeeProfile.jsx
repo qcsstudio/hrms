@@ -26,17 +26,18 @@ const EmployeeProfile = () => {
     switch(activeTab){
       case "Personal" :
         return <PersonalProfile  onSuccess={goToNextTab} onPrevious={goToPreviousTab}/>
-        break;
+        
       case "Work Profile" :
         return <WorkProfile/>
-        break;
+        
       case "Education" :
         return <EducationProfile/>
-        break;
+        
       case "Documents" :
         return <DocumentsProfile/>
-        break;
+        
         default :
+        return null
 
 
     }
