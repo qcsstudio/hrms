@@ -28,7 +28,7 @@ const EmployeeProfile = () => {
         return <PersonalProfile  onSuccess={goToNextTab} onPrevious={goToPreviousTab}/>
         
       case "Work Profile" :
-        return <WorkProfile/>
+        return <WorkProfile onSuccess={goToNextTab} onPrevious={goToPreviousTab}/>
         
       case "Education" :
         return <EducationProfile/>
