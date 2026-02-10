@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import createAxios from "../../../../utils/axios.config";
 
 const WorkProfile = ({ onSuccess, onPrevious }) => {
-     const { completeData } = useSelector(
-    (state) => state.employeeInvite
-  )
+    const { completeData } = useSelector(
+        (state) => state.employeeInvite
+    )
     const [formData, setFormData] = useState({
         dateOfJoining: "",
         employmentStage: "",
@@ -30,7 +31,7 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
         dependentName: "",
         relationship: "",
         emergencyContactNumber: "",
-        birthDate: "",
+        dependentBirthDate: "",
     });
 
     const handleChange = (e) => {
@@ -38,27 +39,28 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
         setFormData({ ...formData, [name]: value });
     };
 
-     const handleSubmit = async (e) => {
-    e.preventDefault()
+    const axiosInstance = createAxios()
+    const handleSubmit = async (e) => {
+        e.preventDefault()
 
-    try {
+        try {
 
-      const res = await axiosInstance.put(`/employees/${completeData.employeeId}/work-profile`, formData)
+            const res = await axiosInstance.put(`/employees/${completeData.employeeId}/work-profile`, formData)
 
-      if (res.status === 200) {
-        onSuccess()
-      }
+            if (res.status === 200) {
+                onSuccess()
+            }
 
-    } catch (error) {
-      console.log("api is not respond", error)
+        } catch (error) {
+            console.log("api is not respond", error)
+
+        }
+
 
     }
-
-    
-  }
-  const handleSkip = () => {
-    onSuccess()
-  }
+    const handleSkip = () => {
+        onSuccess()
+    }
     return (
         <form
             onSubmit={handleSubmit}
@@ -71,6 +73,7 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
 
             <label className="text-sm text-gray-600">Date of Joining</label>
             <input
+                type="date"
                 name="dateOfJoining"
                 value={formData.dateOfJoining}
                 onChange={handleChange}
@@ -238,6 +241,7 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
                     </label>
                     <input
                         type="date"
+                        name="birthDate"
                         className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
                         value={formData.birthDate}
                         onChange={handleChange}
@@ -250,6 +254,7 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
                     </label>
                     <input
                         type="date"
+                        name="partnerBirthDate"
                         className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
                         value={formData.partnerBirthDate}
                         onChange={handleChange}
@@ -262,6 +267,7 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
                     </label>
                     <input
                         type="date"
+                        name="marriageAnniversary"
                         className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
                         value={formData.marriageAnniversary}
                         onChange={handleChange}
@@ -281,6 +287,7 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
                     </label>
                     <input
                         type="text"
+                        name="dependentName"
                         placeholder="Choose Account"
                         className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
                         value={formData.dependentName}
@@ -294,6 +301,7 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
                     </label>
                     <select
                         className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 bg-white focus:outline-none"
+                        name="relationship"
                         value={formData.relationship}
                         onChange={handleChange}
                     >
@@ -315,6 +323,7 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
                     </label>
                     <input
                         type="text"
+                        name="emergencyContactNumber"
                         placeholder="Choose Account"
                         className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
                         value={formData.emergencyContactNumber}
@@ -328,8 +337,9 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
                     </label>
                     <input
                         type="date"
+                        name="dependentBirthDate"
                         className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
-                        value={formData.birthDate}
+                        value={formData.dependentBirthDate}
                         onChange={handleChange}
                     />
                 </div>
@@ -338,18 +348,18 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
 
 
             {/* Buttons */}
-          <div className='flex justify-between sticky bottom-0 mt-5'>
+            <div className='flex justify-between sticky bottom-0 mt-5'>
 
-              <div>
-                <button type='button' className='border px-4 py-2 border-[#D1D3D8] bg-[#E2E4E7] rounded-md' onClick={onPrevious}>previous</button>
-              </div>
+                <div>
+                    <button type='button' className='border px-4 py-2 border-[#D1D3D8] bg-[#E2E4E7] rounded-md' onClick={onPrevious}>previous</button>
+                </div>
 
-              <div className='flex gap-2'>
-                <button type='button' onClick={handleSkip} className='border px-4 py-2 border-[#D1D3D8] bg-[#E2E4E7] rounded-md'>Skip</button>
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md">
-                  Save & Continue
-                </button>
-              </div>
+                <div className='flex gap-2'>
+                    <button type='button' onClick={handleSkip} className='border px-4 py-2 border-[#D1D3D8] bg-[#E2E4E7] rounded-md'>Skip</button>
+                    <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md">
+                        Save & Continue
+                    </button>
+                </div>
 
 
             </div>
