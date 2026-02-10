@@ -96,7 +96,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
 
     try {
 
-      const res = axiosInstance.post(`/employees/${completeData.employeeId}/personal`, formData)
+      const res = axiosInstance.put(`/employees/${completeData.employeeId}/personal`, formData)
 
       if (res.status === 200) {
         onSuccess()
