@@ -96,7 +96,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
 
     try {
 
-      const res = axiosInstance.post(`/employees/${completeData.employeeId}after adding yourself/personal`, formdata)
+      const res = axiosInstance.post(`/employees/${completeData.employeeId}/personal`, formData)
 
       if (res.status === 200) {
         onSuccess()
@@ -134,11 +134,12 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
               <div className='space-y-3 mt-3'>
                 <div>
                   <label className="block text-gray-900 text-sm  mb-1.5">Salutation</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500">
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-500"
                     value={formData.about.salutation}
                     onChange={(e) =>
                       handleChange(["about", "salutation"], e.target.value)
                     }
+                    >
                     <option>Salutation</option>
                   </select>
                 </div>
@@ -546,7 +547,7 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
             <div className='flex justify-between'>
 
               <div>
-                <button type='button' onClick={onPrevious()}>previous</button>
+                <button type='button' onClick={onPrevious}>previous</button>
               </div>
 
               <div className='flex gap-2'>
