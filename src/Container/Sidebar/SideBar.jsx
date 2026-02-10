@@ -270,17 +270,7 @@ const SideBar = () => {
               </div> */}
               <span> Support</span>
             </li>
-            <li className={`transition-all duration-500 w-[100%] ${location.pathname === '/dashboard/channel' ?
-              `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-              onClick={() => changeTab('channel')}>
-              {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'channel' ? <img src={automationactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={automation} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-              Channel
-            </li>
+           
           </ul>}
 
         {/* settings tab */}

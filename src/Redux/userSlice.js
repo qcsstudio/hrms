@@ -21,6 +21,11 @@ const userSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
     },
+    
+    logout: (state) => {
+      state.token = null;
+      state.user = null;
+    },
 
     setCompanyData: (state, action) => {
       state.companyId = action.payload.companyId;
@@ -31,7 +36,11 @@ const userSlice = createSlice({
 
 
 export const {
-    setAddLoginData, setCompanyData,
+    setAddLoginData,logout , setCompanyData,
 } = userSlice.actions;
 
 export default userSlice.reducer;
+
+ 
+
+ 
