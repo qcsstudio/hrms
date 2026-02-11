@@ -161,15 +161,15 @@ const EmployeeHrTL = () => {
           onChange={handleAddEmployee}
           className='bg-[#0575E6] text-white px-4 py-2 rounded w-[198px] h-[40px] font-semibold text-sm'
         >
-          <option value="" disabled>
+          <option value="" disabled className='bg-white text-black'>
             Select Add Employee Type
           </option>
 
-          <option value="add">
+          <option value="add" className='bg-white text-black'>
             Add Employee (Without Link)
           </option>
 
-          <option value="invite">
+          <option value="invite" className='bg-white text-black'>
             Add Employee Via Invite Link
           </option>
         </select>
