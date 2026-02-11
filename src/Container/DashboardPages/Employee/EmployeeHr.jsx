@@ -6,12 +6,16 @@ import { useSelector } from 'react-redux'
 import { getSlug } from '../../../Components/CompanySlug'
 import OTPModal from '../../../Components/Adding-Company/OTPModal'
 import InviteEmployeeModal from './InviteEmployeeModal'
+import { useLocation } from 'react-router-dom'
 
 const EmployeeHr = () => {
     const { token } = useSelector((state) => state.user)
     console.log("admin token", token)
 
-    // const
+const location = useLocation()
+const openInvitePopup = location.state?.invite || false
+
+    const [inviteOpen, setInviteOpen] = useState(openInvitePopup);
 
     const [formData, setFormData] = useState({
         fullName: "",
@@ -36,7 +40,7 @@ const EmployeeHr = () => {
 
     })
 
-    const [inviteOpen, setInviteOpen] = useState(true);
+
 
     const [importOpen, setImportOpen] = useState(false)
     const [file, setFile] = useState(null)
