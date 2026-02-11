@@ -470,9 +470,9 @@ const PersonalProfile = ({ onSuccess, onPrevious }) => {
                         handleChange(["biodata", "maritalStatus"], e.target.value)
                       }>
                       <option value="" disabled hidden>Select Marital Status</option>
-                      <option value="Married">Married</option>
-                      <option value="Unmarried">Unmarried</option>
-                      <option value="Partnered">Partnered</option>
+                      <option value="MARRIED">Married</option>
+                      <option value="UNMARRIED">Unmarried</option>
+                      <option value="PARTNERED">Partnered</option>
                     </select>
                   </div>
                 </div>
