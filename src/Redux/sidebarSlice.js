@@ -11,6 +11,9 @@ const initialState = {
   // Settings
   showSettingsMenu: false,
 
+   // ✅ NEW: Config / Normal mode
+  isConfig: false,
+
 
 };
 
@@ -23,6 +26,11 @@ const SidebarSlice = createSlice({
     setOpenMenu: (state, action) => { state.openMenu = action.payload; },
     setActiveUrl: (state, action) => { state.activeUrl = action.payload; },
     setShowSettingsMenu: (state, action) => { state.showSettingsMenu = action.payload; },
+
+      // ================= ✅ Config Mode =================
+    setIsConfig: (state, action) => {
+      state.isConfig = action.payload;
+    },
 
     // Extra: toggleMenu (same as your setMenu function)
     
@@ -53,7 +61,7 @@ setLogout:(state)=>{
 export const {
   setOpenMenu,setActiveUrl,
   setShowSettingsMenu,
-  toggleMenu, initializeMenuFromStorage
+  toggleMenu, initializeMenuFromStorage, setIsConfig
 } = SidebarSlice.actions;
 
 export default SidebarSlice.reducer;

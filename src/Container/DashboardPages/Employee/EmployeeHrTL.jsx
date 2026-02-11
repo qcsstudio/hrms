@@ -162,7 +162,7 @@ const EmployeeHrTL = () => {
           className='bg-[#0575E6] text-white px-4 py-2 rounded w-[198px] h-[40px] font-semibold text-sm'
         >
           <option value="" disabled className='bg-white text-black'>
-            Select Add Employee Type
+         Add Employee
           </option>
 
           <option value="add" className='bg-white text-black'>

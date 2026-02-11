@@ -1,7 +1,7 @@
 import { IoMdMenu } from "react-icons/io";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
-import { toggleMenu } from "../Redux/sidebarSlice";
+import { toggleMenu ,setIsConfig } from "../Redux/sidebarSlice";
 import { avatar, downArrow, navbarLogo, notification, search } from "../allAssetsImport/allAssets";
 import { logout } from "../Redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,8 @@ import { IoIosArrowDown } from "react-icons/io";
 // import { fetchCurrentUser } from "../utils/thunkApis/userThunkApis";
 
 const Navbar = () => {
+  const {  isConfig } = useSelector((state) => state.sidebar)
+  
 
   const user = useSelector((state) => state.user.user);
 
@@ -24,6 +26,25 @@ const Navbar = () => {
     alert("go back")
     dispatch(logout());
     navigate("/login");
+  }
+
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+
+    if (value === "config") {
+      dispatch(setIsConfig(true));
+    }
+
+    if (value === "normal") {
+      dispatch(setIsConfig(false));
+    }
+
+    // if (value === "logout") {
+    //   // dispatch(logout());
+    //   // dispatch(resetUI());
+    //   navigate("/login");
+    // }
   }
 
 
@@ -79,12 +100,23 @@ const Navbar = () => {
 
               {/* Invisible Select (FULL CONTAINER CLICKABLE) */}
               <select
+                value=""
+                onChange={handleChange}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               >
-                <option value="">Config Settings</option>
+                <option value="" disabled>
+                  {isConfig ? "Normal" : "Config"}
+                </option>
+
+                {isConfig ? (
+                  <option value="normal">Normal</option>
+                ) : (
+                  <option value="config">Config</option>
+                )}
 
                 <option value="logout">Logout</option>
               </select>
+
 
               {/* avatar Icon */}
               <div className="avatarContainer w-[2.5rem] h-[2.5rem] rounded-full overflow-hidden z-0">
