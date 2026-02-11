@@ -124,23 +124,23 @@ const EmployeeHrTL = () => {
     (!filters.status || item.Status === filters.status)
   )
 
-const navigate = useNavigate()
+  const navigate = useNavigate()
 
-const handleAddEmployee = (e) => {
-  const value = e.target.value
+  const handleAddEmployee = (e) => {
+    const value = e.target.value
 
-  if (value === "normal") {
-    navigate("/dashboard/employee/add-Employee", {
-      state: { invite: false }
-    })
+    if (value === "add") {
+      navigate("/dashboard/employee/add-Employee", {
+        state: { invite: false }
+      })
+    }
+
+    if (value === "invite") {
+      navigate("/dashboard/employee/add-Employee", {
+        state: { invite: true }
+      })
+    }
   }
-
-  if (value === "invite") {
-    navigate("/dashboard/employee/add-Employee", {
-      state: { invite: true }
-    })
-  }
-}
   return (
     <div className='bg-gray-50 p-5'>
 
@@ -157,13 +157,23 @@ const handleAddEmployee = (e) => {
           + Add Employee
         </button> */}
         <select
+          defaultValue=""
           onChange={handleAddEmployee}
           className='bg-[#0575E6] text-white px-4 py-2 rounded w-[198px] h-[40px] font-semibold text-sm'
         >
-          <option value="" disabled hidden>Add Employee</option>
-          <option value="normal">Add Employee</option>
-          <option value="invite">Add Employee Via Invite Link</option>
+          <option value="" disabled>
+            Select Add Employee Type
+          </option>
+
+          <option value="add">
+            Add Employee (Without Link)
+          </option>
+
+          <option value="invite">
+            Add Employee Via Invite Link
+          </option>
         </select>
+
       </div>
 
       {/* ---------------- TABS ---------------- */}

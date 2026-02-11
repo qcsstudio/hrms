@@ -1,10 +1,9 @@
 import React, { useRef, useState } from 'react'
 import discardicon from "/assets/Images/discardicon.png"
-import { FiPlus, FiUpload } from 'react-icons/fi'
+import { FiPlus } from 'react-icons/fi'
 import createAxios from '../../../utils/axios.config'
 import { useSelector } from 'react-redux'
 import { getSlug } from '../../../Components/CompanySlug'
-import OTPModal from '../../../Components/Adding-Company/OTPModal'
 import InviteEmployeeModal from './InviteEmployeeModal'
 import { useLocation } from 'react-router-dom'
 
@@ -12,8 +11,8 @@ const EmployeeHr = () => {
     const { token } = useSelector((state) => state.user)
     console.log("admin token", token)
 
-const location = useLocation()
-const openInvitePopup = location.state?.invite || false
+    const location = useLocation()
+    const openInvitePopup = location.state?.invite || false
 
     const [inviteOpen, setInviteOpen] = useState(openInvitePopup);
 
