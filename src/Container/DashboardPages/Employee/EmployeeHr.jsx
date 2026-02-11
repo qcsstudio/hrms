@@ -264,7 +264,7 @@ const EmployeeHr = () => {
                                     </select>
                                 </div>
                             </div>
-                            <div className='flex gap-3 border'>
+                            <div className='flex gap-3 '>
                                 <div className='w-[100%] '>
                                     <h1 className='mt-[9px] text-[15px]' >shift</h1>
                                     <select className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] ' name='shift' value={formData.shift} onChange={handleChange}  >
