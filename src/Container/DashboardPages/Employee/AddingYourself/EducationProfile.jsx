@@ -52,7 +52,7 @@ const EducationProfile = ({ setEducation,onPrevious,onSuccess }) => {
     return (
         <>
             {
-                setEducation ? <div className="w-full bg-white rounded-lg border p-6">
+                setEducation ? <div className="w-full bg-white rounded-lg  p-6">
                     <h2 className="text-sm font-semibold text-gray-700 mb-4">
                         Education Details
                     </h2>
