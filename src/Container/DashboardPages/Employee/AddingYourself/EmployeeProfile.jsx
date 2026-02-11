@@ -2,8 +2,12 @@ import React, { useState } from 'react'
 import PersonalProfile from './PersonalProfile';
 import { Link } from 'react-router-dom';
 import WorkProfile from './WorkProfile';
+import EducationProfile from './EducationProfile';
+import DocumentsProfile from './DocumentsProfile';
 const EmployeeProfile = () => {
   const [activeTab, setActiveTab] = useState('Personal');
+
+  const [educationtab,setEducationtab] = useState(false)
   
   const tabs = ['Personal', 'Work Profile', 'Education', 'Documents'];
 
@@ -21,6 +25,11 @@ const EmployeeProfile = () => {
     }
   }
 
+  const handleEducation =()=>{
+    setEducationtab(true)
+
+  }
+
 
    function changeTab() {
     switch(activeTab){
@@ -31,7 +40,7 @@ const EmployeeProfile = () => {
         return <WorkProfile onSuccess={goToNextTab} onPrevious={goToPreviousTab}/>
         
       case "Education" :
-        return <EducationProfile/>
+        return <EducationProfile  setEducation={educationtab} onPrevious={goToPreviousTab} onSuccess={goToNextTab} />
         
       case "Documents" :
         return <DocumentsProfile/>
@@ -45,6 +54,7 @@ const EmployeeProfile = () => {
 
     
   }
+
 
 
   return (
@@ -75,9 +85,9 @@ const EmployeeProfile = () => {
           </div>
         </div>
         {/* Tabs and Form Container */}
-        <div className="bg-white rounded-lg">
+        <div className="bg-white rounded-lg ">
           {/* Tabs */}
-          <div className="px-6 pt-6 pb-4">
+          <div className="px-6 pt-6 pb-4  flex justify-between">
             <div className="flex bg-[#F5F5F5] rounded-lg p-1 w-fit gap-0.5">
               {tabs.map((tab) => (
                 <button
@@ -93,6 +103,10 @@ const EmployeeProfile = () => {
                 </button>
               ))}
             </div>
+
+            {activeTab === 'Education' && 
+            <button className='border px-4 py-2 bg-[#0575E6] text-white rounded-md' onClick={handleEducation}>Add Education</button>
+            }
           </div>
           {/* Form */}
           {changeTab()}
