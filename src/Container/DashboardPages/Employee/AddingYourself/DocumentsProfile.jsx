@@ -145,7 +145,7 @@ const DocumentsProfile = ({ onSuccess, onPrevious }) => {
 
         const res = await axiosInstance.put(
             `/employees/${completeData.employeeId}/document`,
-            formDataToSend
+            {formDataToSend}
 
         );
         if (res.status === 200) {

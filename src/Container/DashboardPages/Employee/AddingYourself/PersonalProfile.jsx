@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { IoIosArrowDown } from "react-icons/io";
-import { useNavigate } from 'react-router-dom';
 import createAxios from '../../../../utils/axios.config'
 import { useSelector } from 'react-redux';
 
