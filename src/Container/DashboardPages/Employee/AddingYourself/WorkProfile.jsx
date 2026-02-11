@@ -18,21 +18,30 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
         exitDate: "",
 
         officeAddress: "",
-        companyName: "",
+       
+
+
+        // birthDate: "",
+        // partnerBirthDate: "",
+        // marriageAnniversary: "",
+
+        // dependentName: "",
+        // relationship: "",
+        // emergencyContactNumber: "",
+        // dependentBirthDate: "",
+    });
+
+    const [pastExperience,setPastExperience] = useState({
+         companyName: "",
         startDate: "",
         endDate: "",
         workRole: "",
 
+    })
 
-        birthDate: "",
-        partnerBirthDate: "",
-        marriageAnniversary: "",
+    const [pastExperienceres,setPastExperienceres] = useState([])
+        const [pastExpField,setPastExpField] = useState(false)
 
-        dependentName: "",
-        relationship: "",
-        emergencyContactNumber: "",
-        dependentBirthDate: "",
-    });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -58,9 +67,37 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
 
 
     }
+
+
+const handleChangepastExp = (e) => {
+        const { name, value } = e.target;
+        setPastExperience({ ...pastExperience, [name]: value });
+    };
+
+
+    const handlePastExperience = async (e) => {
+        e.preventDefault()
+
+        try {
+
+            const res = await axiosInstance.put(`/employees/${completeData.employeeId}/past-experience`, pastExperience)
+            if(res.status === 200){
+                setPastExperienceres(res.data)
+                console.log("past experience: ",res.data)
+
+            }
+           
+        } catch (error) {
+            console.log("api is not respond", error)
+
+        }
+
+
+    }
     const handleSkip = () => {
         onSuccess()
     }
+
     return (
         <form
             onSubmit={handleSubmit}
@@ -175,9 +212,13 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
             />
 
             {/* Current Experience (Static) */}
-            <h2 className="mb-4 border-b pb-2 text-sm font-semibold text-gray-700">
+            <div className="flex border-b mb-4 justify-between items-center">
+
+            <h2 className=" pb-2 text-sm font-semibold text-gray-700">
                 Current Experience
             </h2>
+            <button type="button" className="bg-[#0575E6] rounded-md px-4 py-2 text-white mb-2" onClick={()=> setPastExpField(prev => !prev)}>Add Past Experience</button>
+            </div>
 
             <div className="mb-6 flex gap-4 rounded-md border p-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-md bg-red-100 font-bold text-red-500">
@@ -193,14 +234,20 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
             </div>
 
             {/* Past Experience */}
-            <h2 className="mb-4 border-b pb-2 text-sm font-semibold text-gray-700">
+        {
+            pastExpField && <>
+            <div className="flex border-b mb-4 justify-between items-center">
+
+            <h2 className=" pb-2 text-sm font-semibold text-gray-700">
                 Past Experience
             </h2>
+            <button type="button" className="bg-[#0575E6] rounded-md px-4 py-2 text-white mb-2" onClick={handlePastExperience}>save</button>
+            </div>
 
             <input
                 name="companyName"
-                value={formData.companyName}
-                onChange={handleChange}
+                value={pastExperience.companyName}
+                onChange={handleChangepastExp}
                 placeholder="Company Name"
                 className="mb-4 h-10 w-full rounded-md border px-3 text-sm"
             />
@@ -209,143 +256,29 @@ const WorkProfile = ({ onSuccess, onPrevious }) => {
                 <input
                     type="date"
                     name="startDate"
-                    value={formData.startDate}
-                    onChange={handleChange}
+                    value={pastExperience.startDate}
+                    onChange={handleChangepastExp}
                     className="h-10 rounded-md border px-3 text-sm"
                 />
                 <input
                     type="date"
                     name="endDate"
-                    value={formData.endDate}
-                    onChange={handleChange}
+                    value={pastExperience.endDate}
+                    onChange={handleChangepastExp}
                     className="h-10 rounded-md border px-3 text-sm"
                 />
             </div>
 
             <input
                 name="workRole"
-                value={formData.workRole}
-                onChange={handleChange}
+                value={pastExperience.workRole}
+                onChange={handleChangepastExp}
                 placeholder="Work Role"
                 className="mb-6 h-10 w-full rounded-md border px-3 text-sm"
             />
 
-            <h2 className="text-sm font-medium text-gray-800 mb-4">
-                Important Dates
-            </h2>
-
-            <div className="grid grid-cols-3 gap-6">
-                <div>
-                    <label className="text-sm text-gray-700 mb-1 block">
-                        Birth Date
-                    </label>
-                    <input
-                        type="date"
-                        name="birthDate"
-                        className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
-                        value={formData.birthDate}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div>
-                    <label className="text-sm text-gray-700 mb-1 block">
-                        Your partner birth date
-                    </label>
-                    <input
-                        type="date"
-                        name="partnerBirthDate"
-                        className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
-                        value={formData.partnerBirthDate}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div>
-                    <label className="text-sm text-gray-700 mb-1 block">
-                        Marriage anniversary
-                    </label>
-                    <input
-                        type="date"
-                        name="marriageAnniversary"
-                        className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
-                        value={formData.marriageAnniversary}
-                        onChange={handleChange}
-                    />
-                </div>
-            </div>
-
-            {/* Dependents */}
-            <h2 className="text-sm font-medium text-gray-800 mt-8 mb-4">
-                Dependents
-            </h2>
-
-            <div className="grid grid-cols-2 gap-6">
-                <div>
-                    <label className="text-sm text-gray-700 mb-1 block">
-                        Full Name
-                    </label>
-                    <input
-                        type="text"
-                        name="dependentName"
-                        placeholder="Choose Account"
-                        className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
-                        value={formData.dependentName}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div>
-                    <label className="text-sm text-gray-700 mb-1 block">
-                        Select Relationship
-                    </label>
-                    <select
-                        className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 bg-white focus:outline-none"
-                        name="relationship"
-                        value={formData.relationship}
-                        onChange={handleChange}
-                    >
-                        <option value="" disabled hidden>
-                            Choose Account
-                        </option>
-                        <option value="Father">Father</option>
-                        <option value="Mother">Mother</option>
-                        <option value="Spouse">Spouse</option>
-                        <option value="Child">Child</option>
-                    </select>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6 mt-6">
-                <div>
-                    <label className="text-sm text-gray-700 mb-1 block">
-                        Emergency Contact Number
-                    </label>
-                    <input
-                        type="text"
-                        name="emergencyContactNumber"
-                        placeholder="Choose Account"
-                        className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
-                        value={formData.emergencyContactNumber}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div>
-                    <label className="text-sm text-gray-700 mb-1 block">
-                        Birth Date
-                    </label>
-                    <input
-                        type="date"
-                        name="dependentBirthDate"
-                        className="w-full h-10 px-3 border rounded-md text-sm text-gray-600 focus:outline-none"
-                        value={formData.dependentBirthDate}
-                        onChange={handleChange}
-                    />
-                </div>
-            </div>
-
-
+            </>
+        }
 
             {/* Buttons */}
             <div className='flex justify-between sticky bottom-0 mt-5'>

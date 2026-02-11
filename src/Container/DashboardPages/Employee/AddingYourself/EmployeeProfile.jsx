@@ -43,7 +43,7 @@ const EmployeeProfile = () => {
         return <EducationProfile  setEducation={educationtab} onPrevious={goToPreviousTab} onSuccess={goToNextTab} />
         
       case "Documents" :
-        return <DocumentsProfile/>
+        return <DocumentsProfile onPrevious={goToPreviousTab} onSuccess={goToNextTab}/>
         
         default :
         return null
