@@ -5,6 +5,8 @@ const initialState = {
     user: null,
     token: null,
     loginSpinner: false,
+    role:null,
+
 
     // company data
     companyId: null,
@@ -20,6 +22,8 @@ const userSlice = createSlice({
       state.loginSpinner = false;
       state.user = action.payload.user;
       state.token = action.payload.token;
+      state.role = action.payload.role;
+      
     },
     
     logout: (state) => {

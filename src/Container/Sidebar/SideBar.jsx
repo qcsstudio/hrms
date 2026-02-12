@@ -1,19 +1,9 @@
 
 import { Link, useLocation, useNavigate } from "react-router-dom"
-// import { sideBarData } from "@/data/sideBar.data"
-// import { useContext, useEffect, useState } from "react";
-// import { uiContext } from "@/Context/ui.context"
 import { SlArrowLeft } from "react-icons/sl";
 import { useDispatch, useSelector } from "react-redux";
-
 import { useState, useEffect, useRef } from "react";
 import { setActiveUrl, setOpenMenu, setShowSettingsMenu } from "../../Redux/sidebarSlice";
-// import { analysis, analysisactive, automation, automationactive, calender, calenderactive, createpost, createpostActive, home, homeactive, inbox, inboxactive, influencer, influenceractive, library, libraryactive, reports, reportsactive, settings, settingsactive, support, supportactive } from "../../allAssetsImport/allAssets";
-// import createAxios from "../../utils/axios.config";
-// import { decryptToken } from "../../utils/cryptoEncrypt";
-// import ActiveUserDropdown from "../DashboardComponents/activeUserDropdown";
-// import { useReactSelector } from "../../utils/hooks/customeHooks";
-// import { getActiveuser } from "../../utils/thunkApis/dashboardThunkApis";
 import { toast } from "react-toastify";
 import { MdArrowDropDown } from "react-icons/md";
 
@@ -22,17 +12,6 @@ const SideBar = () => {
   const { openMenu, showSettingsMenu, activeUrl, isConfig } = useSelector((state) => state.sidebar)
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const hasFetchedRef = useRef(false);
-
-  //Dashboard sidebar account-------------
-
-
-  // useEffect(() => {
-  //   if (hasFetchedRef.current) return; 
-  //   hasFetchedRef.current = true;
-  //   dispatch(getActiveuser());
-  // }, [dispatch]);
-
 
   const [configdropdown, setConfigdropdown] = useState({
     hris: false,
@@ -41,7 +20,6 @@ const SideBar = () => {
     organise: false,
     resolve: false,
     hrops: false,
-
   })
 
   const handleConfigDropdown = (menu) => {
@@ -230,10 +208,22 @@ const SideBar = () => {
         navigate("/dashboard/payroll");
         break;
 
-      // case "billing":
-      //   navigate("/dashboard/settings/billing");
-      //   dispatch(setShowSettingsMenu(true));
-      //   break;
+        // config=============================================================
+        case "global-default":
+          navigate("/config/hris/Account-management/Global-defaults");
+        break;
+
+        case "branding-setup":
+          navigate("/config/hris/Account-management/Branding-setup");
+        break;
+
+        case "company-offices":
+          navigate("/config/hris/Account-management/Company-office");
+        break;
+        
+        case "incorporation-details":
+          navigate("/config/hris/Account-management/Incorporation-details");
+          break;
 
       default:
         navigate("/dashboard");
@@ -254,10 +244,10 @@ const SideBar = () => {
                 <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('accountManagement', 'hris')}>Account Management<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.accountManagement ? 'rotate-180' : ''}`} /></span></h1>
                 {
                   innerconfigdropdownhris.accountManagement && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Global Default</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Branding Setup</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Company Offices</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Incorporation details</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" onClick={() => changeTab('global-default')} >Global Default</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" onClick={() => changeTab('branding-setup')} >Branding Setup</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" onClick={() => changeTab('company-offices')}>Company Offices</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" onClick={() => changeTab('incorporation-details')}>Incorporation details</h1>
                   </div>
                 }
                 <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('companyData', 'hris')}>Company Data <span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.companyData ? 'rotate-180' : ''}`} /></span></h1>
@@ -313,12 +303,9 @@ const SideBar = () => {
                     <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Leave Policy</h1>
                     <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Holiday Plan</h1>
                     <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Leave Cycle Transition</h1>
-
                   </div>
                 }
-
               </div>
-
             }
           </div>
           <div>
@@ -352,10 +339,8 @@ const SideBar = () => {
 
                   </div>
                 }
-
               </div>
             }
-
           </div>
           <div>
             <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('organise')}>Organise</h1>
@@ -371,8 +356,6 @@ const SideBar = () => {
                 }
               </div>
             }
-
-
           </div>
           <div>
             <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('resolve')}>Resolve</h1>
@@ -398,18 +381,18 @@ const SideBar = () => {
           </div>
           <div>
             <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('hrops')}>HR Ops</h1>
-             {
+            {
               configdropdown.hrops && <div className="pl-4">
 
                 <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('asset', 'hrops')}>Asset<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhrops.asset ? 'rotate-180' : ''}`} /></span></h1>
-                
+
                 {
                   innerconfigdropdownhrops.asset && <div className="pl-4">
                     <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Asset Category</h1>
-                    </div>
+                  </div>
                 }
-                </div>
-}
+              </div>
+            }
 
           </div>
 

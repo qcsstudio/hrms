@@ -6,7 +6,7 @@ const PrivateRoute = ({ children, userData }) => {
   const { token} = useSelector((state) => state.user)
 
   if (!token) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;

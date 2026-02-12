@@ -7,6 +7,9 @@ import { logout } from "../Redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { IoIosArrowDown } from "react-icons/io";
 
+import { BiSolidDownArrow } from "react-icons/bi";
+
+
 
 // import { fetchCurrentUser } from "../utils/thunkApis/userThunkApis";
 
@@ -14,17 +17,19 @@ const Navbar = () => {
   const {  isConfig } = useSelector((state) => state.sidebar)
   
 
-  const user = useSelector((state) => state.user.user);
+  const {user, role} = useSelector((state) => state.user);
 
   console.log("user:", user)
+  console.log("role:", role)
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
 
   function handleLogout() {
-    alert("go back")
+   
     dispatch(logout());
+    localStorage.removeItem("authToken");
     navigate("/login");
   }
 
@@ -96,7 +101,7 @@ const Navbar = () => {
             </div>
 
             {/* Profile Container */}
-            <div className="profileContainer relative w-[4.37rem] h-[2.5rem] flex justify-between border cursor-pointer">
+            <div className="profileContainer relative w-[4.37rem] h-[2.5rem] flex justify-between  cursor-pointer">
 
               {/* Invisible Select (FULL CONTAINER CLICKABLE) */}
               <select
@@ -104,6 +109,9 @@ const Navbar = () => {
                 onChange={handleChange}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               >
+                {role === "COMPANY_ADMIN" && 
+                <>
+                
                 <option value="" disabled>
                   {isConfig ? "Normal" : "Config"}
                 </option>
@@ -113,8 +121,9 @@ const Navbar = () => {
                 ) : (
                   <option value="config">Config</option>
                 )}
-
-                <option value="logout">Logout</option>
+                </>
+              }
+                <option value="logout" onClick={handleLogout}>Logout</option>
               </select>
 
 
@@ -129,7 +138,7 @@ const Navbar = () => {
 
               {/* arrow / text area */}
               <div className="avatarContainer w-[1.25rem] h-full flex justify-center items-center z-0">
-                <span className="text-[10px]">▼</span>
+                <span className="text-[10px]"><BiSolidDownArrow /></span>
               </div>
 
             </div>
