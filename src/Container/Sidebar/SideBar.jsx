@@ -15,7 +15,8 @@ import { setActiveUrl, setOpenMenu, setShowSettingsMenu } from "../../Redux/side
 // import { useReactSelector } from "../../utils/hooks/customeHooks";
 // import { getActiveuser } from "../../utils/thunkApis/dashboardThunkApis";
 import { toast } from "react-toastify";
-// import { setLoading, setSelectedAccount } from "../../redux/dashboardSlice";
+import { MdArrowDropDown } from "react-icons/md";
+
 const SideBar = () => {
 
   const { openMenu, showSettingsMenu, activeUrl, isConfig } = useSelector((state) => state.sidebar)
@@ -31,6 +32,93 @@ const SideBar = () => {
   //   hasFetchedRef.current = true;
   //   dispatch(getActiveuser());
   // }, [dispatch]);
+
+
+  const [configdropdown, setConfigdropdown] = useState({
+    hris: false,
+    track: false,
+    pay: false,
+    organise: false,
+    resolve: false,
+    hrops: false,
+
+  })
+
+  const handleConfigDropdown = (menu) => {
+    setConfigdropdown(prev => ({
+      ...prev,
+      [menu]: !prev[menu]
+    }));
+  }
+
+  const [innerconfigdropdownhris, setInnerConfigdropdownhris] = useState({
+    accountManagement: false,
+    companyData: false,
+    employeeData: false,
+  }
+  )
+
+  const [innerconfigdropdowntrack, setInnerConfigdropdowntrack] = useState({
+    attendance: false,
+    leave: false,
+  })
+
+  const [innerconfigdropdownpay, setInnerConfigdropdownpay] = useState({
+    expensive: false,
+    payroll: false,
+  })
+
+  const [innerconfigdropdownorganise, setInnerConfigdropdownorganise] = useState({
+    letter: false,
+
+  })
+  const [innerconfigdropdownresolve, setInnerConfigdropdownresolve] = useState({
+    checklist: false,
+    policycenter: false
+  })
+
+  const [innerconfigdropdownhrops, setInnerConfigdropdownhrops] = useState({
+    asset: false,
+  })
+
+  const handleInnerConfigDropdown = (menu, dropdownType) => {
+    if (dropdownType === 'hris') {
+      setInnerConfigdropdownhris(prev => ({
+        ...prev,
+        [menu]: !prev[menu]
+      }));
+    } else if (dropdownType === 'track') {
+      setInnerConfigdropdowntrack(prev => ({
+        ...prev,
+        [menu]: !prev[menu]
+      }));
+    }
+    else if (dropdownType === 'pay') {
+      setInnerConfigdropdownpay(prev => ({
+        ...prev,
+        [menu]: !prev[menu]
+      }));
+    }
+    else if (dropdownType === 'organise') {
+      setInnerConfigdropdownorganise(prev => ({
+        ...prev,
+        [menu]: !prev[menu]
+      }));
+    }
+    else if (dropdownType === 'resolve') {
+      setInnerConfigdropdownresolve(prev => ({
+        ...prev,
+        [menu]: !prev[menu]
+      }));
+    }
+    else if (dropdownType === 'hrops') {
+      setInnerConfigdropdownhrops(prev => ({
+        ...prev,
+        [menu]: !prev[menu]
+      }));
+    }
+  }
+
 
   const onActivate = async (id) => {
     try {
@@ -160,32 +248,168 @@ const SideBar = () => {
       <div>
         {openMenu && <>
           <div>
-            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">HRIS</h1>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('hris')}>HRIS</h1>
+            {
+              configdropdown.hris && <div className="pl-4">
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('accountManagement', 'hris')}>Account Management<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.accountManagement ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdownhris.accountManagement && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Global Default</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Branding Setup</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Company Offices</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Incorporation details</h1>
+                  </div>
+                }
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('companyData', 'hris')}>Company Data <span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.companyData ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdownhris.companyData && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Bussiness Unit</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Department</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Designation</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Team</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Grade</h1>
+                  </div>
+                }
+
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('employeeData', 'hris')}>Employee Data <span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.employeeData ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdownhris.employeeData && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Employee Id</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Probation</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Approval Workflow</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Default Profile Privacy</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Default Permission</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Permission Policy</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Exit Policy</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Exit Reason</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Custom Data</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Common Access</h1>
+                  </div>
+                }
+              </div>
+            }
 
           </div>
           <div>
-            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">Track</h1>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('track')}>Track</h1>
+            {
+              configdropdown.track && <div className="pl-4">
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('attendance', 'track')}>Attendance<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.attendance ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdowntrack.attendance && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Shift</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Clock-in-Method</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Attendance Policy</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Extra Time (Compoff)</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Attendance Request Cycle</h1>
+
+                  </div>
+                }
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('leave', 'track')}>Leave<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.leave ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdowntrack.leave && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Week-off</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Leave type</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Leave Policy</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Holiday Plan</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Leave Cycle Transition</h1>
+
+                  </div>
+                }
+
+              </div>
+
+            }
+          </div>
+          <div>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('pay')}>Pay</h1>
+            {
+              configdropdown.pay && <div className="pl-4">
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('expensive', 'pay')}>Expensive<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownpay.expensive ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdownpay.expensive && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Expensive Cycle</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Currency Conversion</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Fuel & Distance Unit</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Compensator</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Expensive Policy</h1>
+
+                  </div>
+                }
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('payroll', 'pay')}>Payroll<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownpay.payroll ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdownpay.payroll && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Payroll Method</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Salary Cycle</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Payroll Signatory</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Misc</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Component</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Salary Structure</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Flexible Benifit plan</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Payroll Tag</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >FNF Policy</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Overtime Payment Policy</h1>
+
+                  </div>
+                }
+
+              </div>
+            }
+
+          </div>
+          <div>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('organise')}>Organise</h1>
+            {
+              configdropdown.organise && <div className="pl-4">
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('letter', 'organise')}>Letter<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownorganise.expensive ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdownorganise.letter && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Page Layout</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Template</h1>
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Authorized Signatory</h1>
+                  </div>
+                }
+              </div>
+            }
 
 
           </div>
           <div>
-            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">Pay</h1>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('resolve')}>Resolve</h1>
+            {
+              configdropdown.resolve && <div className="pl-4">
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('checklist', 'resolve')}>Checklist<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownresolve.checklist ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdownresolve.checklist && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Checklist</h1>
 
+                  </div>
+                }
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('policycenter', 'resolve')}>Policy Center<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownresolve.policycenter ? 'rotate-180' : ''}`} /></span></h1>
+                {
+                  innerconfigdropdownresolve.policycenter && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Company Policy</h1>
+
+                  </div>
+                }
+              </div>
+            }
 
           </div>
           <div>
-            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">Organise</h1>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('hrops')}>HR Ops</h1>
+             {
+              configdropdown.hrops && <div className="pl-4">
 
-
-          </div>
-          <div>
-            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">Resolve</h1>
-
-
-          </div>
-          <div>
-            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">HR Ops</h1>
-
+                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('asset', 'hrops')}>Asset<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhrops.asset ? 'rotate-180' : ''}`} /></span></h1>
+                
+                {
+                  innerconfigdropdownhrops.asset && <div className="pl-4">
+                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Asset Category</h1>
+                    </div>
+                }
+                </div>
+}
 
           </div>
 
