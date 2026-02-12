@@ -28,19 +28,27 @@ import LeavemanagementHr from '../Container/DashboardPages/LeaveManagement/Leave
 import LeaveManagement2 from '../Container/DashboardPages/LeaveManagement/LeaveManagementTLHr'
 import LeaveManagementTLHr from '../Container/DashboardPages/LeaveManagement/LeaveManagementTLHr'
 import LeaveManagementHr1 from '../Container/DashboardPages/LeaveManagement/LeaveManagementHr1'
+import GlobalDefaults from '../Container/Config/Account-Management/GlobalDefault'
+import BrandingSetup from '../Container/Config/Account-Management/BrandingSetup'
+import CompanyOffices from '../Container/Config/Account-Management/Company/CompanyOffices'
+import CompanyOfficeCreate from '../Container/Config/Account-Management/Company/CompanyOfficeCreate'
+import CompanyOfficeEdit from '../Container/Config/Account-Management/Company/CompanyOfficeEdit'
+import IncorporationDetails from '../Container/Config/Account-Management/IncorporationDetails'
 
 
 const AppRoutes = () => {
+
+  
   return (
     <>
       <Routes>
         <Route path="/login" element={<Login />} />
-   
+
         <Route path="/org-setup" element={
-           <PrivateRouteOrg >
+          <PrivateRouteOrg >
             <AddCompany />
-           </PrivateRouteOrg>
-          } />
+          </PrivateRouteOrg>
+        } />
         <Route path="/dashboard" element={
           <PrivateRoute >
             <MainDashboardLayout />
@@ -63,10 +71,49 @@ const AppRoutes = () => {
 
           <Route path="payroll" element={<DashboardPayroll1 />} />
         </Route>
-          <Route path="/Addingyourself" element={<Addingyourself />} />
-          <Route path="/employee-Profile" element={<EmployeeProfile />} />
+        <Route path="/Addingyourself" element={<Addingyourself />} />
+        <Route path="/employee-Profile" element={<EmployeeProfile />} />
 
-        
+        {/* ================config=============== */}
+        <Route path="/config/hris"
+        element={
+          <PrivateRoute >
+            <MainDashboardLayout />
+          </PrivateRoute>
+        }>
+
+          {/* Account Management */}
+          <Route path="Account-management/Global-defaults" element={<GlobalDefaults />} />
+          <Route path="Account-management/Branding-setup" element={<BrandingSetup />} />
+          <Route path="Account-management/Incorporation-Details" element={<IncorporationDetails />} />
+          <Route path="Account-management/Company-office" element={<CompanyOffices />} />
+
+          <Route path="Account-management/Company-office/create" element={<CompanyOfficeCreate />} />
+          <Route path="Account-management/Company-office/edit/:id" element={<CompanyOfficeEdit />} />
+
+        </Route>
+        {/* Employee Data */}
+        {/* <Route path="Employee-data/employeeId" element={<CreateEmployeeId />} />
+          <Route path="Employee-data/probation-list" element={<ProbationList />} />
+          <Route path="Employee-data/probation-create" element={<CreateProbation />} />
+          <Route path="Employee-data/probation-edit/:id" element={<ProbationEdit />} />
+          <Route path="Employee-data/probation-view/:id" element={<ProbationView />} />
+
+          <Route path="Employee-data/set-permission" element={<SetPermissions />} />
+
+          <Route path="Employee-data/exit-reason" element={<ExitReasonList />} />
+
+          <Route path="Employee-data/exit-reason/create" element={<CreateExitReason />} />
+
+          <Route path="Employee-data/common-access" element={<CommonAccess />} />
+
+
+          <Route path="Employee-data/custom-create" element={<CreateCustomData />} />
+          <Route path="Employee-data/custom-list" element={<CustomDataList />} /> */}
+
+
+
+
       </Routes>
 
     </>
