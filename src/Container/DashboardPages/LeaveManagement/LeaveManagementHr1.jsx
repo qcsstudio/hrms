@@ -59,7 +59,7 @@ import {action }from '../../../allAssetsImport/allAssets'
     },
  ]
 
-const LeaveManagementHr = () => {
+const LeaveManagementHr1 = () => {
   return (
    <div className='p-[10px] bg-gray-50'>
  <div className='flex justify-between'>
@@ -209,4 +209,4 @@ const LeaveManagementHr = () => {
   )
 }
 
-export default LeaveManagementHr
+export default LeaveManagementHr1

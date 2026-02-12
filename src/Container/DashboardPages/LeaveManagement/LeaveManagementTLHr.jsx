@@ -41,7 +41,7 @@ const days=[
  ]
 
 
-const LeaveManagement2 = () => {
+const LeaveManagementTLHr = () => {
   return (
     <>
     <div className='p-[10px] bg-gray-50'>
@@ -154,4 +154,4 @@ const LeaveManagement2 = () => {
   )
 }
 
-export default LeaveManagement2
+export default LeaveManagementTLHr

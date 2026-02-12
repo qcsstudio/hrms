@@ -11,7 +11,6 @@ import MainDashboardLayout from './mainLayout'
 // import LeaveManagementHr from '../LeaveManagementHr'
 // import DashboardPayroll1 from '../DashboardPayroll1'
 // import DashboardAttandanceEmployee from '../DashboardAttandanceEmployee'
-import LeaveManagementHr from '../Container/DashboardPages/LeaveManagement/LeaveManagementHr'
 import DashboardPayroll1 from '../Container/Payroll/DashboardPayroll1'
 import PrivateRoute from './privateRoute'
 import Employee from '../Container/DashboardPages/Employee/Employee'
@@ -25,6 +24,11 @@ import PrivateRouteOrg from './privateRouteOrg'
 import Addingyourself from '../Container/DashboardPages/Employee/AddingYourself/Addingyourself'
 // import PersonalProfile from '../Container/DashboardPages/Employee/AddingYourself/PersonalProfile'
 import EmployeeProfile from '../Container/DashboardPages/Employee/AddingYourself/EmployeeProfile'
+import LeavemanagementHr from '../Container/DashboardPages/LeaveManagement/LeavemanagementEmployee'
+import LeaveManagement2 from '../Container/DashboardPages/LeaveManagement/LeaveManagementTLHr'
+import LeaveManagementTLHr from '../Container/DashboardPages/LeaveManagement/LeaveManagementTLHr'
+import LeaveManagementHr1 from '../Container/DashboardPages/LeaveManagement/LeaveManagementHr1'
+
 
 const AppRoutes = () => {
   return (
@@ -53,7 +57,9 @@ const AppRoutes = () => {
           <Route path="attendance" element={<AttendanceEmployee />} />
           {/* <Route path="attendance" element={<AttendanceHrTL />} /> */}
 
-          <Route path="leave-management" element={<LeaveManagementHr />} />
+          <Route path="leave-management" element={<LeavemanagementHr />} />
+          {/* <Route path="leave-management" element={<LeaveManagementTLHr />} /> */}
+          {/* <Route path="leave-management" element={<LeaveManagementHr1 />} /> */}
 
           <Route path="payroll" element={<DashboardPayroll1 />} />
         </Route>
