@@ -156,10 +156,47 @@ const SideBar = () => {
   return <>
 
     {/* flex flex-col justify-between */}
-    {isConfig  ? <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between   ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
- helllo
+    {isConfig ? <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between   ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
+      <div>
+        {openMenu && <>
+          <div>
+            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">HRIS</h1>
+
+          </div>
+          <div>
+            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">Track</h1>
+
+
+          </div>
+          <div>
+            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">Pay</h1>
+
+
+          </div>
+          <div>
+            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">Organise</h1>
+
+
+          </div>
+          <div>
+            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">Resolve</h1>
+
+
+          </div>
+          <div>
+            <h1 className="px-4 text-[#64748B] border mt-3 font-bold text-[16px]">HR Ops</h1>
+
+
+          </div>
+
+
+
+        </>
+        }
+
+      </div>
     </nav> :
-      <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between   ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
+      <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
         {/* ===============================Big Sidebar======================== */}
         <div >
           {openMenu && !showSettingsMenu &&
@@ -515,7 +552,7 @@ const SideBar = () => {
 
         </div>
       </nav>
-}
+    }
 
 
 
