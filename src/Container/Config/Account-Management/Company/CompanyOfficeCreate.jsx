@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const CompanyOfficeCreate = () => {
+   const { token } = useSelector((state) => state.user) // get superAdmintoken from redux store
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -23,15 +25,15 @@ const CompanyOfficeCreate = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const axiosInstance = createAxios()
+  const axiosInstance = createAxios(token)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const res = await axiosInstance.post('/config/company-office', formData,
-        {
-          meta: { auth: "ADMIN_AUTH" }
-        }
+       {
+        meta: { auth: "ADMIN_AUTH" }
+      }
       );
       console.log("Company office created:", res.data);
       if (res.status === 200) {
