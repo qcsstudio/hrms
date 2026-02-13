@@ -13,21 +13,21 @@ const SideBar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [configdropdown, setConfigdropdown] = useState({
-    hris: false,
-    track: false,
-    pay: false,
-    organise: false,
-    resolve: false,
-    hrops: false,
-  })
+  // const [configdropdown, setConfigdropdown] = useState({
+  //   hris: false,
+  //   track: false,
+  //   pay: false,
+  //   organise: false,
+  //   resolve: false,
+  //   hrops: false,
+  // })
 
-  const handleConfigDropdown = (menu) => {
-    setConfigdropdown(prev => ({
-      ...prev,
-      [menu]: !prev[menu]
-    }));
-  }
+  // const handleConfigDropdown = (menu) => {
+  //   setConfigdropdown(prev => ({
+  //     ...prev,
+  //     [menu]: !prev[menu]
+  //   }));
+  // }
 
   const [innerconfigdropdownhris, setInnerConfigdropdownhris] = useState({
     accountManagement: false,
@@ -208,22 +208,58 @@ const SideBar = () => {
         navigate("/dashboard/payroll");
         break;
 
-        // config=============================================================
-        case "global-default":
-          navigate("/config/hris/Account-management/Global-defaults");
+      // config=============================================================
+            //Company Data============================
+      case "global-default":
+        navigate("/config/hris/Account-management/Global-defaults");
         break;
 
-        case "branding-setup":
-          navigate("/config/hris/Account-management/Branding-setup");
+      case "branding-setup":
+        navigate("/config/hris/Account-management/Branding-setup");
         break;
 
-        case "company-offices":
-          navigate("/config/hris/Account-management/Company-office");
+      case "company-offices":
+        navigate("/config/hris/Account-management/Company-office");
         break;
-        
-        case "incorporation-details":
-          navigate("/config/hris/Account-management/Incorporation-details");
-          break;
+
+      case "incorporation-details":
+        navigate("/config/hris/Account-management/Incorporation-details");
+        break;
+
+        //Employee Data============================
+      case "employeeId":
+        navigate("/config/hris/Employee-data/employeeId");
+        break;
+      case "probation":
+        navigate("/config/hris/Employee-data/probation-list");
+        break;
+      case "approvalWorkflow":
+        navigate("/config/hris/Employee-data/Approval-workflow");
+        break;
+      case "defaultPrivacyPolicy":
+        navigate("/config/hris/Employee-data/default-privacy-policy");
+        break;
+      case "defaultPermission":
+        navigate("/config/hris/Employee-data/default-permission");
+        break;
+      case "permissionPolicy":
+        navigate("/config/hris/Employee-data/Permission-policy");
+        break;
+      case "exitPolicy":
+        navigate("/config/hris/Employee-data/exitPolicy-list");
+        break;
+      case "exitReason":
+        navigate("/config/hris/Employee-data/Exit-reason");
+        break;
+      case "customData":
+        navigate("/config/hris/Employee-data/custom-list");
+        break;
+      case "commonAccess":
+        navigate("/config/hris/Employee-data/Common-access");
+        break;
+
+
+
 
       default:
         navigate("/dashboard");
@@ -237,162 +273,220 @@ const SideBar = () => {
     {isConfig ? <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between   ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
       <div>
         {openMenu && <>
+        {/* =============================HRIS====================================== */}
           <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('hris')}>HRIS</h1>
-            {
-              configdropdown.hris && <div className="pl-4">
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('accountManagement', 'hris')}>Account Management<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.accountManagement ? 'rotate-180' : ''}`} /></span></h1>
-                {
+            {/* <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('hris')}>HRIS</h1> */}
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" >HRIS</h1>
+            {/* {
+              configdropdown.hris && <div className="pl-4"> */}
+            <div className="px-4">
+              {/* Account Management==================================== */}
+
+                <h1 className={`px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center  `} onClick={() => handleInnerConfigDropdown('accountManagement', 'hris')}>Account Management<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.accountManagement ? 'rotate-180' : ''}`} /></span></h1>
+                { 
                   innerconfigdropdownhris.accountManagement && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" onClick={() => changeTab('global-default')} >Global Default</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" onClick={() => changeTab('branding-setup')} >Branding Setup</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" onClick={() => changeTab('company-offices')}>Company Offices</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" onClick={() => changeTab('incorporation-details')}>Incorporation details</h1>
+                    <h1 className={`px-4 py-2    font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('global-default')} >Global Default</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Branding-setup' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('branding-setup')} >Branding Setup</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Company-office' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('company-offices')}>Company Offices</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Incorporation-details' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('incorporation-details')}>Incorporation details</h1>
                   </div>
                 }
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('companyData', 'hris')}>Company Data <span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.companyData ? 'rotate-180' : ''}`} /></span></h1>
+                {/* Company Data================================================== */}
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('companyData', 'hris')}>Company Data <span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.companyData ? 'rotate-180' : ''}`} /></span></h1>
                 {
-                  innerconfigdropdownhris.companyData && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Bussiness Unit</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Department</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Designation</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Team</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Grade</h1>
+                  innerconfigdropdownhris.companyData && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Bussiness Unit</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Department</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`}>Designation</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`}>Team</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`}>Grade</h1>
                   </div>
                 }
-
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('employeeData', 'hris')}>Employee Data <span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.employeeData ? 'rotate-180' : ''}`} /></span></h1>
+    {/* Employee Data======================================= */}
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('employeeData', 'hris')}>Employee Data <span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.employeeData ? 'rotate-180' : ''}`} /></span></h1>
                 {
-                  innerconfigdropdownhris.employeeData && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Employee Id</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Probation</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Approval Workflow</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Default Profile Privacy</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]">Default Permission</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Permission Policy</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Exit Policy</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Exit Reason</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Custom Data</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]"> Common Access</h1>
+                  innerconfigdropdownhris.employeeData && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/employeeId' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('employeeId')}>Employee Id</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/probation-list' || location.pathname === '/config/hris/Employee-data/probation-create' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('probation')}>Probation</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/Approval-workflow' || location.pathname === '/config/hris/Employee-data/approval-workflow/create' || location.pathname.includes('Employee-data/approval-workflow/edit')  ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('approvalWorkflow')}>Approval Workflow</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/default-privacy-policy' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('defaultPrivacyPolicy')}>Default Profile Privacy</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/default-permission' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('defaultPermission')}>Default Permission</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('permissionPolicy')}> Permission Policy</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/exitPolicy-list' || location.pathname === '/config/hris/Employee-data/exitPolicy/create' || location.pathname.includes('/exitPolicy-edit' ) ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('exitPolicy')}> Exit Policy</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/Exit-reason' || location.pathname === '/config/hris/Employee-data/exit-reason/create' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('exitReason')}> Exit Reason</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/custom-list' || location.pathname === '/config/hris/Employee-data/custom-create' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('customData')}> Custom Data</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/Common-access' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('commonAccess')}> Common Access</h1>
                   </div>
                 }
               </div>
-            }
+            
 
           </div>
+
+            {/* =================Track============================================== */}
+
           <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('track')}>Track</h1>
-            {
-              configdropdown.track && <div className="pl-4">
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('attendance', 'track')}>Attendance<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.attendance ? 'rotate-180' : ''}`} /></span></h1>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" >Track</h1>
+           <div className="px-4">
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('attendance', 'track')}>Attendance<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.attendance ? 'rotate-180' : ''}`} /></span></h1>
                 {
-                  innerconfigdropdowntrack.attendance && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Shift</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Clock-in-Method</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Attendance Policy</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Extra Time (Compoff)</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Attendance Request Cycle</h1>
+                  innerconfigdropdowntrack.attendance && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Shift</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Clock-in-Method</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Attendance Policy</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Extra Time (Compoff)</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Attendance Request Cycle</h1>
 
                   </div>
                 }
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('leave', 'track')}>Leave<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.leave ? 'rotate-180' : ''}`} /></span></h1>
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('leave', 'track')}>Leave<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.leave ? 'rotate-180' : ''}`} /></span></h1>
                 {
-                  innerconfigdropdowntrack.leave && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Week-off</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Leave type</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Leave Policy</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Holiday Plan</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Leave Cycle Transition</h1>
+                  innerconfigdropdowntrack.leave && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Week-off</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Leave type</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Leave Policy</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Holiday Plan</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Leave Cycle Transition</h1>
                   </div>
                 }
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " >Device Integration<span><MdArrowDropDown className={`text-[20px] `} /></span></h1>
+
               </div>
-            }
+            
           </div>
+          {/* ===================Pay========================== */}
           <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('pay')}>Pay</h1>
-            {
-              configdropdown.pay && <div className="pl-4">
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('expensive', 'pay')}>Expensive<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownpay.expensive ? 'rotate-180' : ''}`} /></span></h1>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" >Pay</h1>
+             <div className="px-4">
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('expensive', 'pay')}>Expensive<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownpay.expensive ? 'rotate-180' : ''}`} /></span></h1>
                 {
-                  innerconfigdropdownpay.expensive && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Expensive Cycle</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Currency Conversion</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Fuel & Distance Unit</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Compensator</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Expensive Policy</h1>
+                  innerconfigdropdownpay.expensive && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Expensive Cycle</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Currency Conversion</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Fuel & Distance Unit</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Compensator</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Expensive Policy</h1>
 
                   </div>
                 }
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('payroll', 'pay')}>Payroll<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownpay.payroll ? 'rotate-180' : ''}`} /></span></h1>
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('payroll', 'pay')}>Payroll<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownpay.payroll ? 'rotate-180' : ''}`} /></span></h1>
                 {
-                  innerconfigdropdownpay.payroll && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Payroll Method</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Salary Cycle</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Payroll Signatory</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Misc</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Component</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Salary Structure</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Flexible Benifit plan</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Payroll Tag</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >FNF Policy</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Overtime Payment Policy</h1>
+                  innerconfigdropdownpay.payroll && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Payroll Method</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Salary Cycle</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Payroll Signatory</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Misc</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Component</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Salary Structure</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Flexible Benifit plan</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Payroll Tag</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >FNF Policy</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Overtime Payment Policy</h1>
 
                   </div>
                 }
               </div>
-            }
+            
           </div>
+          {/* ======================Organise============================================= */}
           <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('organise')}>Organise</h1>
-            {
-              configdropdown.organise && <div className="pl-4">
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('letter', 'organise')}>Letter<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownorganise.expensive ? 'rotate-180' : ''}`} /></span></h1>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" >Organise</h1>
+             <div className="px-4">
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('letter', 'organise')}>Letter<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownorganise.expensive ? 'rotate-180' : ''}`} /></span></h1>
                 {
-                  innerconfigdropdownorganise.letter && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Page Layout</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Template</h1>
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Authorized Signatory</h1>
+                  innerconfigdropdownorganise.letter && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Page Layout</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Template</h1>
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Authorized Signatory</h1>
                   </div>
                 }
               </div>
-            }
+            
           </div>
+          {/* ===================================Resolve=========================================== */}
           <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('resolve')}>Resolve</h1>
-            {
-              configdropdown.resolve && <div className="pl-4">
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('checklist', 'resolve')}>Checklist<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownresolve.checklist ? 'rotate-180' : ''}`} /></span></h1>
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" >Resolve</h1>
+            <div className="px-4">
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('checklist', 'resolve')}>Checklist<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownresolve.checklist ? 'rotate-180' : ''}`} /></span></h1>
                 {
-                  innerconfigdropdownresolve.checklist && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Checklist</h1>
+                  innerconfigdropdownresolve.checklist && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Checklist</h1>
 
                   </div>
                 }
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('policycenter', 'resolve')}>Policy Center<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownresolve.policycenter ? 'rotate-180' : ''}`} /></span></h1>
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('policycenter', 'resolve')}>Policy Center<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownresolve.policycenter ? 'rotate-180' : ''}`} /></span></h1>
                 {
-                  innerconfigdropdownresolve.policycenter && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Company Policy</h1>
+                  innerconfigdropdownresolve.policycenter && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Company Policy</h1>
 
                   </div>
                 }
               </div>
-            }
-
           </div>
+          {/* ===================================HR Ops===================================================== */}
           <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('hrops')}>HR Ops</h1>
-            {
-              configdropdown.hrops && <div className="pl-4">
+            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" >HR Ops</h1>
+            <div className="px-4">
 
-                <h1 className="px-4 text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('asset', 'hrops')}>Asset<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhrops.asset ? 'rotate-180' : ''}`} /></span></h1>
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('asset', 'hrops')}>Asset<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhrops.asset ? 'rotate-180' : ''}`} /></span></h1>
 
                 {
-                  innerconfigdropdownhrops.asset && <div className="pl-4">
-                    <h1 className="px-4 text-[#64748B]  mt-2 font-medium text-[14px]" >Asset Category</h1>
+                  innerconfigdropdownhrops.asset && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                   'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Asset Category</h1>
                   </div>
                 }
               </div>
-            }
+            
 
           </div>
 
