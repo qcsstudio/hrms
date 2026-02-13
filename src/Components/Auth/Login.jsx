@@ -75,7 +75,8 @@ const Login = () => {
       console.log("After login response:", res.data);
       localStorage.setItem("authToken", res.data.token)
 
-      const role = res?.data?.role;
+      // const role = res?.data?.role;
+      const role = res?.data?.user?.role;
 
       if (role === "SUPER_ADMIN") {
         navigate("/dashboard/superadmin-dashboard");
