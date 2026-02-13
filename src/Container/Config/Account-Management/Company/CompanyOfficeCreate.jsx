@@ -22,10 +22,35 @@ const CompanyOfficeCreate = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Create Office Data 👉", formData);
-    // API call here
+    try {
+      const res = await axiosInstance.post('/config/company-office', formData,
+        {
+          meta: { auth: "ADMIN_AUTH" }
+        }
+      );
+      console.log("Company office created:", res.data);
+      if (res.status === 200) {
+        setFormData({
+          locationName: "",
+          addressType: "",
+          address1: "",
+          address2: "",
+          country: "india",
+          state: "",
+          city: "",
+          postalCode: "",
+          timezone: "india",
+          ipAddress: "",
+        })
+        navigate("/config/hris/Account-management/Company-office")
+      }
+
+    } catch (error) {
+      console.log("Error creating company office:", error);
+
+    }
   };
 
   return (
@@ -41,7 +66,7 @@ const CompanyOfficeCreate = () => {
           </p>
         </div>
 
-     
+
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
