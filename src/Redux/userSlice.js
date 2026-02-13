@@ -1,15 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit"
 
 const initialState = {
-    // login data
-    user: null,
-    token: null,
-    loginSpinner: false,
-    role:null,
+  // login data
+  user: null,
+  token: null,
+  loginSpinner: false,
+  role: null,
 
 
-    // company data
-    companyId: null,
+  // company data
+  companyId: null,
 
 
 }
@@ -23,28 +23,29 @@ const userSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.role = action.payload.role;
-      
+
     },
-    
+
     logout: (state) => {
       state.token = null;
       state.user = null;
+      state.role = null;
+      state.companyId = null;
     },
 
     setCompanyData: (state, action) => {
       state.companyId = action.payload.companyId;
-      console.log("companyId in redux store",state.companyId)
+      console.log("companyId in redux store", state.companyId)
     },
   },
 });
 
 
 export const {
-    setAddLoginData,logout , setCompanyData,
+  setAddLoginData, logout, setCompanyData,
 } = userSlice.actions;
 
 export default userSlice.reducer;
 
- 
 
- 
+

@@ -34,11 +34,30 @@ import CompanyOffices from '../Container/Config/Account-Management/Company/Compa
 import CompanyOfficeCreate from '../Container/Config/Account-Management/Company/CompanyOfficeCreate'
 import CompanyOfficeEdit from '../Container/Config/Account-Management/Company/CompanyOfficeEdit'
 import IncorporationDetails from '../Container/Config/Account-Management/IncorporationDetails'
+import CreateEmployeeId from '../Container/Config/Employee-data/CreateEmployeeId'
+import ProbationList from '../Container/Config/Employee-data/Probation/ProbationList'
+import CreateProbation from '../Container/Config/Employee-data/Probation/CreateProbation'
+import ProbationEdit from '../Container/Config/Employee-data/Probation/ProbationEdit'
+import ProbationView from '../Container/Config/Employee-data/Probation/ProbationView'
+import ExitReasonList from '../Container/Config/Employee-data/Exitreason/ExitReason'
+import CreateExitReason from '../Container/Config/Employee-data/Exitreason/CreateExitReason'
+import CommonAccess from '../Container/Config/Employee-data/CommonAccess'
+import CreateCustomData from '../Container/Config/Employee-data/custom/CreateCustomData'
+import CustomDataList from '../Container/Config/Employee-data/custom/CustomDataList'
+import ApprovalWorkflowList from '../Container/Config/Employee-data/Approvalworkflow/ApprovalWorkflow'
+import CreateApprovalWorkflow from '../Container/Config/Employee-data/Approvalworkflow/CreateApprovalworkflow'
+import EditApprovalWorkflow from '../Container/Config/Employee-data/Approvalworkflow/EditApprovalWorkflow'
+import ExitPolicyList from '../Container/Config/Employee-data/ExitPolicy/ExitPolicyList'
+import ExitPolicyCreate from '../Container/Config/Employee-data/ExitPolicy/ExitPolicyCreate'
+import EditExitPolicy from '../Container/Config/Employee-data/ExitPolicy/EditExitPolicy'
+import ViewExitPolicy from '../Container/Config/Employee-data/ExitPolicy/ViewExitPolicy'
+import DefaultPrivacyPolicy from '../Container/Config/Employee-data/DefaultPrivacyPolicy'
+import DefaultPermission from '../Container/Config/Employee-data/DefaultPermission'
 
 
 const AppRoutes = () => {
 
-  
+
   return (
     <>
       <Routes>
@@ -76,13 +95,13 @@ const AppRoutes = () => {
 
         {/* ================config=============== */}
         <Route path="/config/hris"
-        element={
-          <PrivateRoute >
-            <MainDashboardLayout />
-          </PrivateRoute>
-        }>
+          element={
+            <PrivateRoute >
+              <MainDashboardLayout />
+            </PrivateRoute>
+          }>
 
-          {/* Account Management */}
+          {/*========================== Account Management ===================================*/}
           <Route path="Account-management/Global-defaults" element={<GlobalDefaults />} />
           <Route path="Account-management/Branding-setup" element={<BrandingSetup />} />
           <Route path="Account-management/Incorporation-Details" element={<IncorporationDetails />} />
@@ -91,15 +110,14 @@ const AppRoutes = () => {
           <Route path="Account-management/Company-office/create" element={<CompanyOfficeCreate />} />
           <Route path="Account-management/Company-office/edit/:id" element={<CompanyOfficeEdit />} />
 
-        </Route>
-        {/* Employee Data */}
-        {/* <Route path="Employee-data/employeeId" element={<CreateEmployeeId />} />
+          {/* ========================Employee Data=========================== */}
+          <Route path="Employee-data/employeeId" element={<CreateEmployeeId />} />
           <Route path="Employee-data/probation-list" element={<ProbationList />} />
           <Route path="Employee-data/probation-create" element={<CreateProbation />} />
           <Route path="Employee-data/probation-edit/:id" element={<ProbationEdit />} />
           <Route path="Employee-data/probation-view/:id" element={<ProbationView />} />
 
-          <Route path="Employee-data/set-permission" element={<SetPermissions />} />
+          {/* <Route path="Employee-data/set-permission" element={<SetPermissions />} />   //page nahi hai */}
 
           <Route path="Employee-data/exit-reason" element={<ExitReasonList />} />
 
@@ -109,10 +127,22 @@ const AppRoutes = () => {
 
 
           <Route path="Employee-data/custom-create" element={<CreateCustomData />} />
-          <Route path="Employee-data/custom-list" element={<CustomDataList />} /> */}
+          <Route path="Employee-data/custom-list" element={<CustomDataList />} />
+
+          <Route path="Employee-data/approval-workflow" element={<ApprovalWorkflowList />} />
+          <Route path="Employee-data/approval-workflow/create" element={<CreateApprovalWorkflow />} />
+          <Route path="Employee-data/approval-workflow/edit/:id" element={<EditApprovalWorkflow />} />
 
 
+          <Route path="Employee-data/exitPolicy-list" element={<ExitPolicyList />} />
+          <Route path="Employee-data/exitPolicy/create" element={<ExitPolicyCreate />} />
+          <Route path="Employee-data/exitPolicy-edit/:id" element={<EditExitPolicy />} />
+          <Route path="Employee-data/exitPolicy-view/:id" element={<ViewExitPolicy />} />
 
+          <Route path="Employee-data/default-privacy-policy" element={<DefaultPrivacyPolicy />} />
+          <Route path="Employee-data/default-permission" element={<DefaultPermission />} />
+
+        </Route>
 
       </Routes>
 

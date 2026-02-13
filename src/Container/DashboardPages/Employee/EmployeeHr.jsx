@@ -3,7 +3,6 @@ import discardicon from "/assets/Images/discardicon.png"
 import { FiPlus } from 'react-icons/fi'
 import createAxios from '../../../utils/axios.config'
 import { useSelector } from 'react-redux'
-import { getSlug } from '../../../Components/CompanySlug'
 import InviteEmployeeModal from './InviteEmployeeModal'
 import { useLocation } from 'react-router-dom'
 
@@ -85,8 +84,6 @@ const EmployeeHr = () => {
 
     async function handleSubmit(e) {
         e.preventDefault()
-        const slug = getSlug();
-
         try {
             const res = await axiosInstance.post(
                 `/employees`,
@@ -94,10 +91,7 @@ const EmployeeHr = () => {
                 {
                     meta: { auth: "TENANT_AUTH" }
                 }
-
             )
-
-
             console.log(res.data)
             setFormData({
                 fullName: "",
@@ -149,9 +143,9 @@ const EmployeeHr = () => {
                             <p className='text-[#000000]/35 text-[12px]'>Create an employee profile, assign job details, and send login invite.</p>
                         </div>
                         <div className='w-[300px] flex gap-[30px]'>
-                            <button className='border border-[#E7EBEd] bg-[#E4E9EE4D] text-[#344054] w-[167px] h-[40px] font-medium rounded-md flex items-center justify-center gap-2' onClick={() => setImportOpen(true)} ><FiPlus /> Import Employees</button>
+                            <button type="button" className='border border-[#E7EBEd] bg-[#E4E9EE4D] text-[#344054] w-[167px] h-[40px] font-medium rounded-md flex items-center justify-center gap-2' onClick={() => setImportOpen(true)} ><FiPlus /> Import Employees</button>
                             <div className='border border-[#E7EBEd] items-center justify-evenly flex bg-[#E4E9EE4D] font-medium text-[#344054] w-[100px] h-[40px] rounded-md' >
-                                <button onClick={() => nav}>Cancel</button>
+                                <button type='button' onClick={() => nav}>Cancel</button>
                                 <img className='w-[20px] h-[20px]' src={discardicon} />
 
                             </div>
@@ -407,7 +401,7 @@ const EmployeeHr = () => {
                                 </p>
 
                                 <div className="flex items-center gap-4 mt-3">
-                                    <button className="px-4 py-2 border border-[#D0D5DD] rounded-lg text-sm font-medium text-[#344054] bg-white">
+                                    <button  type='button' className="px-4 py-2 border border-[#D0D5DD] rounded-lg text-sm font-medium text-[#344054] bg-white">
                                         Download CSV Template
                                     </button>
 
@@ -436,7 +430,7 @@ const EmployeeHr = () => {
                                         </p>
                                     </div>
 
-                                    <button className="px-4 py-2 border border-[#D0D5DD] rounded-lg text-sm font-medium text-[#344054] bg-white">
+                                    <button  type='button' className="px-4 py-2 border border-[#D0D5DD] rounded-lg text-sm font-medium text-[#344054] bg-white">
                                         Browse
                                     </button>
                                 </div>
@@ -462,6 +456,7 @@ const EmployeeHr = () => {
                                 </div>
 
                                 <button
+                                 type='button'
                                     onClick={() => setSendInvitelink(!sendInvitelink)}
                                     className={`w-10 h-6 rounded-full transition ${sendInvitelink ? 'bg-[#2563EB]' : 'bg-[#D0D5DD]'
                                         }`}
@@ -485,6 +480,7 @@ const EmployeeHr = () => {
 
                                 <div className="flex gap-3">
                                     <button
+                                        type='button'
                                         onClick={() => setFile(null)}
                                         className="px-4 py-2 border border-[#D0D5DD] rounded-lg text-sm font-medium text-[#344054]"
                                     >
@@ -492,6 +488,7 @@ const EmployeeHr = () => {
                                     </button>
 
                                     <button
+                                        type='button'
                                         onClick={handleImport}
                                         className="px-5 py-2 bg-[#2563EB] text-white rounded-lg text-sm font-medium flex items-center gap-2"
                                     >

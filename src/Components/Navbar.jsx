@@ -1,7 +1,7 @@
 import { IoMdMenu } from "react-icons/io";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
-import { toggleMenu ,setIsConfig } from "../Redux/sidebarSlice";
+import { toggleMenu, setIsConfig } from "../Redux/sidebarSlice";
 import { avatar, downArrow, navbarLogo, notification, search } from "../allAssetsImport/allAssets";
 import { logout } from "../Redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,10 +14,10 @@ import { BiSolidDownArrow } from "react-icons/bi";
 // import { fetchCurrentUser } from "../utils/thunkApis/userThunkApis";
 
 const Navbar = () => {
-  const {  isConfig } = useSelector((state) => state.sidebar)
-  
+  const { isConfig } = useSelector((state) => state.sidebar)
 
-  const {user, role} = useSelector((state) => state.user);
+
+  const { user, role } = useSelector((state) => state.user);
 
   console.log("user:", user)
   console.log("role:", role)
@@ -25,17 +25,20 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const [selectValue, setSelectValue] = useState("");
+
 
   function handleLogout() {
-   
-    dispatch(logout());
+
     localStorage.removeItem("authToken");
+    dispatch(logout());
     navigate("/login");
   }
 
 
   const handleChange = (e) => {
     const value = e.target.value;
+    
 
     if (value === "config") {
       dispatch(setIsConfig(true));
@@ -44,12 +47,10 @@ const Navbar = () => {
     if (value === "normal") {
       dispatch(setIsConfig(false));
     }
-
-    // if (value === "logout") {
-    //   // dispatch(logout());
-    //   // dispatch(resetUI());
-    //   navigate("/login");
-    // }
+    if (value === "logout") {
+      handleLogout();
+    }
+      setSelectValue("");
   }
 
 
@@ -105,25 +106,23 @@ const Navbar = () => {
 
               {/* Invisible Select (FULL CONTAINER CLICKABLE) */}
               <select
-                value=""
+                value={selectValue}
                 onChange={handleChange}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               >
-                {role === "COMPANY_ADMIN" && 
-                <>
-                
-                <option value="" disabled>
-                  {isConfig ? "Normal" : "Config"}
-                </option>
-
-                {isConfig ? (
-                  <option value="normal">Normal</option>
-                ) : (
-                  <option value="config">Config</option>
-                )}
-                </>
-              }
-                <option value="logout" onClick={handleLogout}>Logout</option>
+                {/* {role === "COMPANY_ADMIN" &&
+                  <> */}
+                    <option value="" disabled>
+                      {isConfig ? "Normal" : "Config"}
+                    </option>
+                    {isConfig ? (
+                      <option value="normal">Normal</option>
+                    ) : (
+                      <option value="config">Config</option>
+                    )}
+                  {/* </>
+                } */}
+                <option value="logout">Logout</option>
               </select>
 
 
