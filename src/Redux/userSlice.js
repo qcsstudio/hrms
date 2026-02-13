@@ -11,6 +11,8 @@ const initialState = {
   // company data
   companyId: null,
 
+   forcePasswordChange: false,
+
 
 }
 
@@ -20,9 +22,15 @@ const userSlice = createSlice({
   reducers: {
     setAddLoginData: (state, action) => {
       state.loginSpinner = false;
+      // state.user = action.payload.user;
+      // state.token = action.payload.token;
+      // state.role = action.payload.role;
       state.user = action.payload.user;
       state.token = action.payload.token;
-      state.role = action.payload.role;
+      state.role = action.payload.user.role;
+      state.companyId = action.payload.user.companyId;
+
+       state.forcePasswordChange = action.payload.forcePasswordChange; 
 
     },
 
@@ -31,6 +39,7 @@ const userSlice = createSlice({
       state.user = null;
       state.role = null;
       state.companyId = null;
+      state.forcePasswordChange = false;
     },
 
     setCompanyData: (state, action) => {
