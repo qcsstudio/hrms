@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
 
 const CompanyOfficeCreate = () => {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ const CompanyOfficeCreate = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const axiosInstance = createAxios()
 
   const handleSubmit = async (e) => {
     e.preventDefault();
