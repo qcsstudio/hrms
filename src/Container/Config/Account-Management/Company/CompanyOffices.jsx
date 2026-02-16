@@ -6,14 +6,14 @@ import { useSelector } from "react-redux";
 
 
 const CompanyOffices = () => {
-  const {token} = useSelector((state)=>state.user)
+  const { token } = useSelector((state) => state.user)
   console.log("Token in CompanyOffices:", token);
 
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
   const menuRef = useRef(null);
 
-  const [offices, setOffices] = useState([]); 
+  const [offices, setOffices] = useState([]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -28,9 +28,7 @@ const CompanyOffices = () => {
 
   const handleEdit = (office) => {
     navigate(
-      office?.id
-        ? `/config/hris/Account-management/Company-office/edit/${office.id}`
-        : `/config/hris/Account-management/Company-office/edit`,
+      `/config/hris/Account-management/Company-office/edit/${office._id}`,
       { state: { office } },
     );
   };
@@ -38,7 +36,7 @@ const CompanyOffices = () => {
   const handleView = (office) => {
     navigate(
       office?.id
-        ? `/config/hris/Account-management/Company-office/view/${office.id}`
+        ? `/config/hris/Account-management/Company-office/view/${office._id}`
         : `/config/hris/Account-management/Company-office/view`,
       { state: { office } },
     );
@@ -48,25 +46,24 @@ const CompanyOffices = () => {
     console.log("Delete office:", office);
     // call delete API here
   };
-const axosInstance = createAxios(token) 
+  const axosInstance = createAxios(token)
   useEffect(() => {
-  const fetchOffices = async () => {
-    try {
-      const res = await axosInstance.get(
-        "/config/company-offices-getAll",
-        { meta: { auth: "ADMIN_AUTH" } }
-      );
-      console.log("API response:", res.data);
-      setOffices(res.data.offices);
-    } catch (error) {
-      console.log("Error fetching offices:", error);
-    }
-  };
+    const fetchOffices = async () => {
+      try {
+        const res = await axosInstance.get(
+          "/config/company-offices-getAll",
+          { meta: { auth: "ADMIN_AUTH" } }
+        );
+        console.log("API response:", res.data);
+        setOffices(res.data.offices);
+      } catch (error) {
+        console.log("Error fetching offices:", error);
+      }
+    };
 
- 
     fetchOffices();
 
-}, [token]);
+  }, [token]);
 
 
   return (
@@ -103,7 +100,7 @@ const axosInstance = createAxios(token)
       <div className="space-y-3 mt-3">
         {offices?.map((item, index) => (
           <div
-            key={item.id ?? index}
+            key={item._id}
             className="grid grid-cols-[2fr_2fr_1fr_1fr_auto] gap-4 px-6 py-5 bg-white rounded-xl border items-center"
           >
             <div>
@@ -116,7 +113,7 @@ const axosInstance = createAxios(token)
             <p className="text-sm text-gray-800"> {item.address?.city || "N/A"}</p>
 
             <p className="text-sm text-gray-800">
-               {item.address?.postalCode || "N/A"}
+              {item.address?.postalCode || "N/A"}
             </p>
 
             {/* Actions */}

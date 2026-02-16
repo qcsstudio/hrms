@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const CompanyOfficeEdit = () => {
+  const { token } = useSelector((state) => state.user) // get superAdmintoken from redux store
   const navigate = useNavigate();
   const { id } = useParams(); // office id from route
+   const { state } = useLocation(); // 👈 yahin se data milega
+  const office = state?.office; 
 
   const [formData, setFormData] = useState({
     locationName: "",
@@ -19,36 +24,45 @@ const CompanyOfficeEdit = () => {
   });
 
   // 🔹 Load existing office data (API later)
-  useEffect(() => {
-    if (id) {
-      // mock existing data (replace with API call)
-      const existingOffice = {
-        locationName: "Leap Of Faith",
-        addressType: "primary",
-        address1: "Phase 8, Industrial Area",
-        address2: "Near Airport Road",
-        country: "india",
-        state: "punjab",
-        city: "mohali",
-        postalCode: "160055",
-        timezone: "india",
-        ipAddress: "auto",
-      };
-
-      setFormData(existingOffice);
+ useEffect(() => {
+    if (office) {
+      setFormData({
+        locationName: office.locationName || "",
+        addressType: office.addressType || "",
+        address1: office.address?.addressLine1 || "",
+        address2: office.address?.addressLine2 || "",
+        country: office.address?.country || "india",
+        state: office.address?.state || "",
+        city: office.address?.city || "",
+        postalCode: office.address?.postalCode || "",
+        timezone: office.timeZone || "india",
+        ipAddress: office.ipAddress || "",
+      });
     }
-  }, [id]);
+  }, [office]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+const axiosInstance = createAxios(token)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    console.log("Update Office ID:", id);
-    console.log("Updated Data 👉", formData);
-    // UPDATE API call here
+   try {
+
+    const res = await axiosInstance.put(`/config/company-office-edit/${id}`, formData, {
+      meta: { auth: "ADMIN_AUTH" }
+    });
+    console.log("Company office updated:", res.data);
+    if (res.status === 200) {
+      navigate("/config/hris/Account-management/Company-office")
+    } 
+    
+   } catch (error) {
+    console.log("Error updating company office:", error);
+    
+   }
   };
 
   return (
@@ -259,5 +273,4 @@ const CompanyOfficeEdit = () => {
     </div>
   );
 };
-
 export default CompanyOfficeEdit;
