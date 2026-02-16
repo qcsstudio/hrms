@@ -53,6 +53,26 @@ import EditExitPolicy from '../Container/Config/Employee-data/ExitPolicy/EditExi
 import ViewExitPolicy from '../Container/Config/Employee-data/ExitPolicy/ViewExitPolicy'
 import DefaultPrivacyPolicy from '../Container/Config/Employee-data/DefaultPrivacyPolicy'
 import DefaultPermission from '../Container/Config/Employee-data/DefaultPermission'
+import BusinessUnit from '../Container/Config/Company-data/Buisness-unit/BusinessUnit'
+import CreateBusinessUnit from '../Container/Config/Company-data/Buisness-unit/CreateBusinessUnit'
+import EditBusinessUnit from '../Container/Config/Company-data/Buisness-unit/EditBusinessUnit'
+import ViewBusinessUnit from '../Container/Config/Company-data/Buisness-unit/ViewBusinessUnit'
+import Department from '../Container/Config/Company-data/Department/Department'
+import CreateDepartment from '../Container/Config/Company-data/Department/CreateDepartment'
+import EditDepartment from '../Container/Config/Company-data/Department/EditDepartment'
+import ViewDepartment from '../Container/Config/Company-data/Department/ViewDepartment'
+import Designation from '../Container/Config/Company-data/Designation/Designation'
+import CreateDesignation from '../Container/Config/Company-data/Designation/CreateDesignation'
+import EditDesignation from '../Container/Config/Company-data/Designation/EditDesignation'
+import ViewDesignation from '../Container/Config/Company-data/Designation/ViewDesignation'
+import Grade from '../Container/Config/Company-data/Grade/Grade'
+import CreateGrade from '../Container/Config/Company-data/Grade/CreateGrade'
+import EditGrade from '../Container/Config/Company-data/Grade/EditGrade'
+import ViewGrade from '../Container/Config/Company-data/Grade/ViewGrade'
+import Team from '../Container/Config/Company-data/Team/Team'
+import CreateTeam from '../Container/Config/Company-data/Team/CreateTeam'
+import EditTeam from '../Container/Config/Company-data/Team/EditTeam'
+import ViewTeam from '../Container/Config/Company-data/Team/ViewTeam'
 
 
 const AppRoutes = () => {
@@ -142,7 +162,38 @@ const AppRoutes = () => {
           <Route path="Employee-data/default-privacy-policy" element={<DefaultPrivacyPolicy />} />
           <Route path="Employee-data/default-permission" element={<DefaultPermission />} />
 
+          {/* company data=========================== */}
+          <Route path="Company_data/buisness-unit-list" element={<BusinessUnit />} />
+          <Route path="Company_data/create-buisness-unit" element={<CreateBusinessUnit />} />
+          <Route path="Company_data/edit-buisness-unit/:id" element={<EditBusinessUnit />} />
+          <Route path="Company_data/view-buisness-unit/:id" element={<ViewBusinessUnit />} />
+
+
+          <Route path="Company_data/department" element={<Department />} />
+          <Route path="Company_data/department/create" element={<CreateDepartment />} />
+          <Route path="Company_data/department/edit/:id" element={<EditDepartment />} />
+          <Route path="Company_data/department/view/:id" element={<ViewDepartment />} />
+
+
+          <Route path="Company_data/designation" element={<Designation />} />
+          <Route path="Company_data/create-designation" element={<CreateDesignation />} />
+          <Route path="Company_data/edit-designation/:id" element={<EditDesignation />} />
+          <Route path="Company_data/view-designation/:id" element={<ViewDesignation />} />
+
+          <Route path="Company_data/grade" element={<Grade />} />
+          <Route path="Company_data/create-grade" element={<CreateGrade />} />
+          <Route path="Company_data/edit-grade/:id" element={<EditGrade />} />
+          <Route path="Company_data/view-grade/:id" element={<ViewGrade />} />
+
+
+          <Route path="Company_data/team" element={<Team />} />
+          <Route path="Company_data/create-team" element={<CreateTeam />} />
+          <Route path="Company_data/edit-team/:id" element={<EditTeam />} />
+          <Route path="Company_data/view-team/:id" element={<ViewTeam />} />
+
         </Route>
+
+
 
       </Routes>
 

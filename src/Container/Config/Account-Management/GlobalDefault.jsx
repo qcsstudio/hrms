@@ -1,71 +1,123 @@
 import React, { useEffect, useState } from "react";
+import Select, { components } from "react-select";
+import createAxios from "../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
 ];
 
 const GlobalDefaults = () => {
-  const [countries, setCountries] = useState([]);
-  const [country, setCountry] = useState(null);
-  const [timezone, setTimezone] = useState("");
-  const [timeFormat, setTimeFormat] = useState("24");
+const {token} = useSelector(state=>state.user)
 
+  const [countries, setCountries] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [timezone, setTimezone] = useState("");
+  const [weekStart, setWeekStart] = useState("Monday");
+  const [leaveCycleStartMonth, setLeaveCycleStartMonth] = useState("January");
+  const [financialYearStartMonth, setFinancialYearStartMonth] = useState("April");
+  const [dateFormat, setDateFormat] = useState("DD-MM-YYYY");
+  const [timeFormat, setTimeFormat] = useState("24");
+  const [subdomain, setSubdomain] = useState("");
+
+  // Fetch countries
   useEffect(() => {
     fetch(
-      "https://restcountries.com/v3.1/all?fields=name,cca2,idd,currencies,timezones"
+      "https://restcountries.com/v3.1/all?fields=name,cca2,currencies,idd,timezones,flags"
     )
       .then((res) => res.json())
       .then((data) => {
         const formatted = data
-          .map((c) => ({
-            name: c.name.common,
-            code: c.cca2,
-            callingCode:
-              c.idd?.root && c.idd?.suffixes?.length
-                ? c.idd.root + c.idd.suffixes[0]
-                : "",
+          .map(c => ({
+            label: c.name.common,
+            value: c.cca2,
             currency: c.currencies ? Object.keys(c.currencies)[0] : "",
+            callingCode: c.idd?.root && c.idd?.suffixes?.length ? c.idd.root + c.idd.suffixes[0] : "",
             timezones: c.timezones || [],
+            flag: c.flags?.png || c.flags?.svg
           }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-
+          .sort((a,b) => a.label.localeCompare(b.label));
+        
         setCountries(formatted);
-        setCountry(formatted.find((c) => c.name === "India") || formatted[0]);
+        setSelectedCountry(formatted.find(c => c.label === "India") || formatted[0]);
       });
   }, []);
 
   useEffect(() => {
-    if (country?.timezones?.length) {
-      setTimezone(country.timezones[0]);
+    if (selectedCountry?.timezones?.length) {
+      setTimezone(selectedCountry.timezones[0]);
     }
-  }, [country]);
+  }, [selectedCountry]);
 
-  if (!country) return <div className="p-8">Loading...</div>;
+  const axiosInstance = createAxios(token)
+  const handleSave = async () => {
+    if (!selectedCountry) return;
+
+    const payload = {
+      subdomain: subdomain.trim(),
+      country: {
+        name: selectedCountry.label,
+        code: selectedCountry.value
+      },
+      currency: selectedCountry.currency,
+      callingCode: selectedCountry.callingCode,
+      timezone,
+      weekStart,
+      leaveCycleStartMonth,
+      financialYearStartMonth,
+      dateFormat,
+      timeFormat
+    };
+
+    try {
+      const res = await axiosInstance.post("/config/global-settings", payload);
+      console.log("Saved successfully:", res.data);
+      alert("Global defaults saved successfully!");
+    } catch (error) {
+      console.error("Error saving global defaults:", error);
+      alert("Failed to save global defaults. Check console for details.");
+    }
+  };
+
+  if (!selectedCountry) return <div className="p-8">Loading...</div>;
+
+  const CountryOption = (props) => {
+    const { data, innerRef, innerProps } = props;
+    return (
+      <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1 cursor-pointer">
+        {data.flag && <img src={data.flag} alt="" className="w-5 h-4 rounded-sm object-cover" />}
+        <span>{data.label}</span>
+      </div>
+    );
+  };
+
+  const CountrySingleValue = (props) => {
+    const { data } = props;
+    return (
+      <components.SingleValue {...props}>
+        <div className="flex items-center gap-2">
+          {data.flag && <img src={data.flag} alt="" className="w-5 h-4 rounded-sm object-cover" />}
+          <span>{data.label}</span>
+        </div>
+      </components.SingleValue>
+    );
+  };
 
   return (
-    <div className="p-4 sm:p-6 md:p-8  mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 mx-auto">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Global Defaults
-          </h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Global Defaults</h1>
           <p className="text-sm text-gray-500 mt-1">
             Manage employee directory, documents, and role-based actions.
           </p>
         </div>
 
-        <button className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
+        <button
+          onClick={handleSave}
+          className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+        >
           Save Changes
         </button>
       </div>
@@ -76,34 +128,42 @@ const GlobalDefaults = () => {
           <input
             placeholder="https://________.qcs.com"
             className="mt-1 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            value={subdomain}
+            onChange={(e) => setSubdomain(e.target.value)}
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="text-sm font-medium">Select Country</label>
-            <select
-              className="mt-1 w-full px-4 py-3 border rounded-lg"
-              value={country.code}
-              onChange={(e) =>
-                setCountry(
-                  countries.find((c) => c.code === e.target.value)
-                )
-              }
-            >
-              {countries.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <Select
+              options={countries}
+              value={selectedCountry}
+              onChange={setSelectedCountry}
+              placeholder="Select Country"
+              components={{ Option: CountryOption, SingleValue: CountrySingleValue }}
+              className="mt-1 w-full"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: "40px",
+                  borderRadius: "0.5rem",
+                  borderColor: "rgba(0,0,0,0.1)",
+                  boxShadow: "none"
+                }),
+                menu: (base) => ({
+                  ...base,
+                  zIndex: 9999
+                })
+              }}
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">Currency</label>
             <input
               readOnly
-              value={country.currency}
+              value={selectedCountry.currency}
               className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50"
             />
           </div>
@@ -112,7 +172,7 @@ const GlobalDefaults = () => {
             <label className="text-sm font-medium">Calling Code</label>
             <input
               readOnly
-              value={country.callingCode}
+              value={selectedCountry.callingCode}
               className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50"
             />
           </div>
@@ -126,19 +186,19 @@ const GlobalDefaults = () => {
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
             >
-              {country.timezones.map((tz) => (
-                <option key={tz} value={tz}>
-                  {tz}
-                </option>
+              {selectedCountry.timezones.map((tz) => (
+                <option key={tz} value={tz}>{tz}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="text-sm font-medium">
-              When does your week start?
-            </label>
-            <select className="mt-1 w-full px-4 py-3 border rounded-lg">
+            <label className="text-sm font-medium">When does your week start?</label>
+            <select
+              className="mt-1 w-full px-4 py-3 border rounded-lg"
+              value={weekStart}
+              onChange={(e) => setWeekStart(e.target.value)}
+            >
               <option>Monday</option>
               <option>Sunday</option>
             </select>
@@ -147,34 +207,36 @@ const GlobalDefaults = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="text-sm font-medium">
-              Select Leave Cycle (Start month)
-            </label>
-            <select className="mt-1 w-full px-4 py-3 border rounded-lg">
-              {MONTHS.map((m) => (
-                <option key={m}>{m}</option>
-              ))}
+            <label className="text-sm font-medium">Select Leave Cycle (Start month)</label>
+            <select
+              className="mt-1 w-full px-4 py-3 border rounded-lg"
+              value={leaveCycleStartMonth}
+              onChange={(e) => setLeaveCycleStartMonth(e.target.value)}
+            >
+              {MONTHS.map((m) => <option key={m}>{m}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="text-sm font-medium">
-              Financial year starts
-            </label>
-            <select className="mt-1 w-full px-4 py-3 border rounded-lg">
-              {MONTHS.map((m) => (
-                <option key={m}>{m}</option>
-              ))}
+            <label className="text-sm font-medium">Financial year starts</label>
+            <select
+              className="mt-1 w-full px-4 py-3 border rounded-lg"
+              value={financialYearStartMonth}
+              onChange={(e) => setFinancialYearStartMonth(e.target.value)}
+            >
+              {MONTHS.map((m) => <option key={m}>{m}</option>)}
             </select>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="text-sm font-medium">
-              Select preferred date format
-            </label>
-            <select className="mt-1 w-full px-4 py-3 border rounded-lg">
+            <label className="text-sm font-medium">Select preferred date format</label>
+            <select
+              className="mt-1 w-full px-4 py-3 border rounded-lg"
+              value={dateFormat}
+              onChange={(e) => setDateFormat(e.target.value)}
+            >
               <option>DD-MM-YYYY</option>
               <option>MM-DD-YYYY</option>
               <option>YYYY-MM-DD</option>
@@ -182,11 +244,9 @@ const GlobalDefaults = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium">
-              Select preferred time format
-            </label>
+            <label className="text-sm font-medium">Select preferred time format</label>
             <div className="flex gap-4 mt-2">
-              {["12", "24"].map((t) => (
+              {["12","24"].map(t => (
                 <button
                   key={t}
                   onClick={() => setTimeFormat(t)}
@@ -202,6 +262,7 @@ const GlobalDefaults = () => {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
