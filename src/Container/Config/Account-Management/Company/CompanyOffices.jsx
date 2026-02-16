@@ -57,7 +57,7 @@ const axosInstance = createAxios(token)
         { meta: { auth: "ADMIN_AUTH" } }
       );
       console.log("API response:", res.data);
-      setOffices(res.data);
+      setOffices(res.data.offices);
     } catch (error) {
       console.log("Error fetching offices:", error);
     }
@@ -101,22 +101,22 @@ const axosInstance = createAxios(token)
 
       {/* Rows */}
       <div className="space-y-3 mt-3">
-        {offices.map((item, index) => (
+        {offices?.map((item, index) => (
           <div
             key={item.id ?? index}
             className="grid grid-cols-[2fr_2fr_1fr_1fr_auto] gap-4 px-6 py-5 bg-white rounded-xl border items-center"
           >
             <div>
-              <p className="font-medium text-gray-900">{item?.office?.locationName}</p>
-              <p className="text-xs text-gray-400 mt-1">{item.createdAt}</p>
+              <p className="font-medium text-gray-900">{item?.locationName}</p>
+              <p className="text-xs text-gray-400 mt-1"> {new Date(item.createdAt).toLocaleDateString()}</p>
             </div>
 
-            <p className="text-sm text-gray-800">{item?.office?.addressType}</p>
+            <p className="text-sm text-gray-800"> {item.addressType}</p>
 
-            <p className="text-sm text-gray-800">{item?.office?.address?.city}</p>
+            <p className="text-sm text-gray-800"> {item.address?.city || "N/A"}</p>
 
             <p className="text-sm text-gray-800">
-              {item?.office?.address?.postalCode || "N/A"}
+               {item.address?.postalCode || "N/A"}
             </p>
 
             {/* Actions */}
