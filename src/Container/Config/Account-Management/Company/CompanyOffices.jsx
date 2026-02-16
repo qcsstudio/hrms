@@ -15,6 +15,7 @@ const CompanyOffices = () => {
 
   const [offices, setOffices] = useState([]);
 
+   const axosInstance = createAxios(token)
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -42,11 +43,16 @@ const CompanyOffices = () => {
     );
   };
 
-  const handleDelete = (office) => {
-    console.log("Delete office:", office);
-    // call delete API here
+  const handleDelete = async(office) => {
+    try {
+      const res = await axiosInstance.delete(`/config/company-office-delete/${office._id}`, { meta: { auth: "ADMIN_AUTH" } });
+      console.log("Delete response:", res.data);
+      setOffices((prev) => prev.filter((o) => o._id !== office._id));
+    } catch (error) {
+      console.log("Error deleting office:", error);
+    }
   };
-  const axosInstance = createAxios(token)
+ 
   useEffect(() => {
     const fetchOffices = async () => {
       try {
@@ -62,7 +68,6 @@ const CompanyOffices = () => {
     };
 
     fetchOffices();
-
   }, [token]);
 
 
