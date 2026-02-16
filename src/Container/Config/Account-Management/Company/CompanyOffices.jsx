@@ -1,29 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from '../../../../utils/axios.config'
+import { useSelector } from "react-redux";
 
-const offices = [
-  {
-    id: 1,
-    name: "Leap Of Faith",
-    date: "12 Jun 2025  11:10 AM",
-    addressType: "Primary Office / Registered Office",
-    city: "Mohali",
-    postalCode: "160055",
-  },
-  {
-    id: 2,
-    name: "Leap Of Faith",
-    date: "12 Jun 2025  11:10 AM",
-    addressType: "Primary Office / Registered Office",
-    city: "Mohali",
-    contact: "Jessi Pinkman",
-  },
-];
+
 
 const CompanyOffices = () => {
+  const {token} = useSelector((state)=>state.user)
+  console.log("Token in CompanyOffices:", token);
+
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
   const menuRef = useRef(null);
+
+  const [offices, setOffices] = useState([]); 
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -58,6 +48,26 @@ const CompanyOffices = () => {
     console.log("Delete office:", office);
     // call delete API here
   };
+const axosInstance = createAxios(token) 
+  useEffect(() => {
+  const fetchOffices = async () => {
+    try {
+      const res = await axosInstance.get(
+        "/config/company-offices-getAll",
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+      console.log("API response:", res.data);
+      setOffices(res.data);
+    } catch (error) {
+      console.log("Error fetching offices:", error);
+    }
+  };
+
+ 
+    fetchOffices();
+
+}, [token]);
+
 
   return (
     <div className="p-8  mx-auto">
@@ -91,29 +101,29 @@ const CompanyOffices = () => {
 
       {/* Rows */}
       <div className="space-y-3 mt-3">
-        {offices.map((office, index) => (
+        {offices.map((item, index) => (
           <div
-            key={office.id ?? index}
+            key={item.id ?? index}
             className="grid grid-cols-[2fr_2fr_1fr_1fr_auto] gap-4 px-6 py-5 bg-white rounded-xl border items-center"
           >
             <div>
-              <p className="font-medium text-gray-900">{office.name}</p>
-              <p className="text-xs text-gray-400 mt-1">{office.date}</p>
+              <p className="font-medium text-gray-900">{item?.office?.locationName}</p>
+              <p className="text-xs text-gray-400 mt-1">{item.createdAt}</p>
             </div>
 
-            <p className="text-sm text-gray-800">{office.addressType}</p>
+            <p className="text-sm text-gray-800">{item?.office?.addressType}</p>
 
-            <p className="text-sm text-gray-800">{office.city}</p>
+            <p className="text-sm text-gray-800">{item?.office?.address?.city}</p>
 
             <p className="text-sm text-gray-800">
-              {office.postalCode || office.contact}
+              {item?.office?.address?.postalCode || "N/A"}
             </p>
 
             {/* Actions */}
             <div className="flex items-center gap-2 relative" ref={menuRef}>
               {/* Edit */}
               <button
-                onClick={() => handleEdit(office)}
+                onClick={() => handleEdit(item)}
                 className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
               >
                 <svg
@@ -145,7 +155,7 @@ const CompanyOffices = () => {
                 <div className="absolute right-0 top-10 w-36 bg-white border rounded-lg shadow-lg z-50">
                   <button
                     onClick={() => {
-                      handleView(office);
+                      handleView(item);
                       setOpenMenu(null);
                     }}
                     className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100"
@@ -155,7 +165,7 @@ const CompanyOffices = () => {
 
                   <button
                     onClick={() => {
-                      handleDelete(office);
+                      handleDelete(item);
                       setOpenMenu(null);
                     }}
                     className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
