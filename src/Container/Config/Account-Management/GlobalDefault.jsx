@@ -10,6 +10,7 @@ const MONTHS = [
 
 const GlobalDefaults = () => {
 const {token} = useSelector(state=>state.user)
+console.log(token,"tokrn============")
 
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
@@ -71,7 +72,11 @@ const {token} = useSelector(state=>state.user)
     };
 
     try {
-      const res = await axiosInstance.post("/config/global-settings", payload);
+      const res = await axiosInstance.post("/config/global-settings", payload,
+        {
+          meta:{auth:"ADMIN_AUTH"}
+        }
+      );
       console.log("Saved successfully:", res.data);
       alert("Global defaults saved successfully!");
     } catch (error) {
