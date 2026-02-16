@@ -15,7 +15,7 @@ const CompanyOffices = () => {
 
   const [offices, setOffices] = useState([]);
 
-   const axosInstance = createAxios(token)
+   const axiosInstance = createAxios(token)
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -56,7 +56,7 @@ const CompanyOffices = () => {
   useEffect(() => {
     const fetchOffices = async () => {
       try {
-        const res = await axosInstance.get(
+        const res = await axiosInstance.get(
           "/config/company-offices-getAll",
           { meta: { auth: "ADMIN_AUTH" } }
         );
