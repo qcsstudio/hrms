@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 export default function ProbationList() {
 const {token} = useSelector((state) => state.user);
@@ -69,9 +70,9 @@ const [probitionData, setProbationData] = useState([]);
       // Add API delete logic here
     }
   };
-const axiosInstance = createAxios(token);
   useEffect(()=>{
     const fetchProbitionData = async () => {
+      const axiosInstance = createAxios(token);
       try {
         const res = await axiosInstance.get("/config/probation-getAll", {
           meta: { auth: "ADMIN_AUTH" },
@@ -84,7 +85,7 @@ const axiosInstance = createAxios(token);
     }
     fetchProbitionData();
 
-  },[])
+  },[token])
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
