@@ -22,6 +22,31 @@ console.log(token,"tokrn============")
   const [timeFormat, setTimeFormat] = useState("24");
   const [subdomain, setSubdomain] = useState("");
 
+  const [globalsettings, setGlobalSettings] = useState(null);
+
+    const axiosInstance = createAxios(token)
+
+
+useEffect(()=>{
+  const fetchGlobalSettings = async () => {
+    try {
+      const res = await axiosInstance.get("/config/global-settings-get",
+        {
+          meta:{auth:"ADMIN_AUTH"}
+        }
+      );
+      console.log("Fetched global settings:", res.data);
+      setGlobalSettings(res.data);  
+    } catch (error) {
+      console.error("Error fetching global settings:", error);
+    }
+      
+  
+}
+fetchGlobalSettings()
+
+},[])
+
   // Fetch countries
   useEffect(() => {
     fetch(
@@ -51,7 +76,6 @@ console.log(token,"tokrn============")
     }
   }, [selectedCountry]);
 
-  const axiosInstance = createAxios(token)
   const handleSave = async () => {
     if (!selectedCountry) return;
 
@@ -70,7 +94,7 @@ console.log(token,"tokrn============")
       dateFormat,
       timeFormat
     };
-
+// es api ka response redux ki state mai save krna hai============================================
     try {
       const res = await axiosInstance.post("/config/global-settings", payload,
         {
