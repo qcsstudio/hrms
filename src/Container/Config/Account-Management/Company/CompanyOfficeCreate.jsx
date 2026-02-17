@@ -37,7 +37,7 @@ const CompanyOfficeCreate = () => {
       }
       );
       console.log("Company office created:", res.data);
-      if (res.status === 200) {
+      if (res.status === 201) {
         setFormData({
           locationName: "",
           addressType: "",
