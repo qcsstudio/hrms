@@ -9,9 +9,10 @@ const MONTHS = [
 ];
 
 const GlobalDefaults = () => {
-const {token} = useSelector(state=>state.user)
-console.log(token,"tokrn============")
+  const { token } = useSelector(state => state.user);
+  const axiosInstance = createAxios(token);
 
+  const [globalSettings, setGlobalSettings] = useState(null);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [timezone, setTimezone] = useState("");
@@ -22,38 +23,13 @@ console.log(token,"tokrn============")
   const [timeFormat, setTimeFormat] = useState("24");
   const [subdomain, setSubdomain] = useState("");
 
-  const [globalsettings, setGlobalSettings] = useState(null);
-
-    const axiosInstance = createAxios(token)
-
-
-useEffect(()=>{
-  const fetchGlobalSettings = async () => {
-    try {
-      const res = await axiosInstance.get("/config/global-settings-get",
-        {
-          meta:{auth:"ADMIN_AUTH"}
-        }
-      );
-      console.log("Fetched global settings:", res.data);
-      setGlobalSettings(res.data);  
-    } catch (error) {
-      console.error("Error fetching global settings:", error);
-    }
-      
-  
-}
-fetchGlobalSettings()
-
-},[])
-
-  // Fetch countries
+  // 1️⃣ Fetch countries first
   useEffect(() => {
     fetch(
       "https://restcountries.com/v3.1/all?fields=name,cca2,currencies,idd,timezones,flags"
     )
-      .then((res) => res.json())
-      .then((data) => {
+      .then(res => res.json())
+      .then(data => {
         const formatted = data
           .map(c => ({
             label: c.name.common,
@@ -64,18 +40,54 @@ fetchGlobalSettings()
             flag: c.flags?.png || c.flags?.svg
           }))
           .sort((a,b) => a.label.localeCompare(b.label));
-        
+
         setCountries(formatted);
-        setSelectedCountry(formatted.find(c => c.label === "India") || formatted[0]);
       });
   }, []);
 
+  // 2️⃣ Fetch global settings
+  useEffect(() => {
+    const fetchGlobalSettings = async () => {
+      try {
+        const res = await axiosInstance.get("/config/global-settings-get", {
+          meta: { auth: "ADMIN_AUTH" }
+        });
+        setGlobalSettings(res.data);
+      } catch (err) {
+        console.error("Error fetching global settings:", err);
+      }
+    };
+    fetchGlobalSettings();
+  }, [axiosInstance]);
+
+  // 3️⃣ Prefill form once globalSettings and countries are loaded
+  useEffect(() => {
+    if (!globalSettings || countries.length === 0) return;
+
+    const gs = globalSettings.globalSettings;
+
+    // Country
+    const countryOption = countries.find(c => c.value === gs.country.code) || countries[0];
+    setSelectedCountry(countryOption);
+
+    // Other fields
+    setTimezone(gs.timezone || countryOption.timezones[0] || "");
+    setWeekStart(gs.weekStart || "Monday");
+    setLeaveCycleStartMonth(gs.leaveCycleStartMonth || "January");
+    setFinancialYearStartMonth(gs.financialYearStartMonth || "April");
+    setDateFormat(gs.dateFormat || "DD-MM-YYYY");
+    setTimeFormat(gs.timeFormat || "24");
+    setSubdomain(gs.subdomain || "");
+  }, [globalSettings, countries]);
+
+  // Update timezone if country changes
   useEffect(() => {
     if (selectedCountry?.timezones?.length) {
       setTimezone(selectedCountry.timezones[0]);
     }
   }, [selectedCountry]);
 
+  // Handle Save
   const handleSave = async () => {
     if (!selectedCountry) return;
 
@@ -94,44 +106,37 @@ fetchGlobalSettings()
       dateFormat,
       timeFormat
     };
-// es api ka response redux ki state mai save krna hai============================================
+
     try {
-      const res = await axiosInstance.post("/config/global-settings", payload,
-        {
-          meta:{auth:"ADMIN_AUTH"}
-        }
-      );
+      const res = await axiosInstance.post("/config/global-settings", payload, {
+        meta: { auth: "ADMIN_AUTH" }
+      });
       console.log("Saved successfully:", res.data);
       alert("Global defaults saved successfully!");
+      // Optionally update Redux here
     } catch (error) {
       console.error("Error saving global defaults:", error);
-      alert("Failed to save global defaults. Check console for details.");
+      alert("Failed to save global defaults. Check console.");
     }
   };
 
   if (!selectedCountry) return <div className="p-8">Loading...</div>;
 
-  const CountryOption = (props) => {
-    const { data, innerRef, innerProps } = props;
-    return (
-      <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1 cursor-pointer">
-        {data.flag && <img src={data.flag} alt="" className="w-5 h-4 rounded-sm object-cover" />}
-        <span>{data.label}</span>
-      </div>
-    );
-  };
+  const CountryOption = ({ data, innerRef, innerProps }) => (
+    <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1 cursor-pointer">
+      {data.flag && <img src={data.flag} alt="" className="w-5 h-4 rounded-sm object-cover" />}
+      <span>{data.label}</span>
+    </div>
+  );
 
-  const CountrySingleValue = (props) => {
-    const { data } = props;
-    return (
-      <components.SingleValue {...props}>
-        <div className="flex items-center gap-2">
-          {data.flag && <img src={data.flag} alt="" className="w-5 h-4 rounded-sm object-cover" />}
-          <span>{data.label}</span>
-        </div>
-      </components.SingleValue>
-    );
-  };
+  const CountrySingleValue = (props) => (
+    <components.SingleValue {...props}>
+      <div className="flex items-center gap-2">
+        {props.data.flag && <img src={props.data.flag} alt="" className="w-5 h-4 rounded-sm object-cover" />}
+        <span>{props.data.label}</span>
+      </div>
+    </components.SingleValue>
+  );
 
   return (
     <div className="p-4 sm:p-6 md:p-8 mx-auto">
@@ -152,6 +157,7 @@ fetchGlobalSettings()
       </div>
 
       <div className="space-y-6">
+        {/* Subdomain */}
         <div>
           <label className="text-sm font-medium">Your Subdomain</label>
           <input
@@ -162,6 +168,7 @@ fetchGlobalSettings()
           />
         </div>
 
+        {/* Country, Currency, Calling Code */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="text-sm font-medium">Select Country</label>
@@ -172,19 +179,6 @@ fetchGlobalSettings()
               placeholder="Select Country"
               components={{ Option: CountryOption, SingleValue: CountrySingleValue }}
               className="mt-1 w-full"
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  minHeight: "40px",
-                  borderRadius: "0.5rem",
-                  borderColor: "rgba(0,0,0,0.1)",
-                  boxShadow: "none"
-                }),
-                menu: (base) => ({
-                  ...base,
-                  zIndex: 9999
-                })
-              }}
             />
           </div>
 
@@ -207,6 +201,7 @@ fetchGlobalSettings()
           </div>
         </div>
 
+        {/* Timezone & Week Start */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="text-sm font-medium">Select Timezone</label>
@@ -234,6 +229,7 @@ fetchGlobalSettings()
           </div>
         </div>
 
+        {/* Leave Cycle & Financial Year */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="text-sm font-medium">Select Leave Cycle (Start month)</label>
@@ -242,7 +238,7 @@ fetchGlobalSettings()
               value={leaveCycleStartMonth}
               onChange={(e) => setLeaveCycleStartMonth(e.target.value)}
             >
-              {MONTHS.map((m) => <option key={m}>{m}</option>)}
+              {MONTHS.map(m => <option key={m}>{m}</option>)}
             </select>
           </div>
 
@@ -253,11 +249,12 @@ fetchGlobalSettings()
               value={financialYearStartMonth}
               onChange={(e) => setFinancialYearStartMonth(e.target.value)}
             >
-              {MONTHS.map((m) => <option key={m}>{m}</option>)}
+              {MONTHS.map(m => <option key={m}>{m}</option>)}
             </select>
           </div>
         </div>
 
+        {/* Date & Time Format */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="text-sm font-medium">Select preferred date format</label>
@@ -291,7 +288,6 @@ fetchGlobalSettings()
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
