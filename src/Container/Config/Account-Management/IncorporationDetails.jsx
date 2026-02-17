@@ -53,7 +53,8 @@ const FormSelect = ({ options = [], value, onChange }) => (
 const IncorporationDetails = () => {
    const navigate = useNavigate();
   const { token } = useSelector(state => state.user);
-  const axiosInstance = createAxios(token);
+  console.log(token,"555555555555555555555")
+  // const axiosInstance = createAxios(token);
 
   const [form, setForm] = useState({
     legalName: "",
@@ -83,6 +84,8 @@ const IncorporationDetails = () => {
 // POST API=============================
 const handleSave = async () => {
   try {
+      const axiosInstance = createAxios(token);
+
     const payload = {
       companyLegalName: form.legalName,
       incorporationDate: form.incorporationDate,
@@ -93,11 +96,12 @@ const handleSave = async () => {
       tan: form.tan
     };
 
-    await axiosInstance.post(
+   const res= await axiosInstance.post(
       "/config/incorporation",
       payload,
       { meta: { auth: "ADMIN_AUTH" } }
     );
+    console.log(res,"/config/incorporation======================")
 
     alert("Incorporation details saved successfully");
   } catch (err) {
