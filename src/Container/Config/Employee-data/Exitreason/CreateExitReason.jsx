@@ -1,8 +1,49 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from '../../../../utils/axios.config'
+import { useSelector } from "react-redux";
+import { setExitReasons } from "../../../../Redux/configSlices/exitReasonSlice";
 
 const CreateExitReason = () => {
+const {token} = useSelector((state) => state.user)
+
+const [form, setForm] = useState({
+    exitType: "",
+    description: "",
+  });
+
   const navigate = useNavigate();
+const axiosInstance = createAxios(token);
+
+ const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = async() => {
+
+    try {
+
+      const res = await axiosInstance.post('',form,{
+        meta: { auth : "ADMIN_AUTH"}
+      })
+      // dispatch(setExitReasons(res.data))
+      console.log(res.data,"exit reason created successfully")
+      navigate("/config/hris/Employee-data/Exit-reason");
+      
+    } catch (error) {
+      console.log(error,"api is not working")
+      
+    }
+
+
+  }
+   
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -19,8 +60,10 @@ const CreateExitReason = () => {
               Exit Type
             </label>
             <select
+            name="exitType"
+            onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              defaultValue=""
+              value={form.exitType}
             >
               <option value="" disabled>Choose Type</option>
               <option value="resignation">Resignation</option>
@@ -33,6 +76,9 @@ const CreateExitReason = () => {
               Description
             </label>
             <textarea
+              name="description"
+              onChange={handleChange}
+            value={form.description}
               placeholder="Enter description"
               rows={5}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -49,6 +95,7 @@ const CreateExitReason = () => {
           </button>
 
           <button
+          onClick={handleSave}
             className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 transition"
           >
             Save
