@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const resignationReasons = [
   { id: 1, reason: "Company culture or boss issues", timeUsed: 12, inUse: false },
@@ -9,9 +11,14 @@ const terminationReasons = [
   { id: 2, reason: "Company culture or boss issues", timeUsed: 12, inUse: false },
 ];
 
+// ==================================================================================================
+
 const ExitReasonList = () => {
+  const { token } = useSelector((state) => state.user);
   const [resignation, setResignation] = useState(resignationReasons);
   const [termination, setTermination] = useState(terminationReasons);
+
+  const [reasonList, setReasonList] = useState([]);
 
   const toggleResignation = (id) => {
     setResignation(prev =>
@@ -28,6 +35,26 @@ const ExitReasonList = () => {
       )
     );
   };
+  // get api =============================
+  useEffect(() => {
+    const fetchexitreasons = async () => {
+      const axiosInstance = createAxios(token);
+      try {
+
+        const res = await axiosInstance.get(
+          `/config/exit-reasons-getAll`,
+          { meta: { auth: "ADMIN_AUTH" } }
+        );
+        setReasonList(res?.data?.data)
+        console.log(res?.data, "exit reasons data")
+
+      } catch (err) {
+        console.error("Error fetching exit reasons:", err);
+      }
+    };
+
+    fetchexitreasons();
+  }, [token]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -59,7 +86,7 @@ const ExitReasonList = () => {
           </div>
 
           <div className="space-y-4">
-            {resignation.map(item => (
+            {reasonList.map(item => (
               <div
                 key={item.id}
                 className="bg-white border border-gray-200 rounded-xl px-6 py-5 grid grid-cols-3 items-center shadow-sm"
@@ -74,14 +101,12 @@ const ExitReasonList = () => {
                   {/* Toggle */}
                   <button
                     onClick={() => toggleResignation(item.id)}
-                    className={`w-12 h-6 flex items-center rounded-full p-1 transition ${
-                      item.inUse ? "bg-blue-600" : "bg-gray-300"
-                    }`}
+                    className={`w-12 h-6 flex items-center rounded-full p-1 transition ${item.inUse ? "bg-blue-600" : "bg-gray-300"
+                      }`}
                   >
                     <div
-                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
-                        item.inUse ? "translate-x-6" : "translate-x-0"
-                      }`}
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${item.inUse ? "translate-x-6" : "translate-x-0"
+                        }`}
                     />
                   </button>
                 </div>
@@ -114,14 +139,12 @@ const ExitReasonList = () => {
                   {/* Toggle */}
                   <button
                     onClick={() => toggleTermination(item.id)}
-                    className={`w-12 h-6 flex items-center rounded-full p-1 transition ${
-                      item.inUse ? "bg-blue-600" : "bg-gray-300"
-                    }`}
+                    className={`w-12 h-6 flex items-center rounded-full p-1 transition ${item.inUse ? "bg-blue-600" : "bg-gray-300"
+                      }`}
                   >
                     <div
-                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${
-                        item.inUse ? "translate-x-6" : "translate-x-0"
-                      }`}
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${item.inUse ? "translate-x-6" : "translate-x-0"
+                        }`}
                     />
                   </button>
                 </div>

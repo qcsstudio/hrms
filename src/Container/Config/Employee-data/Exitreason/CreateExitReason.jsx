@@ -31,7 +31,7 @@ const axiosInstance = createAxios(token);
       const res = await axiosInstance.post('/config/create-exit-reason',form,{
         meta: { auth : "ADMIN_AUTH"}
       })
-      // dispatch(setExitReasons(res.data))
+      dispatch(setExitReasons(res?.data?.data))
       console.log(res.data,"exit reason created successfully")
       navigate("/config/hris/Employee-data/Exit-reason");
       

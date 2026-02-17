@@ -3,11 +3,14 @@ import { createSlice } from "@reduxjs/toolkit";
 const exitReasonSlice = createSlice({
   name: "exitReason",
   initialState: {
+    id: null,
+    isActive: null,
    
   },
   reducers: {
     setExitReasons: (state, action) => {
-      state.exitReasons = action.payload;
+      state.id = action.payload._id;
+      state.isActive = action.payload.isActive;
     },
   },
 });
