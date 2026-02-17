@@ -28,7 +28,7 @@ const axiosInstance = createAxios(token);
 
     try {
 
-      const res = await axiosInstance.post('',form,{
+      const res = await axiosInstance.post('/config/create-exit-reason',form,{
         meta: { auth : "ADMIN_AUTH"}
       })
       // dispatch(setExitReasons(res.data))
