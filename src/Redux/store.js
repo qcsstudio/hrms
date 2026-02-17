@@ -3,6 +3,7 @@ import SidebarSlice from "./sidebarSlice.js";
 import UserSlice from "./userSlice.js";
 import otpReducer from './otpSlice.js'
 import employeeInviteReducer from './employeeInviteSlice.js'
+import incorporationslice from './configSlices/incorporationslice.js'
 
 
 const store = configureStore({
@@ -11,6 +12,7 @@ const store = configureStore({
         user: UserSlice,
         otp: otpReducer,
         employeeInvite: employeeInviteReducer,      //adding yourself response
+        incorporation: incorporationslice
 
 
     }
