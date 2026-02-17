@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from '../../../utils/axios.config'
+import { useSelector } from "react-redux";
 
 /* ---------- Custom Components ---------- */
 
@@ -19,31 +21,91 @@ const FormField = ({ label, children }) => (
   </div>
 );
 
-const FormInput = ({ placeholder, type = "text" }) => (
+const FormInput = ({ placeholder, type = "text", value, onChange }) => (
   <input
     type={type}
     placeholder={placeholder}
+    value={value}
+    onChange={onChange}
     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
   />
 );
 
-const FormSelect = ({ options = [], defaultValue }) => (
+
+const FormSelect = ({ options = [], value, onChange }) => (
   <select
-    defaultValue={defaultValue}
+    value={value}
+    onChange={onChange}
     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
   >
+    <option value="">Select</option>
     {options.map((opt) => (
-      <option key={opt.value} value={opt.value}>
+      <option key={opt.value} value={opt.label}>
         {opt.label}
       </option>
     ))}
   </select>
 );
 
+
 /* ---------- Main Component ---------- */
 
 const IncorporationDetails = () => {
-  const navigate = useNavigate();
+   const navigate = useNavigate();
+  const { token } = useSelector(state => state.user);
+  const axiosInstance = createAxios(token);
+
+  const [form, setForm] = useState({
+    legalName: "",
+    incorporationDate: "",
+    companyType: "",
+    cin: "",
+    gstin: "",
+    pan: "",
+    tan: ""
+  });
+
+// get api =============================
+  // useEffect(() => {
+  //   const fetchincorporation = async () => {
+  //     try {
+  //       const res = await axiosInstance.get(`/config/incorporation-get/${}`, {
+  //         meta: { auth: "ADMIN_AUTH" }
+  //       });
+  //       console.log(res,"/config/incorporation-get======================")
+  //     } catch (err) {
+  //       console.error("Error fetching global settings:", err);
+  //     }
+  //   };
+  //   fetchincorporation();
+  // }, []);
+
+// POST API=============================
+const handleSave = async () => {
+  try {
+    const payload = {
+      companyLegalName: form.legalName,
+      incorporationDate: form.incorporationDate,
+      companyType: form.companyType,
+      cin: form.cin,
+      gstin: form.gstin,
+      pan: form.pan,
+      tan: form.tan
+    };
+
+    await axiosInstance.post(
+      "/config/incorporation",
+      payload,
+      { meta: { auth: "ADMIN_AUTH" } }
+    );
+
+    alert("Incorporation details saved successfully");
+  } catch (err) {
+    console.error("Save failed", err);
+    alert("Failed to save details");
+  }
+};
+
 
   return (
     <div className="p-8  mx-auto">
@@ -55,50 +117,91 @@ const IncorporationDetails = () => {
       <div className="space-y-6">
         {/* Row 1 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField label="Company Legal Name">
-            <FormInput placeholder="India" />
-          </FormField>
+         <FormField label="Company Legal Name">
+  <FormInput
+    placeholder="India"
+    value={form.legalName}
+    onChange={(e) =>
+      setForm({ ...form, legalName: e.target.value })
+    }
+  />
+</FormField>
 
-          <FormField label="Incorporation Date (Optional)">
-            <FormInput placeholder="Choose Account" />
-          </FormField>
+
+        <FormField label="Incorporation Date (Optional)">
+  <FormInput
+    type="date"
+    value={form.incorporationDate}
+    onChange={(e) =>
+      setForm({ ...form, incorporationDate: e.target.value })
+    }
+  />
+</FormField>
+
         </div>
 
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField label="Company Type (Optional)">
-            <FormSelect
-              defaultValue="india"
-              options={[
-                { value: "india", label: "India" },
-                { value: "private", label: "Private Limited" },
-                { value: "public", label: "Public Limited" },
-                { value: "llp", label: "LLP" },
-              ]}
-            />
-          </FormField>
+  <FormSelect
+    value={form.companyType}
+    onChange={(e) =>
+      setForm({ ...form, companyType: e.target.value })
+    }
+    options={[
+      { value: "private", label: "Private Limited" },
+      { value: "public", label: "Public Limited" },
+      { value: "llp", label: "LLP" }
+    ]}
+  />
+</FormField>
+
 
           <FormField label="CIN (Optional)">
-            <FormInput placeholder="Choose Account" />
-          </FormField>
+  <FormInput
+    value={form.cin}
+    onChange={(e) =>
+      setForm({ ...form, cin: e.target.value })
+    }
+  />
+</FormField>
+
         </div>
 
         {/* Row 3 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField label="GSTIN (Optional)">
-            <FormInput placeholder="India" />
-          </FormField>
+  <FormInput
+    value={form.gstin}
+    onChange={(e) =>
+      setForm({ ...form, gstin: e.target.value })
+    }
+  />
+</FormField>
 
-          <FormField label="PAN (Optional)">
-            <FormInput placeholder="Choose Account" />
-          </FormField>
+
+         <FormField label="PAN (Optional)">
+  <FormInput
+    value={form.pan}
+    onChange={(e) =>
+      setForm({ ...form, pan: e.target.value })
+    }
+  />
+</FormField>
+
         </div>
 
         {/* Row 4 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField label="TAN (Optional)">
-            <FormInput placeholder="India" />
-          </FormField>
+  <FormInput
+    value={form.tan}
+    onChange={(e) =>
+      setForm({ ...form, tan: e.target.value })
+    }
+  />
+</FormField>
+
         </div>
       </div>
 
@@ -112,6 +215,7 @@ const IncorporationDetails = () => {
         </button>
 
         <button
+         onClick={handleSave}
           className="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
         >
           Save

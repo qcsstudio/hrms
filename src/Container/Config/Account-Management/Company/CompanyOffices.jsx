@@ -45,7 +45,8 @@ const CompanyOffices = () => {
 
   const handleDelete = async(office) => {
     try {
-      const res = await axiosInstance.delete(`/config/company-office-delete/${office._id}`, { meta: { auth: "ADMIN_AUTH" } });
+      const res = await axiosInstance.delete(`/config/company-office-delete/${office._id}`, 
+        { meta: { auth: "ADMIN_AUTH" } });
       console.log("Delete response:", res.data);
       setOffices((prev) => prev.filter((o) => o._id !== office._id));
     } catch (error) {
