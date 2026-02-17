@@ -23,7 +23,7 @@ const GlobalDefaults = () => {
   const [timeFormat, setTimeFormat] = useState("24");
   const [subdomain, setSubdomain] = useState("");
 
-  // 1️⃣ Fetch countries first
+  // 1️ Fetch countries first=======================
   useEffect(() => {
     fetch(
       "https://restcountries.com/v3.1/all?fields=name,cca2,currencies,idd,timezones,flags"
@@ -45,7 +45,7 @@ const GlobalDefaults = () => {
       });
   }, []);
 
-  // 2️⃣ Fetch global settings
+  // 2️ Fetch global settings get========================
   useEffect(() => {
     const fetchGlobalSettings = async () => {
       try {
@@ -58,9 +58,9 @@ const GlobalDefaults = () => {
       }
     };
     fetchGlobalSettings();
-  }, [axiosInstance]);
+  }, []);
 
-  // 3️⃣ Prefill form once globalSettings and countries are loaded
+  // 3️. Prefill form once globalSettings and countries are loaded=====================
   useEffect(() => {
     if (!globalSettings || countries.length === 0) return;
 
