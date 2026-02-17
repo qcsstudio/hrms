@@ -4,31 +4,16 @@ import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 export default function ProbationList() {
-const {token} = useSelector((state) => state.user);
-const [probitionData, setProbationData] = useState([]);
+  const { token } = useSelector((state) => state.user);
+  const [probitionData, setProbationData] = useState([]);
 
   const navigate = useNavigate();
   const [tab, setTab] = useState("active");
   const [openMenu, setOpenMenu] = useState(null);
   const menuRef = useRef(null);
 
-  const probationData = [
-    {
-      id: 1,
-      name: "6 Months",
-      date: "12 Jun 2025 11:10 AM",
-      assignedCount: 0,
-      duration: "180 Days",
-    },
-    {
-      id: 2,
-      name: "3 Months",
-      date: "12 Jun 2025 11:10 AM",
-      assignedCount: 15,
-      duration: "90 Days",
-    },
-  ];
 
+ const axiosInstance = createAxios(token);
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -45,16 +30,16 @@ const [probitionData, setProbationData] = useState([]);
 
   // Edit
   const handleEdit = (item) => {
-    if (!item?.id) return;
+    if (!item?._id) return;
 
-    navigate(`/config/hris/Employee-data/probation-edit/${item.id}`, {
+    navigate(`/config/hris/Employee-data/probation-edit/${item._id}`, {
       state: { probationData: item },
     });
   };
 
   // View
   const handleView = (item) => {
-    navigate(`/config/hris/Employee-data/probation-view/${item.id}`, {
+    navigate(`/config/hris/Employee-data/probation-view/${item._id}`, {
       state: { probationData: item },
     });
   };
@@ -62,30 +47,35 @@ const [probitionData, setProbationData] = useState([]);
   // Delete
   const handleDelete = (item) => {
     const confirmDelete = window.confirm(
-      `Are you sure you want to delete "${item.name}"?`
+      `Are you sure you want to delete "${item.policyName}"?`
     );
 
     if (confirmDelete) {
       console.log("Deleted:", item);
-      // Add API delete logic here
+     try {
+      axiosInstance.delete(`/config/delete-probation/${item._id}`)
+    
+     } catch (error) {
+      console.log("api is not working",error)
+     }
     }
   };
-  useEffect(()=>{
+  useEffect(() => {
     const fetchProbitionData = async () => {
-      const axiosInstance = createAxios(token);
+      // const axiosInstance = createAxios(token);
       try {
         const res = await axiosInstance.get("/config/probation-getAll", {
           meta: { auth: "ADMIN_AUTH" },
         });
-        console.log("Probation Data:", res.data);
-        setProbationData(res.data);
+        console.log("Probation Data:", res?.data?.data);
+        setProbationData(res?.data?.data);
       } catch (error) {
         console.error("API Error:", error);
       }
     }
     fetchProbitionData();
 
-  },[token])
+  }, [token])
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -113,22 +103,20 @@ const [probitionData, setProbationData] = useState([]);
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setTab("active")}
-              className={`px-4 py-1.5 text-sm rounded-md transition ${
-                tab === "active"
+              className={`px-4 py-1.5 text-sm rounded-md transition ${tab === "active"
                   ? "bg-white shadow text-gray-900"
                   : "text-gray-500"
-              }`}
+                }`}
             >
               Active
             </button>
 
             <button
               onClick={() => setTab("draft")}
-              className={`px-4 py-1.5 text-sm rounded-md transition ${
-                tab === "draft"
+              className={`px-4 py-1.5 text-sm rounded-md transition ${tab === "draft"
                   ? "bg-white shadow text-gray-900"
                   : "text-gray-500"
-              }`}
+                }`}
             >
               Draft
             </button>
@@ -151,14 +139,14 @@ const [probitionData, setProbationData] = useState([]);
 
           {probitionData.map((item, index) => (
             <div
-              key={item.id}
+              key={item._id}
               className="grid grid-cols-5 gap-4 px-6 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition"
             >
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  {item.name}
+                  {item.policyName}
                 </p>
-                <p className="text-xs text-gray-500">{item.date}</p>
+                <p className="text-xs text-gray-500"> {new Date(item.createdAt).toLocaleString()}</p>
               </div>
 
               <div>
@@ -168,13 +156,13 @@ const [probitionData, setProbationData] = useState([]);
               </div>
 
               <div className="text-sm text-gray-800">
-                {item.assignedCount === 0
+                {item.assignedEmployeeList.length === 0
                   ? "No Employee Assigned"
-                  : `${item.assignedCount} Employees`}
+                  : `${item.assignedEmployeeList.length} Employees`}
               </div>
 
               <div className="text-sm text-gray-900">
-                {item.duration}
+                  {item.probationDurationDays} Days
               </div>
 
               {/* Actions */}
