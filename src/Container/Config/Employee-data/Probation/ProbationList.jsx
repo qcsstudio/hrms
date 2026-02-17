@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
 
 export default function ProbationList() {
+const {token} = useSelector((state) => state.user);
+const [probitionData, setProbationData] = useState([]);
+
   const navigate = useNavigate();
   const [tab, setTab] = useState("active");
   const [openMenu, setOpenMenu] = useState(null);
@@ -65,6 +69,22 @@ export default function ProbationList() {
       // Add API delete logic here
     }
   };
+const axiosInstance = createAxios(token);
+  useEffect(()=>{
+    const fetchProbitionData = async () => {
+      try {
+        const res = await axiosInstance.get("/config/probation-getAll", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        console.log("Probation Data:", res.data);
+        setProbationData(res.data);
+      } catch (error) {
+        console.error("API Error:", error);
+      }
+    }
+    fetchProbitionData();
+
+  },[])
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -128,7 +148,7 @@ export default function ProbationList() {
             <div className="text-right">Action</div>
           </div>
 
-          {probationData.map((item, index) => (
+          {probitionData.map((item, index) => (
             <div
               key={item.id}
               className="grid grid-cols-5 gap-4 px-6 py-5 border-b border-gray-100 items-center hover:bg-gray-50 transition"
