@@ -123,6 +123,28 @@ const GlobalDefaults = () => {
   }
 }, [selectedCountry]);
 
+const getValidTimezone = (country, timezone, countryTimezones = []) => {
+  // 1️⃣ Agar already IANA format hai (Asia/Europe/America etc.)
+  if (timezone?.includes("/")) {
+    return timezone;
+  }
+
+  // 2️⃣ Agar country ke timezones me koi IANA hai → use first
+  const ianaTz = countryTimezones.find(tz => tz.includes("/"));
+  if (ianaTz) {
+    return ianaTz;
+  }
+
+  // 3️⃣ Last fallback (India safe default)
+  if (country === "India") {
+    return "Asia/Kolkata";
+  }
+
+  // 4️⃣ Worst case: jo hai wahi bhej do
+  return timezone;
+};
+
+
 
   // Handle Save
   // const handleSave = async () => {
@@ -174,12 +196,16 @@ const GlobalDefaults = () => {
   const handleSave = async () => {
   if (!selectedCountry) return;
 
-  const payload = {
+   const payload = {
     name: name.trim(),
     slug: subdomain.trim(),
     industryType: industrytype,
     country: selectedCountry.label,
-    timezone,
+    timezone: getValidTimezone(
+      selectedCountry.label,
+      timezone,
+      selectedCountry.timezones
+    ),
     currency: selectedCountry.currency,
     leaveCycleStartMonth: leaveCycleStartMonth || "April",
     financialYearStartMonth: financialYearStartMonth || "April",
