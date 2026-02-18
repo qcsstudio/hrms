@@ -52,8 +52,8 @@ const GlobalDefaults = () => {
         const res = await axiosInstance.get("/companies/global-setting-get", {
           meta: { auth: "ADMIN_AUTH" }
         });
-        setGlobalSettings(res.data);
-        console.log(res.data)
+        setGlobalSettings(res?.data?.data);
+        console.log(res?.data?.data)
       } catch (err) {
         console.error("Error fetching global settings:", err);
       }
@@ -62,24 +62,49 @@ const GlobalDefaults = () => {
   }, []);
 
   // 3️. Prefill form once globalSettings and countries are loaded=====================
+  // useEffect(() => {
+  //   if (!globalSettings || countries.length === 0) return;
+
+  //   const gs = globalSettings.globalSettings;
+
+  //   // Country
+  //   const countryOption = countries.find(c => c.value === gs.country.code) || countries[0];
+  //   setSelectedCountry(countryOption);
+
+  //   // Other fields
+  //   setTimezone(gs.timezone || countryOption.timezones[0] || "");
+  //   setWeekStart(gs.weekStart || "Monday");
+  //   setLeaveCycleStartMonth(gs.leaveCycleStartMonth || "January");
+  //   setFinancialYearStartMonth(gs.financialYearStartMonth || "April");
+  //   setDateFormat(gs.dateFormat || "DD-MM-YYYY");
+  //   setTimeFormat(gs.timeFormat || "24");
+  //   setSubdomain(gs.subdomain || "");
+  // }, [globalSettings, countries]);
+
   useEffect(() => {
-    if (!globalSettings || countries.length === 0) return;
+  if (!globalSettings || countries.length === 0) return;
 
-    const gs = globalSettings.globalSettings;
+  const gs = globalSettings; // 👈 API ka direct object
 
-    // Country
-    const countryOption = countries.find(c => c.value === gs.country.code) || countries[0];
-    setSelectedCountry(countryOption);
+  // Country mapping (API me sirf country name hai)
+  const countryOption =
+    countries.find(c => c.label === gs.country) || null;
 
-    // Other fields
-    setTimezone(gs.timezone || countryOption.timezones[0] || "");
-    setWeekStart(gs.weekStart || "Monday");
-    setLeaveCycleStartMonth(gs.leaveCycleStartMonth || "January");
-    setFinancialYearStartMonth(gs.financialYearStartMonth || "April");
-    setDateFormat(gs.dateFormat || "DD-MM-YYYY");
-    setTimeFormat(gs.timeFormat || "24");
-    setSubdomain(gs.subdomain || "");
-  }, [globalSettings, countries]);
+  setSelectedCountry(countryOption);
+
+  // Timezone (agar API me ho to, warna empty)
+  setTimezone(gs.timezone || "");
+
+  // Ye fields API me nahi / null hain → empty hi rehne do
+  setWeekStart("Monday"); // default UI behaviour
+  setLeaveCycleStartMonth(gs.leaveCycleStartMonth || "");
+  setFinancialYearStartMonth(gs.financialYearStartMonth || "");
+  setDateFormat(gs.dateFormat || "");
+  setTimeFormat(gs.timeFormat || "");
+  setSubdomain(gs.customUrl || "");
+
+}, [globalSettings, countries]);
+
 
   // Update timezone if country changes
   useEffect(() => {
