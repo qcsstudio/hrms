@@ -31,7 +31,7 @@ export default function ProbationEdit() {
     }
 
     try {
-      await axiosInstance.post(`/create-probation`, payload, {
+      await axiosInstance.post(`/config/create-probation`, payload, {
         meta: { auth: "ADMIN_AUTH" }
       })
       navigate("/config/hris/Employee-data/probation-list");
