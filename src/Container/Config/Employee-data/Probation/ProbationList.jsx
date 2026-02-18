@@ -31,6 +31,7 @@ export default function ProbationList() {
   // Edit
   const handleEdit = (item) => {
     if (!item?._id) return;
+    
 
     navigate(`/config/hris/Employee-data/probation-edit/${item._id}`, {
       state: { probationData: item },

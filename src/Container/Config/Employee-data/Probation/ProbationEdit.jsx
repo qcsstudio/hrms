@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 export default function ProbationEdit() {
+const {token} = useSelector(state=>state.user)
+
   const navigate = useNavigate();
   const { id } = useParams(); // probation id
   const [form, setForm] = useState({
-    name: "6 Months",
-    duration: "180",
-    description: "Default probation plan",
-    status: "active",
-  });
+  policyName: "",
+  probationDurationDays: "",
+  description: ""
+});
 
   const handleChange = (e) => {
     setForm({
@@ -18,10 +21,41 @@ export default function ProbationEdit() {
     });
   };
 
-  const handleSave = () => {
+  const axiosInstance = createAxios(token)
+
+  const handleSave = async() => {
     console.log("Updated Probation:", form);
-    navigate("/config/hris/Employee-data/probation-list");
+    const payload = {
+      ...form,
+      _id:id
+    }
+
+    try {
+      await axiosInstance.post(`/create-probation`,payload,{
+        meta:{auth:"ADMIN_AUTH"}
+      })
+          navigate("/config/hris/Employee-data/probation-list");
+
+      
+    } catch (error) {
+      console.log("api is not working",error)
+      
+    }
   };
+
+  useEffect(() => {
+    if (!id) return;
+      const fetchprobition = async()=>{
+  
+        const res = await axiosInstance.get(`/config/probation-get/${id}`,{
+          meta:{auth:"ADMIN_AUTH"}
+        })
+        setForm(res?.data?.data)
+        console.log("fetchprobition single view====",res?.data)
+      };
+  
+      fetchprobition()
+    }, [id,token]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -56,8 +90,8 @@ export default function ProbationEdit() {
             </label>
             <input
               type="text"
-              name="name"
-              value={form.name}
+              name="policyName"
+              value={form.policyName}
               onChange={handleChange}
               placeholder="Enter probation name"
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -71,8 +105,8 @@ export default function ProbationEdit() {
             </label>
             <input
               type="number"
-              name="duration"
-              value={form.duration}
+              name="probationDurationDays"
+              value={form.probationDurationDays}
               onChange={handleChange}
               placeholder="Enter duration"
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -95,7 +129,7 @@ export default function ProbationEdit() {
           </div>
 
           {/* Status */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
@@ -109,7 +143,7 @@ export default function ProbationEdit() {
               <option value="draft">Draft</option>
               <option value="disabled">Disabled</option>
             </select>
-          </div>
+          </div> */}
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4">
