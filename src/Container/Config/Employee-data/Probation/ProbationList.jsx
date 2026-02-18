@@ -54,7 +54,7 @@ export default function ProbationList() {
       console.log("Deleted:", item);
      try {
       axiosInstance.delete(`/config/delete-probation/${item._id}`)
-    
+    setProbationData((prev) => prev.filter((o) => o._id !== office._id));
      } catch (error) {
       console.log("api is not working",error)
      }
@@ -187,7 +187,7 @@ export default function ProbationList() {
                 </button>
 
                 {openMenu === index && (
-                  <div className="absolute right-0 top-11 w-36 bg-white border rounded-lg shadow-lg z-50">
+                  <div className="absolute right-0  w-36 bg-white border rounded-lg shadow-lg z-50">
                     <button
                       onClick={() => {
                         handleView(item);

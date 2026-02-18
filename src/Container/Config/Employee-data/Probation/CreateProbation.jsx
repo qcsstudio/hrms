@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { getprobitiondata } from "../../../../Redux/configSlices/probitionSlice";
 
 export default function CreateProbation() {
   const {token} = useSelector((state) => state.user);
   const navigate = useNavigate();
   const axiosInstance = createAxios(token);
-
+const dispatch = useDispatch()
   const [formData, setFormData] = useState({
     policyName: "",
     description: "",
@@ -43,11 +44,14 @@ export default function CreateProbation() {
 
   const handleSave = async () => {
     try {
-      await axiosInstance.post(
+      const res = await axiosInstance.post(
         "/config/create-probation",
         formData, // ✅ exact backend format
         { meta: { auth: "ADMIN_AUTH" } }
       );
+
+      console.log(res?.data)
+      dispatch(getprobitiondata(res?.data?.data))
 
       navigate("/config/hris/Employee-data/probation-list");
     } catch (error) {
@@ -211,3 +215,4 @@ export default function CreateProbation() {
     </div>
   );
 }
+
