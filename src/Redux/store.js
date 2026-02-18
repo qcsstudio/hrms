@@ -17,8 +17,6 @@ const store = configureStore({
         incorporation: incorporationslice,
         exitreason:exitReasonSlice,
         probition:probitionSlice
-
-
     }
 })
 export default store;

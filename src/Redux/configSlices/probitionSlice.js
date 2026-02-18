@@ -20,5 +20,6 @@ const probitionSlice = createSlice({
 
     }
 })
+
 export const {getprobitiondata } = probitionSlice.actions
 export default probitionSlice.reducer
