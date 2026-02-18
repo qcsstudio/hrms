@@ -49,10 +49,11 @@ const GlobalDefaults = () => {
   useEffect(() => {
     const fetchGlobalSettings = async () => {
       try {
-        const res = await axiosInstance.get("/config/global-settings-get", {
+        const res = await axiosInstance.get("/companies/global-setting-get", {
           meta: { auth: "ADMIN_AUTH" }
         });
         setGlobalSettings(res.data);
+        console.log(res.data)
       } catch (err) {
         console.error("Error fetching global settings:", err);
       }
