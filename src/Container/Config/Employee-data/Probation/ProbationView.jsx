@@ -16,7 +16,7 @@ export default function ProbationView() {
   useEffect(() => {
     const fetchprobition = async()=>{
 
-      const res = await axiosInstance.get(`/config/probation-get/${probitionid}`,{
+      const res = await axiosInstance.get(`/config/probation-get/${id}`,{
         meta:{auth:"ADMIN_AUTH"}
       })
       setData(res?.data?.data)
