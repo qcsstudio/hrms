@@ -19,7 +19,7 @@ export default function ProbationView() {
       const res = await axiosInstance.get(`/config/probation-get/${probitionid}`,{
         meta:{auth:"ADMIN_AUTH"}
       })
-      setData(res?.data)
+      setData(res?.data?.data)
       console.log("fetchprobition single view====",res?.data)
     }
 
