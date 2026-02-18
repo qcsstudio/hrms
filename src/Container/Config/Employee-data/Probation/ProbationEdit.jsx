@@ -20,7 +20,7 @@ export default function ProbationEdit() {
 
   const handleSave = () => {
     console.log("Updated Probation:", form);
-    navigate("/probation");
+    navigate("/config/hris/Employee-data/probation-list");
   };
 
   return (

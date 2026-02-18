@@ -5,6 +5,7 @@ import otpReducer from './otpSlice.js'
 import employeeInviteReducer from './employeeInviteSlice.js'
 import incorporationslice from './configSlices/incorporationslice.js'
 import exitReasonSlice from './configSlices/exitReasonSlice.js'
+import probitionSlice from './configSlices/probitionSlice.js'
 
 
 const store = configureStore({
@@ -14,7 +15,8 @@ const store = configureStore({
         otp: otpReducer,
         employeeInvite: employeeInviteReducer,      //adding yourself response
         incorporation: incorporationslice,
-        exitreason:exitReasonSlice
+        exitreason:exitReasonSlice,
+        probition:probitionSlice
 
 
     }

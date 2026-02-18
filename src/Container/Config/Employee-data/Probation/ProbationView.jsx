@@ -1,21 +1,29 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 export default function ProbationView() {
+  const {token} = useSelector(state=>state.user)
+  const {probitionid} = useSelector(state=>state.probition)
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [data, setData] = useState(null);
+  const [data, setData] = useState();
 
+  const axiosInstance = createAxios(token)
   useEffect(() => {
-    // Replace with API call later
-    setData({
-      name: "6 Months",
-      duration: 180,
-      description: "Default probation plan",
-      status: "Active",
-    });
-  }, [id]);
+    const fetchprobition = async()=>{
+
+      const res = await axiosInstance.get(`/config/probation-get/${probitionid}`,{
+        meta:{auth:"ADMIN_AUTH"}
+      })
+      setData(res?.data)
+      console.log("fetchprobition single view====",res?.data)
+    }
+
+    fetchprobition()
+  }, [token]);
 
   if (!data) return null;
 
@@ -48,14 +56,14 @@ export default function ProbationView() {
           <div>
             <label className="text-sm text-gray-500">Probation Name</label>
             <p className="text-lg font-medium text-gray-900">
-              {data.name}
+              {data.policyName}
             </p>
           </div>
 
           <div>
             <label className="text-sm text-gray-500">Duration (Days)</label>
             <p className="text-lg font-medium text-gray-900">
-              {data.duration}
+              {data.probationDurationDays}
             </p>
           </div>
 
@@ -63,13 +71,6 @@ export default function ProbationView() {
             <label className="text-sm text-gray-500">Description</label>
             <p className="text-gray-800">
               {data.description}
-            </p>
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-500">Status</label>
-            <p className="text-lg font-semibold text-green-600">
-              {data.status}
             </p>
           </div>
 
