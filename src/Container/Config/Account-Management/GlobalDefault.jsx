@@ -4,8 +4,8 @@ import createAxios from "../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 const MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December"
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
 ];
 
 const GlobalDefaults = () => {
@@ -22,8 +22,8 @@ const GlobalDefaults = () => {
   const [dateFormat, setDateFormat] = useState("DD-MM-YYYY");
   const [timeFormat, setTimeFormat] = useState("24");
   const [subdomain, setSubdomain] = useState("");
-  const [industrytype,setIndustrytype] = useState("")
-  const [name,setName] = useState("")
+  const [industrytype, setIndustrytype] = useState("")
+  const [name, setName] = useState("")
 
   // 1️ Fetch countries first=======================
   useEffect(() => {
@@ -41,7 +41,7 @@ const GlobalDefaults = () => {
             timezones: c.timezones || [],
             flag: c.flags?.png || c.flags?.svg
           }))
-          .sort((a,b) => a.label.localeCompare(b.label));
+          .sort((a, b) => a.label.localeCompare(b.label));
 
         setCountries(formatted);
       });
@@ -84,31 +84,38 @@ const GlobalDefaults = () => {
   // }, [globalSettings, countries]);
 
   useEffect(() => {
-  if (!globalSettings || countries.length === 0) return;
+    if (!globalSettings || countries.length === 0) return;
 
-  const gs = globalSettings; // 👈 API ka direct object
+    const gs = globalSettings; // 👈 API ka direct object
 
-  // Country mapping (API me sirf country name hai)
-  const countryOption =
-    countries.find(c => c.label === gs.country) || null;
+    // Country mapping (API me sirf country name hai)
+    const countryOption =
+      countries.find(c => c.label === gs.country) || null;
 
-  setSelectedCountry(countryOption);
+    setSelectedCountry(countryOption);
 
-  // Timezone (agar API me ho to, warna empty)
-  setTimezone(gs.timezone || "");
+    // Timezone (agar API me ho to, warna empty)
+    const normalizedTimezone = getValidTimezone(
+      gs.country,
+      gs.timezone,
+      countryOption?.timezones || []
+    );
+    setTimezone(normalizedTimezone);
 
-  // Ye fields API me nahi / null hain → empty hi rehne do
-  setWeekStart("Monday"); // default UI behaviour
-  setLeaveCycleStartMonth(gs.leaveCycleStartMonth || "");
-  setFinancialYearStartMonth(gs.financialYearStartMonth || "");
-  setDateFormat(gs.dateFormat || "");
-  setTimeFormat(gs.timeFormat || "");
-  setSubdomain(gs.slug || "");
-  setIndustrytype(gs.industryType || "")
-  setName(gs.name || "")
+    // setTimezone(gs.timezone || "");
+
+    // Ye fields API me nahi / null hain → empty hi rehne do
+    setWeekStart("Monday"); // default UI behaviour
+    setLeaveCycleStartMonth(gs.leaveCycleStartMonth || "");
+    setFinancialYearStartMonth(gs.financialYearStartMonth || "");
+    setDateFormat(gs.dateFormat || "");
+    setTimeFormat(gs.timeFormat || "");
+    setSubdomain(gs.slug || "");
+    setIndustrytype(gs.industryType || "")
+    setName(gs.name || "")
 
 
-}, [globalSettings, countries]);
+  }, [globalSettings, countries]);
 
 
   // Update timezone if country changes
@@ -118,31 +125,31 @@ const GlobalDefaults = () => {
   //   }
   // }, [selectedCountry]);
   useEffect(() => {
-  if (!timezone && selectedCountry?.timezones?.length) {
-    setTimezone(selectedCountry.timezones[0]);
-  }
-}, [selectedCountry]);
+    if (!timezone && selectedCountry?.timezones?.length) {
+      setTimezone(selectedCountry.timezones[0]);
+    }
+  }, [selectedCountry]);
 
-const getValidTimezone = (country, timezone, countryTimezones = []) => {
-  // 1️⃣ Agar already IANA format hai (Asia/Europe/America etc.)
-  if (timezone?.includes("/")) {
+  const getValidTimezone = (country, timezone, countryTimezones = []) => {
+    // 1️⃣ Agar already IANA format hai (Asia/Europe/America etc.)
+    if (timezone?.includes("/")) {
+      return timezone;
+    }
+
+    // 2️⃣ Agar country ke timezones me koi IANA hai → use first
+    const ianaTz = countryTimezones.find(tz => tz.includes("/"));
+    if (ianaTz) {
+      return ianaTz;
+    }
+
+    // 3️⃣ Last fallback (India safe default)
+    if (country === "India") {
+      return "Asia/Kolkata";
+    }
+
+    // 4️⃣ Worst case: jo hai wahi bhej do
     return timezone;
-  }
-
-  // 2️⃣ Agar country ke timezones me koi IANA hai → use first
-  const ianaTz = countryTimezones.find(tz => tz.includes("/"));
-  if (ianaTz) {
-    return ianaTz;
-  }
-
-  // 3️⃣ Last fallback (India safe default)
-  if (country === "India") {
-    return "Asia/Kolkata";
-  }
-
-  // 4️⃣ Worst case: jo hai wahi bhej do
-  return timezone;
-};
+  };
 
 
 
@@ -150,21 +157,21 @@ const getValidTimezone = (country, timezone, countryTimezones = []) => {
   // const handleSave = async () => {
   //   if (!selectedCountry) return;
 
-    // const payload = {
-    //   subdomain: subdomain.trim(),
-    //   country: {
-    //     name: selectedCountry.label,
-    //     code: selectedCountry.value
-    //   },
-    //   currency: selectedCountry.currency,
-    //   callingCode: selectedCountry.callingCode,
-    //   timezone,
-    //   weekStart,
-    //   leaveCycleStartMonth,
-    //   financialYearStartMonth,
-    //   dateFormat,
-    //   timeFormat
-    // };
+  // const payload = {
+  //   subdomain: subdomain.trim(),
+  //   country: {
+  //     name: selectedCountry.label,
+  //     code: selectedCountry.value
+  //   },
+  //   currency: selectedCountry.currency,
+  //   callingCode: selectedCountry.callingCode,
+  //   timezone,
+  //   weekStart,
+  //   leaveCycleStartMonth,
+  //   financialYearStartMonth,
+  //   dateFormat,
+  //   timeFormat
+  // };
 
   //   const payload = {
   //     name,
@@ -178,7 +185,7 @@ const getValidTimezone = (country, timezone, countryTimezones = []) => {
   //     dateFormat,
   //     timeFormat,
   //     callingCode:selectedCountry.callingCode
-      
+
   //   }
   //   try {
   //     const res = await axiosInstance.post("/companies/global-setting-edit", payload, {
@@ -194,41 +201,41 @@ const getValidTimezone = (country, timezone, countryTimezones = []) => {
   // };
 
   const handleSave = async () => {
-  if (!selectedCountry) return;
+    if (!selectedCountry) return;
 
-   const payload = {
-    name: name.trim(),
-    slug: subdomain.trim(),
-    industryType: industrytype,
-    country: selectedCountry.label,
-    timezone: getValidTimezone(
-      selectedCountry.label,
-      timezone,
-      selectedCountry.timezones
-    ),
-    currency: selectedCountry.currency,
-    leaveCycleStartMonth: leaveCycleStartMonth || "April",
-    financialYearStartMonth: financialYearStartMonth || "April",
-    dateFormat: dateFormat || "DD-MM-YYYY",
-    timeFormat: timeFormat === "24" ? "24-hour" : "12-hour",
-    callingCode: selectedCountry.callingCode
+    const payload = {
+      name: name.trim(),
+      slug: subdomain.trim(),
+      industryType: industrytype,
+      country: selectedCountry.label,
+      timezone: getValidTimezone(
+        selectedCountry.label,
+        timezone,
+        selectedCountry.timezones
+      ),
+      currency: selectedCountry.currency,
+      leaveCycleStartMonth: leaveCycleStartMonth || "April",
+      financialYearStartMonth: financialYearStartMonth || "April",
+      dateFormat: dateFormat || "DD-MM-YYYY",
+      timeFormat: timeFormat === "24" ? "24-hour" : "12-hour",
+      callingCode: selectedCountry.callingCode
+    };
+
+    console.log("FINAL PAYLOAD →", payload);
+
+    try {
+      await axiosInstance.post(
+        "/companies/global-setting-edit",
+        payload,
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+
+      alert("Global defaults saved successfully!");
+    } catch (error) {
+      console.error("SAVE ERROR →", error);
+      alert("Failed to save global defaults");
+    }
   };
-
-  console.log("FINAL PAYLOAD →", payload);
-
-  try {
-    await axiosInstance.post(
-      "/companies/global-setting-edit",
-      payload,
-      { meta: { auth: "ADMIN_AUTH" } }
-    );
-
-    alert("Global defaults saved successfully!");
-  } catch (error) {
-    console.error("SAVE ERROR →", error);
-    alert("Failed to save global defaults");
-  }
-};
 
 
   if (!selectedCountry) return <div className="p-8">Loading...</div>;
@@ -321,9 +328,15 @@ const getValidTimezone = (country, timezone, countryTimezones = []) => {
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
             >
-              {selectedCountry.timezones.map((tz) => (
+              {/* {selectedCountry.timezones.map((tz) => (
                 <option key={tz} value={tz}>{tz}</option>
-              ))}
+              ))} */}
+              {selectedCountry.timezones
+                .filter(tz => tz.includes("/"))
+                .map((tz) => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
+
             </select>
           </div>
 
@@ -383,15 +396,14 @@ const getValidTimezone = (country, timezone, countryTimezones = []) => {
           <div>
             <label className="text-sm font-medium">Select preferred time format</label>
             <div className="flex gap-4 mt-2">
-              {["12","24"].map(t => (
+              {["12", "24"].map(t => (
                 <button
                   key={t}
                   onClick={() => setTimeFormat(t)}
-                  className={`flex-1 h-12 md:h-14 rounded-lg font-semibold border transition ${
-                    timeFormat === t
+                  className={`flex-1 h-12 md:h-14 rounded-lg font-semibold border transition ${timeFormat === t
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-white text-blue-600 border-blue-600"
-                  }`}
+                    }`}
                 >
                   {t} Hours
                 </button>
