@@ -101,7 +101,7 @@ const GlobalDefaults = () => {
   setFinancialYearStartMonth(gs.financialYearStartMonth || "");
   setDateFormat(gs.dateFormat || "");
   setTimeFormat(gs.timeFormat || "");
-  setSubdomain(gs.customUrl || "");
+  setSubdomain(gs.slug || "");
 
 }, [globalSettings, countries]);
 
@@ -185,9 +185,9 @@ const GlobalDefaults = () => {
       <div className="space-y-6">
         {/* Subdomain */}
         <div>
-          <label className="text-sm font-medium">Your Subdomain</label>
+          <label className="text-sm font-medium">Your slug</label>
           <input
-            placeholder="https://________.qcs.com"
+            placeholder="your company slug name"
             className="mt-1 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
             value={subdomain}
             onChange={(e) => setSubdomain(e.target.value)}
