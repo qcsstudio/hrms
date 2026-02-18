@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 export default function ProbationView() {
   const {token} = useSelector(state=>state.user)
   const {probitionid} = useSelector(state=>state.probition)
+  console.log("probitionid=====",probitionid)
   const navigate = useNavigate();
   const { id } = useParams();
 
