@@ -112,15 +112,21 @@ const GlobalDefaults = () => {
 
 
   // Update timezone if country changes
+  // useEffect(() => {
+  //   if (selectedCountry?.timezones?.length) {
+  //     setTimezone(selectedCountry.timezones[0]);
+  //   }
+  // }, [selectedCountry]);
   useEffect(() => {
-    if (selectedCountry?.timezones?.length) {
-      setTimezone(selectedCountry.timezones[0]);
-    }
-  }, [selectedCountry]);
+  if (!timezone && selectedCountry?.timezones?.length) {
+    setTimezone(selectedCountry.timezones[0]);
+  }
+}, [selectedCountry]);
+
 
   // Handle Save
-  const handleSave = async () => {
-    if (!selectedCountry) return;
+  // const handleSave = async () => {
+  //   if (!selectedCountry) return;
 
     // const payload = {
     //   subdomain: subdomain.trim(),
@@ -138,32 +144,66 @@ const GlobalDefaults = () => {
     //   timeFormat
     // };
 
-    const payload = {
-      name,
-      slug:subdomain.trim(),
-      industryType:industrytype,
-      country:selectedCountry.label,
-      timezone,
-      currency:selectedCountry.currency,
-      leaveCycleStartMonth,
-      financialYearStartMonth,
-      dateFormat,
-      timeFormat,
-      callingCode:selectedCountry.callingCode
+  //   const payload = {
+  //     name,
+  //     slug:subdomain.trim(),
+  //     industryType:industrytype,
+  //     country:selectedCountry.label,
+  //     timezone,
+  //     currency:selectedCountry.currency,
+  //     leaveCycleStartMonth,
+  //     financialYearStartMonth,
+  //     dateFormat,
+  //     timeFormat,
+  //     callingCode:selectedCountry.callingCode
       
-    }
-    try {
-      const res = await axiosInstance.post("/companies/global-setting-edit", payload, {
-        meta: { auth: "ADMIN_AUTH" }
-      });
-      console.log("Saved successfully:", res.data);
-      alert("Global defaults saved successfully!");
-      // Optionally update Redux here
-    } catch (error) {
-      console.error("Error saving global defaults:", error);
-      alert("Failed to save global defaults. Check console.");
-    }
+  //   }
+  //   try {
+  //     const res = await axiosInstance.post("/companies/global-setting-edit", payload, {
+  //       meta: { auth: "ADMIN_AUTH" }
+  //     });
+  //     console.log("Saved successfully:", res.data);
+  //     alert("Global defaults saved successfully!");
+  //     // Optionally update Redux here
+  //   } catch (error) {
+  //     console.error("Error saving global defaults:", error);
+  //     alert("Failed to save global defaults. Check console.");
+  //   }
+  // };
+
+  const handleSave = async () => {
+  if (!selectedCountry) return;
+
+  const payload = {
+    name: name.trim(),
+    slug: subdomain.trim(),
+    industryType: industrytype,
+    country: selectedCountry.label,
+    timezone,
+    currency: selectedCountry.currency,
+    leaveCycleStartMonth: leaveCycleStartMonth || "April",
+    financialYearStartMonth: financialYearStartMonth || "April",
+    dateFormat: dateFormat || "DD-MM-YYYY",
+    timeFormat: timeFormat === "24" ? "24-hour" : "12-hour",
+    callingCode: selectedCountry.callingCode
   };
+
+  console.log("FINAL PAYLOAD →", payload);
+
+  try {
+    await axiosInstance.post(
+      "/companies/global-setting-edit",
+      payload,
+      { meta: { auth: "ADMIN_AUTH" } }
+    );
+
+    alert("Global defaults saved successfully!");
+  } catch (error) {
+    console.error("SAVE ERROR →", error);
+    alert("Failed to save global defaults");
+  }
+};
+
 
   if (!selectedCountry) return <div className="p-8">Loading...</div>;
 
