@@ -13,7 +13,7 @@ export default function ProbationList() {
   const menuRef = useRef(null);
 
 
- const axiosInstance = createAxios(token);
+  const axiosInstance = createAxios(token);
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -52,12 +52,14 @@ export default function ProbationList() {
 
     if (confirmDelete) {
       console.log("Deleted:", item);
-     try {
-      axiosInstance.delete(`/config/delete-probation/${item._id}`)
-    setProbationData((prev) => prev.filter((o) => o._id !== office._id));
-     } catch (error) {
-      console.log("api is not working",error)
-     }
+      try {
+        axiosInstance.delete(`/config/delete-probation/${item._id}`)
+        setProbationData((prev) =>
+          prev.filter((o) => o._id !== item._id)
+        );
+      } catch (error) {
+        console.log("api is not working", error)
+      }
     }
   };
   useEffect(() => {
@@ -104,8 +106,8 @@ export default function ProbationList() {
             <button
               onClick={() => setTab("active")}
               className={`px-4 py-1.5 text-sm rounded-md transition ${tab === "active"
-                  ? "bg-white shadow text-gray-900"
-                  : "text-gray-500"
+                ? "bg-white shadow text-gray-900"
+                : "text-gray-500"
                 }`}
             >
               Active
@@ -114,8 +116,8 @@ export default function ProbationList() {
             <button
               onClick={() => setTab("draft")}
               className={`px-4 py-1.5 text-sm rounded-md transition ${tab === "draft"
-                  ? "bg-white shadow text-gray-900"
-                  : "text-gray-500"
+                ? "bg-white shadow text-gray-900"
+                : "text-gray-500"
                 }`}
             >
               Draft
@@ -162,7 +164,7 @@ export default function ProbationList() {
               </div>
 
               <div className="text-sm text-gray-900">
-                  {item.probationDurationDays} Days
+                {item.probationDurationDays} Days
               </div>
 
               {/* Actions */}
