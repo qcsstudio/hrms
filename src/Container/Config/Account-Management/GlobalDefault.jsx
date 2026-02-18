@@ -134,7 +134,7 @@ const GlobalDefaults = () => {
     };
 
     try {
-      const res = await axiosInstance.post("/config/global-settings", payload, {
+      const res = await axiosInstance.post("/companies/global-setting-edit", payload, {
         meta: { auth: "ADMIN_AUTH" }
       });
       console.log("Saved successfully:", res.data);
