@@ -4,15 +4,15 @@ import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 export default function ProbationEdit() {
-const {token} = useSelector(state=>state.user)
+  const { token } = useSelector(state => state.user)
 
   const navigate = useNavigate();
   const { id } = useParams(); // probation id
   const [form, setForm] = useState({
-  policyName: "",
-  probationDurationDays: "",
-  description: ""
-});
+    policyName: "",
+    probationDurationDays: "",
+    description: ""
+  });
 
   const handleChange = (e) => {
     setForm({
@@ -23,39 +23,44 @@ const {token} = useSelector(state=>state.user)
 
   const axiosInstance = createAxios(token)
 
-  const handleSave = async() => {
+  const handleSave = async () => {
     console.log("Updated Probation:", form);
     const payload = {
       ...form,
-      _id:id
+      _id: id
     }
 
     try {
-      await axiosInstance.post(`/create-probation`,payload,{
-        meta:{auth:"ADMIN_AUTH"}
+      await axiosInstance.post(`/create-probation`, payload, {
+        meta: { auth: "ADMIN_AUTH" }
       })
-          navigate("/config/hris/Employee-data/probation-list");
+      navigate("/config/hris/Employee-data/probation-list");
 
-      
+
     } catch (error) {
-      console.log("api is not working",error)
-      
+      console.log("api is not working", error)
+
     }
   };
 
   useEffect(() => {
-    if (!id) return;
-      const fetchprobition = async()=>{
-  
-        const res = await axiosInstance.get(`/config/probation-get/${id}`,{
-          meta:{auth:"ADMIN_AUTH"}
-        })
-        setForm(res?.data?.data)
-        console.log("fetchprobition single view====",res?.data)
-      };
-  
-      fetchprobition()
-    }, [id,token]);
+    // if (!id) return;
+    const fetchprobition = async () => {
+
+      const res = await axiosInstance.get(`/config/probation-get/${id}`, {
+        meta: { auth: "ADMIN_AUTH" }
+      })
+      setForm({
+        policyName: res?.data?.data?.policyName || "",
+        probationDurationDays: res?.data?.data?.probationDurationDays || "",
+        description: res?.data?.data?.description || ""
+      });
+
+      console.log("fetchprobition single view====", res?.data)
+    };
+
+    fetchprobition()
+  }, [id, token]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
