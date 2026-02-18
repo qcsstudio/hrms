@@ -22,6 +22,8 @@ const GlobalDefaults = () => {
   const [dateFormat, setDateFormat] = useState("DD-MM-YYYY");
   const [timeFormat, setTimeFormat] = useState("24");
   const [subdomain, setSubdomain] = useState("");
+  const [industrytype,setIndustrytype] = useState("")
+  const [name,setName] = useState("")
 
   // 1️ Fetch countries first=======================
   useEffect(() => {
@@ -102,6 +104,9 @@ const GlobalDefaults = () => {
   setDateFormat(gs.dateFormat || "");
   setTimeFormat(gs.timeFormat || "");
   setSubdomain(gs.slug || "");
+  setIndustrytype(gs.industryType || "")
+  setName(gs.name || "")
+
 
 }, [globalSettings, countries]);
 
@@ -117,22 +122,36 @@ const GlobalDefaults = () => {
   const handleSave = async () => {
     if (!selectedCountry) return;
 
+    // const payload = {
+    //   subdomain: subdomain.trim(),
+    //   country: {
+    //     name: selectedCountry.label,
+    //     code: selectedCountry.value
+    //   },
+    //   currency: selectedCountry.currency,
+    //   callingCode: selectedCountry.callingCode,
+    //   timezone,
+    //   weekStart,
+    //   leaveCycleStartMonth,
+    //   financialYearStartMonth,
+    //   dateFormat,
+    //   timeFormat
+    // };
+
     const payload = {
-      subdomain: subdomain.trim(),
-      country: {
-        name: selectedCountry.label,
-        code: selectedCountry.value
-      },
-      currency: selectedCountry.currency,
-      callingCode: selectedCountry.callingCode,
+      name,
+      slug:subdomain.trim(),
+      industryType:industrytype,
+      country:selectedCountry.label,
       timezone,
-      weekStart,
+      currency:selectedCountry.currency,
       leaveCycleStartMonth,
       financialYearStartMonth,
       dateFormat,
-      timeFormat
-    };
-
+      timeFormat,
+      callingCode:selectedCountry.callingCode
+      
+    }
     try {
       const res = await axiosInstance.post("/companies/global-setting-edit", payload, {
         meta: { auth: "ADMIN_AUTH" }
