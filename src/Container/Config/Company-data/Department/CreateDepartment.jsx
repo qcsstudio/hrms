@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 const CreateDepartment = ({ onCancel }) => {
-  const { token} = useSelector((state) => state.user);
+  const { token } = useSelector((state) => state.user);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isEdit = location.state?.isEdit === true;
+  const editData = location.state?.department || null;
+
   const [departmentName, setDepartmentName] = useState("");
 
   const [isPartOfBusinessUnit, setIsPartOfBusinessUnit] = useState(false);
@@ -15,39 +22,83 @@ const CreateDepartment = ({ onCancel }) => {
   const [assignDepartmentHead, setAssignDepartmentHead] = useState(false);
   const [departmentHead, setDepartmentHead] = useState("John Doe");
 
-  const axiosInstance = createAxios(token)
+  const axiosInstance = createAxios(token);
 
-  const handleSave = async () => {
+  /* ---------------- EDIT PREFILL (LOGIC ONLY) ---------------- */
+  useEffect(() => {
+    if (isEdit && editData) {
+      setDepartmentName(editData.name || "");
+
+      setIsPartOfBusinessUnit(!!editData.businessUnitId);
+      setBusinessUnitId(editData.businessUnitId || "5fa11111111111111111111");
+
+      setIsSubDepartment(!!editData.parentDepartmentName);
+      setParentDepartmentName(editData.parentDepartmentName || "IT Department");
+
+      setAssignDepartmentHead(!!editData.head);
+      setDepartmentHead(editData.head || "John Doe");
+    }
+  }, [isEdit, editData]);
+
+  /* ---------------- SAVE HANDLER ---------------- */
+  const handleedit = async () => {
     const payload = {
       departmentName,
       isPartOfBusinessUnit,
-      businessUnitId: isPartOfBusinessUnit ? businessUnitId : "5fa11111111111111111111",
+      businessUnitId: isPartOfBusinessUnit
+        ? businessUnitId
+        : "5fa11111111111111111111",
       isSubDepartment,
-      parentDepartmentName: isSubDepartment ? parentDepartmentName : "IT Department",
+      parentDepartmentName: isSubDepartment
+        ? parentDepartmentName
+        : "IT Department",
       assignDepartmentHead,
       departmentHead: assignDepartmentHead ? departmentHead : "John Doe",
     };
 
     try {
-      const res = await axiosInstance.post(
-        "/config/create-department",
-        payload,
-        { meta: { auth: "ADMIN_AUTH" } }
-      );
-      console.log("Department created successfully:", res.data);
+      if (isEdit) {
+        await axiosInstance.put(
+          `/config/update-department/${editData.id}`,
+          payload,
+          { meta: { auth: "ADMIN_AUTH" } }
+        );
+      } else {
+      const res =   await axiosInstance.post(
+          "/config/all-department",
+          payload,
+          { meta: { auth: "ADMIN_AUTH" } }
+        );
+        console.log("Create department response:", res.data);
+      }
+
+      navigate("/config/hris/Company_data/department");
     } catch (error) {
-      console.error("Error creating department:", error);
+      console.error("Error saving department:", error);
     }
   };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Create Department</h1>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+        <h1 className="text-2xl font-bold">
+          {isEdit ? "Edit Department" : "Create Department"}
+        </h1>
         <p className="text-sm text-gray-500 mt-1">
           Manage employee directory, documents, and role-based actions.
         </p>
+
+        </div>
+        {isEdit && 
+         <button
+            onClick={handleedit}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md"
+          >
+            {isEdit ? "Save Changes" : "Save"}
+          </button>
+}
       </div>
 
       <div className="space-y-6 bg-white p-6 rounded-lg border">
@@ -215,16 +266,13 @@ const CreateDepartment = ({ onCancel }) => {
 
         {/* Buttons */}
         <div className="flex justify-end gap-3 pt-6">
-          <button onClick={onCancel} className="px-4 py-2 border rounded-md">
-            Cancel
-          </button>
+          {!isEdit && (
+            <button onClick={onCancel} className="px-4 py-2 border rounded-md">
+              Cancel
+            </button>
+          )}
 
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md"
-          >
-            Save
-          </button>
+         
         </div>
 
       </div>
