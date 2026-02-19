@@ -33,18 +33,18 @@ const axiosInstance = createAxios(token);
     navigate("/config/hris/Company_data/create-buisness-unit");
   };
 
-  useEffect(()=>{
-    const fetchallbussinessunit = async () => {
-      try {
-        const response = await axiosInstance.get("/config/all-buinessUnit");
-        setData(response.data);
-      } catch (error) {
-        console.error("Error fetching business units:", error);
-      }
-    };
+  // useEffect(()=>{
+  //   const fetchallbussinessunit = async () => {
+  //     try {
+  //       const response = await axiosInstance.get("/config/all-buinessUnit");
+  //       setData(response.data);
+  //     } catch (error) {
+  //       console.error("Error fetching business units:", error);
+  //     }
+  //   };
 
-    fetchallbussinessunit();
-  },[])
+  //   fetchallbussinessunit();
+  // },[])
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
