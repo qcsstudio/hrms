@@ -38,12 +38,17 @@ const FormTextarea = ({ placeholder, rows }) => {
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
 const BrandingSetup = () => {
-const {token}= useSelector(state=>state.user)
+  const { token } = useSelector(state => state.user)
 
-  const [logo, setLogo] = useState(null);
-  const [coverImage, setCoverImage] = useState(null);
+  // const [logo, setLogo] = useState(null);
+  // const [coverImage, setCoverImage] = useState(null);
   const [logoError, setLogoError] = useState("");
   const [coverError, setCoverError] = useState("");
+
+  const [companybrands, setCompanybrands] = useState({
+    logo: "",
+    loginImage: ""
+  })
 
   const handleFileUpload = (e, setter, errorSetter) => {
     const file = e.target.files?.[0];
@@ -62,20 +67,24 @@ const {token}= useSelector(state=>state.user)
 
   const axiosInstance = createAxios(token)
 
-  useEffect(()=>{
-    const fetchcompanybrands = async ()=>{
+  useEffect(() => {
+    const fetchcompanybrands = async () => {
       try {
         const res = await axiosInstance.get('/companies/company-branding-get',
-          {meta:{auth:"ADMIN_AUTH"}}
+          { meta: { auth: "ADMIN_AUTH" } }
         )
-        console.log("brands logo data======",res.data)
+        console.log("brands logo data======", res.data)
+        setCompanybrands({
+          logo:  res?.data?.data?.branding?.logo ,
+          loginImage:  res?.data?.data?.branding?.loginImage
+        })
 
       } catch (error) {
-        console.log("api is not working",error)
+        console.log("api is not working", error)
       }
     };
     fetchcompanybrands()
-  },[])
+  }, [])
 
   return (
     <div className=" mx-auto p-8">
@@ -94,7 +103,7 @@ const {token}= useSelector(state=>state.user)
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-900">Brand Logo</h3>
-            {!logo && (
+            {!companybrands.logo && (
               <span className="text-xs text-gray-400">
                 Recommended Size: <strong>280</strong>×<strong>110</strong> px
               </span>
@@ -105,7 +114,7 @@ const {token}= useSelector(state=>state.user)
             <div className="w-16 h-16 rounded-md bg-gray-100 flex items-center justify-center overflow-hidden">
               {logo ? (
                 <img
-                  src={logo}
+                  src={companybrands.logo}
                   alt="Brand Logo"
                   className="w-full h-full object-contain"
                 />
@@ -142,7 +151,7 @@ const {token}= useSelector(state=>state.user)
             <h3 className="text-sm font-semibold text-gray-900">
               Login Cover Image
             </h3>
-            {!coverImage && (
+            {!companybrands.loginImage && (
               <span className="text-xs text-gray-400">
                 Recommended Size: <strong>720</strong>×<strong>788</strong> px
               </span>
@@ -153,7 +162,7 @@ const {token}= useSelector(state=>state.user)
             <div className="w-16 h-16 rounded-md bg-blue-100 flex items-center justify-center overflow-hidden">
               {coverImage ? (
                 <img
-                  src={coverImage}
+                  src={companybrands.loginImage}
                   alt="Cover"
                   className="w-full h-full object-cover"
                 />
