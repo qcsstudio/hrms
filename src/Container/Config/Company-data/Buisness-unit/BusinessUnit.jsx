@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const BusinessUnit = () => {
+const {token} = useSelector((state) => state.user);
+
   const navigate = useNavigate();
 const axiosInstance = createAxios(token);
 
