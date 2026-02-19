@@ -1,12 +1,17 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 const CreateBusinessUnit = () => {
   const { token } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ NEW
   const axiosInstance = createAxios(token);
+
+  /* ================= EDIT MODE DETECT ================= */
+  const isEdit = location.state?.isEdit || false; // ✅ NEW
+  const editData = location.state?.data || null;  // ✅ NEW
 
   const [assignHead, setAssignHead] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
@@ -17,6 +22,20 @@ const CreateBusinessUnit = () => {
     locationName: "",
     businessHead: ""
   });
+
+  /* ================= PREFILL FORM ON EDIT ================= */
+  useEffect(() => {
+    if (isEdit && editData) {
+      setForm({
+        businessUnitName: editData.name || "",
+        locationName: editData.location || "",
+        businessHead: editData.head || ""
+      });
+
+      setAssignHead(!!editData.head);
+      setLogoPreview(editData.logo || null);
+    }
+  }, [isEdit, editData]);
 
   /* ================= HANDLE CHANGE ================= */
   const handleChange = (e) => {
@@ -54,7 +73,7 @@ const CreateBusinessUnit = () => {
     navigate("/config/hris/Company_data/buisness-unit-list");
   };
 
-  /* ================= SAVE ================= */
+  /* ================= CREATE ================= */
   const handleSave = async () => {
     try {
       const logoUrl = await uploadLogo();
@@ -79,17 +98,59 @@ const CreateBusinessUnit = () => {
     }
   };
 
+  /* ================= UPDATE (EDIT) ================= */
+  const handleUpdate = async () => {
+    try {
+      const logoUrl = logoFile ? await uploadLogo() : editData.logo;
+
+      const payload = {
+        businessUnitId: editData.id,
+        businessUnitName: form.businessUnitName,
+        locationName: form.locationName,
+        logo: logoUrl,
+        assignBusinessHead: assignHead,
+        businessHead: assignHead ? form.businessHead : null
+      };
+
+      await axiosInstance.put(
+        `/config/update-buinessUnit/${editData.id}`,
+        payload,
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+
+      navigate("/config/hris/Company_data/buisness-unit-list");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold">Create Business Unit</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Manage employee directory, documents, and role-based actions.
-        </p>
+      {/* ================= HEADER (DESIGN SAME) ================= */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold">
+            {isEdit ? "Edit Business Unit" : "Create Business Unit"}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Manage employee directory, documents, and role-based actions.
+          </p>
+        </div>
+
+        {/* ✅ EDIT MODE BUTTON */}
+        {isEdit && (
+          <button
+            onClick={handleUpdate}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Save Changes
+          </button>
+        )}
       </div>
 
       <div className="space-y-6">
+        {/* ================= REST OF DESIGN (UNCHANGED) ================= */}
+
         {/* Business Unit Name */}
         <div>
           <label className="text-sm font-semibold block mb-2">
@@ -149,7 +210,6 @@ const CreateBusinessUnit = () => {
             <div className="flex-1">
               <p className="text-xs text-gray-500">
                 Note: Upload photo with max size 2MB for optimum results.
-                (Supports .gif, .jpeg, .jpg and .png file types)
               </p>
             </div>
 
@@ -214,22 +274,24 @@ const CreateBusinessUnit = () => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-4 pt-6">
-          <button
-            onClick={handleCancel}
-            className="px-6 py-2 rounded-lg border bg-white hover:bg-gray-100 transition"
-          >
-            Cancel
-          </button>
+        {/* ================= FOOTER (ONLY CREATE MODE) ================= */}
+        {!isEdit && (
+          <div className="flex justify-end gap-4 pt-6">
+            <button
+              onClick={handleCancel}
+              className="px-6 py-2 rounded-lg border bg-white hover:bg-gray-100 transition"
+            >
+              Cancel
+            </button>
 
-          <button
-            onClick={handleSave}
-            className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
-          >
-            Save Changes
-          </button>
-        </div>
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+            >
+              Save Changes
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
