@@ -4,14 +4,13 @@ import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 const BusinessUnit = () => {
-const {token} = useSelector((state) => state.user);
+  const { token } = useSelector((state) => state.user);
 
   const navigate = useNavigate();
-const axiosInstance = createAxios(token);
+  const axiosInstance = createAxios(token);
 
   const [data, setData] = useState([]);
-
-  const handleDelete = async(id) => {
+  const handleDelete = async (id) => {
     try {
       await axiosInstance.delete(`/config/delete-buinessUnit/${id}`, { meta: { auth: "ADMIN_AUTH" } });
     } catch (error) {
@@ -80,11 +79,11 @@ const axiosInstance = createAxios(token);
 
       {/* Rows */}
       <div className="space-y-3 mt-3">
-          {data.length === 0 ? (
+        {data.length === 0 ? (
           <div className="text-center text-gray-400 py-10">
             No Business Units Found
           </div>
-        ) :  data.map((unit) => (
+        ) : data.map((unit) => (
           <div
             key={unit.id}
             className="grid grid-cols-6 items-center bg-white p-4 rounded-xl border shadow-sm"

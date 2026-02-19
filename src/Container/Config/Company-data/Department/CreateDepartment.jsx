@@ -1,10 +1,40 @@
 import { useState } from "react";
+import axiosInstance from "../../../../utils/axios.config";
 
 const CreateDepartment = ({ onCancel }) => {
   const [departmentName, setDepartmentName] = useState("");
-  const [partOfBU, setPartOfBU] = useState("no");
-  const [subDept, setSubDept] = useState("no");
-  const [assignHead, setAssignHead] = useState("no");
+
+  const [isPartOfBusinessUnit, setIsPartOfBusinessUnit] = useState(false);
+  const [businessUnitId, setBusinessUnitId] = useState(null);
+
+  const [isSubDepartment, setIsSubDepartment] = useState(false);
+  const [parentDepartmentName, setParentDepartmentName] = useState(null);
+
+  const [assignDepartmentHead, setAssignDepartmentHead] = useState(false);
+  const [departmentHead, setDepartmentHead] = useState(null);
+
+  const handleSave = async () => {
+    const payload = {
+      departmentName,
+      isPartOfBusinessUnit,
+      businessUnitId: isPartOfBusinessUnit ? businessUnitId : "5fa11111111111111111111",
+      isSubDepartment,
+      parentDepartmentName: isSubDepartment ? parentDepartmentName : "IT Department",
+      assignDepartmentHead,
+      departmentHead: assignDepartmentHead ? departmentHead : "John Doe",
+    };
+
+    try {
+      const res = await axiosInstance.post(
+        "/config/create-department",
+        payload,
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+      console.log("Department created successfully:", res.data);
+    } catch (error) {
+      console.error("Error creating department:", error);
+    }
+  };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -16,19 +46,17 @@ const CreateDepartment = ({ onCancel }) => {
         </p>
       </div>
 
-      <div className="max-w-2xl space-y-6 bg-white p-6 rounded-lg border">
+      <div className="space-y-6 bg-white p-6 rounded-lg border">
 
         {/* Department Name */}
         <div>
-          <label className="text-sm font-semibold">
-            Department Name
-          </label>
+          <label className="text-sm font-semibold">Department Name</label>
           <input
             type="text"
             value={departmentName}
             onChange={(e) => setDepartmentName(e.target.value)}
             placeholder="Enter department name"
-            className="mt-2 w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-2 w-full border rounded-md px-3 py-2"
           />
         </div>
 
@@ -43,23 +71,24 @@ const CreateDepartment = ({ onCancel }) => {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  value="yes"
-                  checked={partOfBU === "yes"}
-                  onChange={() => setPartOfBU("yes")}
+                  checked={isPartOfBusinessUnit === true}
+                  onChange={() => setIsPartOfBusinessUnit(true)}
                 />
                 Yes
               </label>
             </div>
 
-            {partOfBU === "yes" && (
+            {isPartOfBusinessUnit && (
               <div className="pl-6">
-                <label className="text-sm font-semibold">
-                  Business Units
-                </label>
-                <select className="mt-2 w-full border rounded-md px-3 py-2">
-                  <option>Select business unit</option>
-                  <option>Mohali Office</option>
-                  <option>Delhi Office</option>
+                <label className="text-sm font-semibold">Business Units</label>
+                <select
+                  value={businessUnitId ?? ""}
+                  onChange={(e) => setBusinessUnitId(e.target.value)}
+                  className="mt-2 w-full border rounded-md px-3 py-2"
+                >
+                  <option value="">Select business unit</option>
+                  <option value="65fa11111111111111111111">Mohali Office</option>
+                  <option value="65fa22222222222222222222">Delhi Office</option>
                 </select>
               </div>
             )}
@@ -68,9 +97,11 @@ const CreateDepartment = ({ onCancel }) => {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  value="no"
-                  checked={partOfBU === "no"}
-                  onChange={() => setPartOfBU("no")}
+                  checked={isPartOfBusinessUnit === false}
+                  onChange={() => {
+                    setIsPartOfBusinessUnit(false);
+                    setBusinessUnitId(null);
+                  }}
                 />
                 No
               </label>
@@ -89,23 +120,24 @@ const CreateDepartment = ({ onCancel }) => {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  value="yes"
-                  checked={subDept === "yes"}
-                  onChange={() => setSubDept("yes")}
+                  checked={isSubDepartment === true}
+                  onChange={() => setIsSubDepartment(true)}
                 />
                 Yes
               </label>
             </div>
 
-            {subDept === "yes" && (
+            {isSubDepartment && (
               <div className="pl-6">
-                <label className="text-sm font-semibold">
-                  Department
-                </label>
-                <select className="mt-2 w-full border rounded-md px-3 py-2">
-                  <option>Select department</option>
-                  <option>Engineering</option>
-                  <option>Marketing</option>
+                <label className="text-sm font-semibold">Department</label>
+                <select
+                  value={parentDepartmentName ?? ""}
+                  onChange={(e) => setParentDepartmentName(e.target.value)}
+                  className="mt-2 w-full border rounded-md px-3 py-2"
+                >
+                  <option value="">Select department</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Marketing">Marketing</option>
                 </select>
               </div>
             )}
@@ -114,9 +146,11 @@ const CreateDepartment = ({ onCancel }) => {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  value="no"
-                  checked={subDept === "no"}
-                  onChange={() => setSubDept("no")}
+                  checked={isSubDepartment === false}
+                  onChange={() => {
+                    setIsSubDepartment(false);
+                    setParentDepartmentName(null);
+                  }}
                 />
                 No
               </label>
@@ -135,23 +169,26 @@ const CreateDepartment = ({ onCancel }) => {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  value="yes"
-                  checked={assignHead === "yes"}
-                  onChange={() => setAssignHead("yes")}
+                  checked={assignDepartmentHead === true}
+                  onChange={() => setAssignDepartmentHead(true)}
                 />
                 Yes
               </label>
             </div>
 
-            {assignHead === "yes" && (
+            {assignDepartmentHead && (
               <div className="pl-6">
                 <label className="text-sm font-semibold">
                   Assign Department Head
                 </label>
-                <select className="mt-2 w-full border rounded-md px-3 py-2">
-                  <option>Select department head</option>
-                  <option>John Doe</option>
-                  <option>Jane Smith</option>
+                <select
+                  value={departmentHead ?? ""}
+                  onChange={(e) => setDepartmentHead(e.target.value)}
+                  className="mt-2 w-full border rounded-md px-3 py-2"
+                >
+                  <option value="">Select department head</option>
+                  <option value="John Doe">John Doe</option>
+                  <option value="Jane Smith">Jane Smith</option>
                 </select>
               </div>
             )}
@@ -160,9 +197,11 @@ const CreateDepartment = ({ onCancel }) => {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  value="no"
-                  checked={assignHead === "no"}
-                  onChange={() => setAssignHead("no")}
+                  checked={assignDepartmentHead === false}
+                  onChange={() => {
+                    setAssignDepartmentHead(false);
+                    setDepartmentHead(null);
+                  }}
                 />
                 No
               </label>
@@ -172,20 +211,18 @@ const CreateDepartment = ({ onCancel }) => {
 
         {/* Buttons */}
         <div className="flex justify-end gap-3 pt-6">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 border rounded-md"
-          >
+          <button onClick={onCancel} className="px-4 py-2 border rounded-md">
             Cancel
           </button>
 
           <button
-            onClick={onCancel}
+            onClick={handleSave}
             className="px-4 py-2 bg-blue-600 text-white rounded-md"
           >
             Save
           </button>
         </div>
+
       </div>
     </div>
   );
