@@ -1,6 +1,10 @@
 import { useState } from "react";
+import createAxios from "../../../utils/axios.config";
+import { useSelector } from "react-redux";
+
 
 const Card = ({ children }) => {
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
       {children}
@@ -40,6 +44,10 @@ const Toggle = ({ checked, onChange }) => {
 };
 
 export default function CreateEmployeeId() {
+
+
+
+
   const [mode, setMode] = useState("auto");
   const [assignMethod, setAssignMethod] = useState("oldest");
   const [includeDeactivated, setIncludeDeactivated] = useState("yes");
@@ -52,6 +60,39 @@ export default function CreateEmployeeId() {
   const [midUpper, setMidUpper] = useState(false);
   const [suffixUpper, setSuffixUpper] = useState(false);
 
+  const { token,  } = useSelector((state) => state.user)
+    const axiosInstance = createAxios(token)
+
+    const sendConfig = async () => {
+        if (!token) {
+    console.log("No token available");
+    return;
+  }
+
+      const payLoad={
+        
+
+            assignType: "automatic",
+    separator: "_",
+    prefix: { enabled: true, type: "custom_text", customText: "EMP", upperCase: true },
+    midText: { enabled: true, type: "numerical_series", customText: "", numberOfCharacters: 4, startFrom: 1001, currentNumber: 1001, upperCase: false },
+    suffix: { enabled: true, type: "custom_text", customText: "2026", startFrom: 1, currentNumber: 1, upperCase: false },
+    assignToExistingEmployees: "oldest_joining_date",
+    includeDeactivatedEmployees: false,
+    continueSeriesForFutureEmployees: true
+
+      }
+      try {
+        const response = await axiosInstance.post("/config/employee-id-config", payLoad);
+        console.log("Response:", response.data);  
+      } catch (error) {
+        console.log("error", error.response?.data)
+        
+      }
+
+    }
+
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className=" mx-auto">
@@ -60,6 +101,7 @@ export default function CreateEmployeeId() {
         <p className="text-sm text-gray-500 mb-8">
           Manage employee directory, documents, and role-based actions.
         </p>
+
 
         {/* Mode */}
         <p className="text-sm font-medium mb-3">
@@ -79,6 +121,7 @@ export default function CreateEmployeeId() {
             label="Assign Automatically"
           />
         </div>
+
 
         {mode === "auto" && (
           <>
@@ -222,6 +265,12 @@ export default function CreateEmployeeId() {
           </>
         )}
       </div>
+      <button
+  onClick={sendConfig}
+  className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg"
+>
+  Save Employee ID Config
+</button>
     </div>
   );
 }
