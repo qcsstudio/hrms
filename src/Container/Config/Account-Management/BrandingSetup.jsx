@@ -112,7 +112,7 @@ const BrandingSetup = () => {
 
           <div className="flex items-center gap-4 rounded-lg border-2 border-dashed border-gray-200 p-6">
             <div className="w-16 h-16 rounded-md bg-gray-100 flex items-center justify-center overflow-hidden">
-              {logo ? (
+              {companybrands.logo ? (
                 <img
                   src={companybrands.logo}
                   alt="Brand Logo"
@@ -133,9 +133,9 @@ const BrandingSetup = () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) =>
-                  handleFileUpload(e, setLogo, setLogoError)
-                }
+                // onChange={(e) =>
+                //   handleFileUpload(e, setLogo, setLogoError)
+                // }
               />
             </label>
           </div>
@@ -160,7 +160,7 @@ const BrandingSetup = () => {
 
           <div className="flex items-center gap-4 rounded-lg border-2 border-dashed border-gray-200 p-6">
             <div className="w-16 h-16 rounded-md bg-blue-100 flex items-center justify-center overflow-hidden">
-              {coverImage ? (
+              {companybrands.loginImage ? (
                 <img
                   src={companybrands.loginImage}
                   alt="Cover"
@@ -175,12 +175,12 @@ const BrandingSetup = () => {
               Tip: pick an image with safe space in the center (edges may crop).
             </p>
 
-            {coverImage ? (
+            {companybrands.loginImage ? (
               <button
-                onClick={() => {
-                  setCoverImage(null);
-                  setCoverError("");
-                }}
+                // onClick={() => {
+                //   setCoverImage(null);
+                //   setCoverError("");
+                // }}
                 className="px-6 py-2.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
               >
                 Delete ✕
@@ -192,9 +192,9 @@ const BrandingSetup = () => {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) =>
-                    handleFileUpload(e, setCoverImage, setCoverError)
-                  }
+                  // onChange={(e) =>
+                  //   handleFileUpload(e, setCoverImage, setCoverError)
+                  // }
                 />
               </label>
             )}
