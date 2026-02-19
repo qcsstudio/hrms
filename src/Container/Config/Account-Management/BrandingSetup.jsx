@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
-import createAxios from '../../../utils/axios.config'
+import createAxios from "../../../utils/axios.config";
 import { useSelector } from "react-redux";
+
+/* =======================
+   UI SMALL COMPONENTS
+======================= */
 
 const PageHeader = ({ title, subtitle, action }) => {
   return (
@@ -25,84 +29,135 @@ const FormField = ({ label, children }) => {
   );
 };
 
-const FormTextarea = ({ placeholder, rows }) => {
+const FormTextarea = ({ placeholder, rows, value, onChange }) => {
   return (
     <textarea
       rows={rows}
       placeholder={placeholder}
+      value={value}
+      onChange={onChange}
       className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
     />
   );
 };
 
+/* =======================
+   MAIN COMPONENT
+======================= */
+
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
 const BrandingSetup = () => {
-  const { token } = useSelector(state => state.user)
+  const { token } = useSelector((state) => state.user);
+  const axiosInstance = createAxios(token);
 
-  // const [logo, setLogo] = useState(null);
-  // const [coverImage, setCoverImage] = useState(null);
   const [logoError, setLogoError] = useState("");
   const [coverError, setCoverError] = useState("");
 
   const [companybrands, setCompanybrands] = useState({
     logo: "",
-    loginImage: ""
-  })
+    loginImage: "",
+  });
 
-  const handleFileUpload = (e, setter, errorSetter) => {
+  const [welcomeTitle, setWelcomeTitle] = useState("");
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+
+  /* =======================
+     FILE UPLOAD HANDLER
+  ======================= */
+  const handleFileUpload = (e, key, errorSetter) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > MAX_FILE_SIZE) {
       errorSetter("File size must be less than 2MB");
-      setter(null);
       return;
     }
 
     errorSetter("");
-    const url = URL.createObjectURL(file);
-    setter(url);
+    const previewUrl = URL.createObjectURL(file);
+
+    setCompanybrands((prev) => ({
+      ...prev,
+      [key]: previewUrl,
+    }));
   };
 
-  const axiosInstance = createAxios(token)
-
+  /* =======================
+     FETCH EXISTING DATA
+  ======================= */
   useEffect(() => {
-    const fetchcompanybrands = async () => {
+    const fetchCompanyBrands = async () => {
       try {
-        const res = await axiosInstance.get('/companies/company-branding-get',
+        const res = await axiosInstance.get(
+          "/companies/company-branding-get",
           { meta: { auth: "ADMIN_AUTH" } }
-        )
-        console.log("brands logo data======", res.data)
-        setCompanybrands({
-          logo:  res?.data?.data?.branding?.logo ,
-          loginImage:  res?.data?.data?.branding?.loginImage
-        })
+        );
 
+        const branding = res?.data?.data?.branding;
+
+        setCompanybrands({
+          logo: branding?.logo || "",
+          loginImage: branding?.loginImage || "",
+        });
+
+        setWelcomeTitle(branding?.welcomeTitle || "");
+        setWelcomeMessage(branding?.welcomeMessage || "");
       } catch (error) {
-        console.log("api is not working", error)
+        console.log("API error", error);
       }
     };
-    fetchcompanybrands()
-  }, [])
 
+    fetchCompanyBrands();
+  }, []);
+
+  /* =======================
+     SAVE DATA
+  ======================= */
+  const handleSave = async () => {
+    const payload = {
+      brand_logo: companybrands.logo,
+      cover_image: companybrands.loginImage,
+      welcomeTitle,
+      welcomeMessage,
+    };
+
+    try {
+      await axiosInstance.patch(
+        "/companies/company-branding-get",
+        payload,
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+    } catch (error) {
+      console.log("Save API error", error);
+    }
+  };
+
+  /* =======================
+     UI
+  ======================= */
   return (
-    <div className=" mx-auto p-8">
+    <div className="mx-auto p-8">
       <PageHeader
         title="Branding Setup"
         subtitle="Manage employee directory, documents, and role-based actions."
         action={
-          <button className="px-6 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition">
+          <button
+            onClick={handleSave}
+            className="px-6 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition"
+          >
             Save Changes
           </button>
         }
       />
 
       <div className="space-y-6">
-        {/* Brand Logo */}
+        {/* BRAND LOGO */}
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-900">Brand Logo</h3>
+            <h3 className="text-sm font-semibold text-gray-900">
+              Brand Logo
+            </h3>
             {!companybrands.logo && (
               <span className="text-xs text-gray-400">
                 Recommended Size: <strong>280</strong>×<strong>110</strong> px
@@ -133,9 +188,9 @@ const BrandingSetup = () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                // onChange={(e) =>
-                //   handleFileUpload(e, setLogo, setLogoError)
-                // }
+                onChange={(e) =>
+                  handleFileUpload(e, "logo", setLogoError)
+                }
               />
             </label>
           </div>
@@ -145,7 +200,7 @@ const BrandingSetup = () => {
           )}
         </div>
 
-        {/* Login Cover Image */}
+        {/* LOGIN COVER IMAGE */}
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-900">
@@ -175,26 +230,16 @@ const BrandingSetup = () => {
               Tip: pick an image with safe space in the center (edges may crop).
             </p>
 
-            {companybrands.loginImage ? (
-              <button
-                // onClick={() => {
-                //   setCoverImage(null);
-                //   setCoverError("");
-                // }}
-                className="px-6 py-2.5 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
-              >
-                Delete ✕
-              </button>
-            ) : (
+            {!companybrands.loginImage && (
               <label className="cursor-pointer px-6 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition">
                 Upload
                 <input
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  // onChange={(e) =>
-                  //   handleFileUpload(e, setCoverImage, setCoverError)
-                  // }
+                  onChange={(e) =>
+                    handleFileUpload(e, "loginImage", setCoverError)
+                  }
                 />
               </label>
             )}
@@ -205,12 +250,23 @@ const BrandingSetup = () => {
           )}
         </div>
 
+        {/* WELCOME TEXT */}
         <FormField label="Welcome message title">
-          <FormTextarea placeholder="Choose Account" rows={2} />
+          <FormTextarea
+            placeholder="Choose Account"
+            rows={2}
+            value={welcomeTitle}
+            onChange={(e) => setWelcomeTitle(e.target.value)}
+          />
         </FormField>
 
         <FormField label="Welcome message body">
-          <FormTextarea placeholder="Choose Account" rows={3} />
+          <FormTextarea
+            placeholder="Choose Account"
+            rows={3}
+            value={welcomeMessage}
+            onChange={(e) => setWelcomeMessage(e.target.value)}
+          />
         </FormField>
       </div>
     </div>
