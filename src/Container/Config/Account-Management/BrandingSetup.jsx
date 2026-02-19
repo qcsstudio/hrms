@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import createAxios from '../../../utils/axios.config'
+import { useSelector } from "react-redux";
 
 const PageHeader = ({ title, subtitle, action }) => {
   return (
@@ -36,6 +38,8 @@ const FormTextarea = ({ placeholder, rows }) => {
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
 const BrandingSetup = () => {
+const {token}= useSelector(state=>state.user)
+
   const [logo, setLogo] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
   const [logoError, setLogoError] = useState("");
@@ -55,6 +59,23 @@ const BrandingSetup = () => {
     const url = URL.createObjectURL(file);
     setter(url);
   };
+
+  const axiosInstance = createAxios(token)
+
+  useEffect(()=>{
+    const fetchcompanybrands = async ()=>{
+      try {
+        const res = await axiosInstance.get('/companies/company-branding-get',
+          {meta:{auth:"ADMIN_AUTH"}}
+        )
+        console.log("brands logo data======",res.data)
+
+      } catch (error) {
+        console.log("api is not working",error)
+      }
+    };
+    fetchcompanybrands()
+  },[])
 
   return (
     <div className=" mx-auto p-8">
