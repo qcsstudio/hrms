@@ -224,7 +224,7 @@ const GlobalDefaults = () => {
     console.log("FINAL PAYLOAD →", payload);
 
     try {
-      await axiosInstance.post(
+      await axiosInstance.patch(
         "/companies/global-setting-edit",
         payload,
         { meta: { auth: "ADMIN_AUTH" } }
