@@ -1,49 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const BusinessUnit = () => {
   const navigate = useNavigate();
 
-  const initialData = [
-    {
-      id: 1,
-      name: "Leap Of Faith",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "John Doe",
-      assignedEmployees: [
-        { name: "Alice Smith" },
-        { name: "Bob Jones" },
-        { name: "Carol White" },
-        { name: "Dave Brown" },
-      ],
-      location: "Mohali Office",
-      head: "XYZ______",
-    },
-    {
-      id: 2,
-      name: "Leap Of Faith",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "Jane Smith",
-      assignedEmployees: [],
-      location: "Mohali Office",
-      head: "XYZ______",
-    },
-  ];
+  const [data, setData] = useState(null);
 
-  const [data, setData] = useState(initialData);
-
-  const handleDelete = (id) => {
+  const handleDelete = async(id) => {
+    try {
+      await axiosInstance.delete(`/config/delete-buinessUnit/${id}`, { meta: { auth: "ADMIN_AUTH" } });
+    } catch (error) {
+      console.error("Error deleting business unit:", error);
+    }
     setData(data.filter((item) => item.id !== id));
   };
 
   const handleEdit = (unit) => {
-    // Navigate to edit page
-    navigate(`/config/hris/Company_data/edit-buisness-unit/${unit.id}`);
+    navigate(
+      "/config/hris/Company_data/create-buisness-unit",
+      {
+        state: {
+          isEdit: true,
+          data: unit
+        }
+      }
+    );
   };
 
   const handleCreate = () => {
     navigate("/config/hris/Company_data/create-buisness-unit");
   };
+
+  useEffect(()=>{
+    const fetchallbussinessunit = async () => {
+      try {
+        const response = await axiosInstance.get("/config/all-buinessUnit");
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching business units:", error);
+      }
+    };
+
+    fetchallbussinessunit();
+  },[])
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -64,17 +63,6 @@ const BusinessUnit = () => {
         </button>
       </div>
 
-      {/* Sort + Clear */}
-      <div className="flex justify-between items-center mb-4">
-        <select className="border px-4 py-2 rounded-md text-sm">
-          <option>Sort by</option>
-        </select>
-
-        <button className="border px-4 py-2 rounded-md text-sm">
-          Clear ✕
-        </button>
-      </div>
-
       {/* Table Header */}
       <div className="grid grid-cols-6 text-sm text-gray-500 font-medium px-4 py-3 border-b">
         <div>Business Unit Name</div>
@@ -92,13 +80,11 @@ const BusinessUnit = () => {
             key={unit.id}
             className="grid grid-cols-6 items-center bg-white p-4 rounded-xl border shadow-sm"
           >
-            {/* Name + Date */}
             <div>
               <p className="font-medium">{unit.name}</p>
               <p className="text-xs text-gray-400">{unit.date}</p>
             </div>
 
-            {/* Created By */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm">
                 {unit.createdBy.charAt(0)}
@@ -106,7 +92,6 @@ const BusinessUnit = () => {
               <span className="text-sm">{unit.createdBy}</span>
             </div>
 
-            {/* Assigned Employees */}
             <div>
               {unit.assignedEmployees.length > 0 ? (
                 <div className="flex -space-x-2">
@@ -118,12 +103,6 @@ const BusinessUnit = () => {
                       {emp.name.charAt(0)}
                     </div>
                   ))}
-
-                  {unit.assignedEmployees.length > 3 && (
-                    <div className="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center text-xs border-2 border-white">
-                      +{unit.assignedEmployees.length - 3}
-                    </div>
-                  )}
                 </div>
               ) : (
                 <span className="text-sm text-gray-500">
@@ -132,13 +111,9 @@ const BusinessUnit = () => {
               )}
             </div>
 
-            {/* Location */}
             <div className="text-sm">{unit.location}</div>
+            <div className="text-sm">{unit.head || "—"}</div>
 
-            {/* Head */}
-            <div className="text-sm">{unit.head}</div>
-
-            {/* Actions */}
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => handleEdit(unit)}
