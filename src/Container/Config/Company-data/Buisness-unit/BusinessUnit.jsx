@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
 
 const BusinessUnit = () => {
   const navigate = useNavigate();
+const axiosInstance = createAxios(token);
 
   const [data, setData] = useState(null);
 
