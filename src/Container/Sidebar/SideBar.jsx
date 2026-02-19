@@ -272,6 +272,24 @@ const SideBar = () => {
       case "grade":
         navigate("/config/hris/Company_data/grade");
         break;
+        // track===================================================================
+                // Attendance===========================
+      case "shift":
+        navigate("/config/track/Attendance/shift/list");
+        break;
+      case "clock-in-method":
+        navigate("/config/track/Attendance/clock-in-method/list");
+        break;
+      case "attendencepolicy":
+        navigate("/config/track/Attendance/attendance-policy/list");
+        break;
+      case "extratime":
+        navigate("/config/track/Attendance/extra-time/list");
+        break;
+      // case "attendancereqcycle":
+      //   navigate("/config/track/Attendance/extra-time/list");
+      //   break;
+         
 
 
       default:
@@ -363,15 +381,15 @@ const SideBar = () => {
                 {
                   innerconfigdropdowntrack.attendance && <div className="px-4">
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Shift</h1>
+                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('shift')} >Shift</h1>
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Clock-in-Method</h1>
+                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('clock-in-method')} >Clock-in-Method</h1>
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Attendance Policy</h1>
+                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('attendencepolicy')} >Attendance Policy</h1>
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Extra Time (Compoff)</h1>
+                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('extratime')} >Extra Time (Compoff)</h1>
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Attendance Request Cycle</h1>
+                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('attendancereqcycle')} >Attendance Request Cycle</h1>
 
                   </div>
                 }

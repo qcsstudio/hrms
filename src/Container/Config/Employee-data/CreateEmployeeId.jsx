@@ -114,7 +114,6 @@ export default function CreateEmployeeId() {
 
       continueSeriesForFutureEmployees: assignMethod === "continue"
     };
-
     try {
       const response = await axiosInstance.post(
         "/config/employee-id-config",

@@ -73,6 +73,18 @@ import Team from '../Container/Config/Company-data/Team/Team'
 import CreateTeam from '../Container/Config/Company-data/Team/CreateTeam'
 import EditTeam from '../Container/Config/Company-data/Team/EditTeam'
 import ViewTeam from '../Container/Config/Company-data/Team/ViewTeam'
+import ShiftCreate from '../Container/Config/Attendance/Shift/ShiftCreate'
+import ShiftList from '../Container/Config/Attendance/Shift/ShiftList'
+import ShiftEdit from '../Container/Config/Attendance/Shift/ShiftEdit'
+import ShiftView from '../Container/Config/Attendance/Shift/ShiftView'
+import ClockInMethodList from '../Container/Config/Attendance/ClockinMethod/ClockInMethodList'
+import ClockInMethodCreate from '../Container/Config/Attendance/ClockinMethod/ClockInMethodCreate'
+import ClockInMethodEdit from '../Container/Config/Attendance/ClockinMethod/ClockInMethodEdit'
+import ClockInMethodView from '../Container/Config/Attendance/ClockinMethod/ClockInMethodView'
+import AttendancePolicyList from '../Container/Config/Attendance/AttendancePolicy/AttendancePolicyList'
+import AttendancePolicyCreate from '../Container/Config/Attendance/AttendancePolicy/AttendancePolicyCreate'
+import ExtraTimeCreate from '../Container/Config/Attendance/ExtraTime/ExtraTimeCreate'
+import ExtraTimeList from '../Container/Config/Attendance/ExtraTime/ExtraTimeList'
 
 
 const AppRoutes = () => {
@@ -191,6 +203,31 @@ const AppRoutes = () => {
           <Route path="Company_data/edit-team/:id" element={<EditTeam />} />
           <Route path="Company_data/view-team/:id" element={<ViewTeam />} />
 
+        </Route>
+
+        {/* track===================== */}
+        <Route path="/config/track"
+          element={
+            <PrivateRoute >
+              <MainDashboardLayout />
+            </PrivateRoute>
+          }>
+
+          <Route path="Attendance/shift/create" element={<ShiftCreate />} />
+          <Route path="Attendance/shift/list" element={<ShiftList />} />
+          <Route path="Attendance/shift/edit/:id" element={<ShiftEdit />} />
+          <Route path="Attendance/shift/view/:id" element={<ShiftView />} />
+
+          <Route path="Attendance/clock-in-method/list" element={<ClockInMethodList />} />
+          <Route path="Attendance/clock-in-method/create" element={<ClockInMethodCreate />} />
+          <Route path="Attendance/clock-in-method/edit/:id" element={<ClockInMethodEdit />} />
+          <Route path="Attendance/clock-in-method/view/:id" element={<ClockInMethodView />} />
+
+          <Route path="Attendance/attendance-policy/list" element={<AttendancePolicyList />} />
+          <Route path="Attendance/attendance-policy/create" element={<AttendancePolicyCreate />} />
+
+          <Route path="Attendance/extra-time/create" element={<ExtraTimeCreate />} />
+          <Route path="Attendance/extra-time/list" element={<ExtraTimeList />} />
         </Route>
 
 
