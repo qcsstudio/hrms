@@ -1,7 +1,9 @@
 import { useState } from "react";
-import axiosInstance from "../../../../utils/axios.config";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const CreateDepartment = ({ onCancel }) => {
+  const { token} = useSelector((state) => state.user);
   const [departmentName, setDepartmentName] = useState("");
 
   const [isPartOfBusinessUnit, setIsPartOfBusinessUnit] = useState(false);
@@ -12,6 +14,8 @@ const CreateDepartment = ({ onCancel }) => {
 
   const [assignDepartmentHead, setAssignDepartmentHead] = useState(false);
   const [departmentHead, setDepartmentHead] = useState(null);
+
+  const axiosInstance = createAxios(token)
 
   const handleSave = async () => {
     const payload = {
