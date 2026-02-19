@@ -7,13 +7,13 @@ const CreateDepartment = ({ onCancel }) => {
   const [departmentName, setDepartmentName] = useState("");
 
   const [isPartOfBusinessUnit, setIsPartOfBusinessUnit] = useState(false);
-  const [businessUnitId, setBusinessUnitId] = useState(null);
+  const [businessUnitId, setBusinessUnitId] = useState("5fa11111111111111111111");
 
   const [isSubDepartment, setIsSubDepartment] = useState(false);
-  const [parentDepartmentName, setParentDepartmentName] = useState(null);
+  const [parentDepartmentName, setParentDepartmentName] = useState("IT Department");
 
   const [assignDepartmentHead, setAssignDepartmentHead] = useState(false);
-  const [departmentHead, setDepartmentHead] = useState(null);
+  const [departmentHead, setDepartmentHead] = useState("John Doe");
 
   const axiosInstance = createAxios(token)
 
