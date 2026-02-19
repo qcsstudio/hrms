@@ -1,4 +1,8 @@
 import { useState } from "react";
+import createAxios from "../../../utils/axios.config";
+import { useSelector } from "react-redux";
+
+/* ================== COMMON UI ================== */
 
 const Card = ({ children }) => {
   return (
@@ -39,29 +43,99 @@ const Toggle = ({ checked, onChange }) => {
   );
 };
 
+/* ================== MAIN ================== */
+
 export default function CreateEmployeeId() {
+  /* -------- BASE -------- */
   const [mode, setMode] = useState("auto");
   const [assignMethod, setAssignMethod] = useState("oldest");
   const [includeDeactivated, setIncludeDeactivated] = useState("yes");
 
+  /* -------- PREFIX -------- */
   const [prefix, setPrefix] = useState(false);
-  const [mid, setMid] = useState(false);
-  const [suffix, setSuffix] = useState(false);
-
+  const [prefixType, setPrefixType] = useState("");
+  const [prefixText, setPrefixText] = useState("");
   const [prefixUpper, setPrefixUpper] = useState(false);
+
+  /* -------- MID -------- */
+  const [mid, setMid] = useState(false);
+  const [midType, setMidType] = useState("");
+  const [midChars, setMidChars] = useState("");
   const [midUpper, setMidUpper] = useState(false);
+
+  /* -------- SUFFIX -------- */
+  const [suffix, setSuffix] = useState(false);
+  const [suffixType, setSuffixType] = useState("");
+  const [suffixText, setSuffixText] = useState("");
   const [suffixUpper, setSuffixUpper] = useState(false);
+
+  const { token } = useSelector((state) => state.user);
+  const axiosInstance = createAxios(token);
+
+  /* ================== API ================== */
+
+  const sendConfig = async () => {
+    if (!token) return;
+
+    const payLoad = {
+      assignType: mode === "auto" ? "automatic" : "manual",
+      separator: "_",
+
+      prefix: {
+        enabled: prefix,
+        type: prefixType,
+        customText: prefixText,
+        upperCase: prefixUpper
+      },
+
+      midText: {
+        enabled: mid,
+        type: midType,
+        customText: "",
+        numberOfCharacters: Number(midChars) || null,
+        startFrom: Number(midChars) ? 1 : null,
+        currentNumber: Number(midChars) ? 1 : null,
+        upperCase: midUpper
+      },
+
+      suffix: {
+        enabled: suffix,
+        type: suffixType,
+        customText: suffixText,
+        startFrom: 1,
+        currentNumber: 1,
+        upperCase: suffixUpper
+      },
+
+      assignToExistingEmployees:
+        assignMethod === "oldest" ? "oldest_joining_date" : null,
+
+      includeDeactivatedEmployees: includeDeactivated === "yes",
+
+      continueSeriesForFutureEmployees: assignMethod === "continue"
+    };
+
+    try {
+      const response = await axiosInstance.post(
+        "/config/employee-id-config",
+        payLoad
+      );
+      console.log("Saved:", response.data);
+    } catch (error) {
+      console.log("error", error.response?.data);
+    }
+  };
+
+  /* ================== UI ================== */
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      <div className=" mx-auto">
-        {/* Header */}
+      <div className="mx-auto">
         <h1 className="text-2xl font-semibold">Create Employee ID</h1>
         <p className="text-sm text-gray-500 mb-8">
           Manage employee directory, documents, and role-based actions.
         </p>
 
-        {/* Mode */}
         <p className="text-sm font-medium mb-3">
           How would you like to define employee ID?
         </p>
@@ -72,7 +146,6 @@ export default function CreateEmployeeId() {
             onChange={() => setMode("manual")}
             label="Specify it manually"
           />
-
           <RadioBox
             checked={mode === "auto"}
             onChange={() => setMode("auto")}
@@ -82,10 +155,8 @@ export default function CreateEmployeeId() {
 
         {mode === "auto" && (
           <>
-            {/* Prefix / Mid / Suffix */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-              
-              {/* Prefix */}
+              {/* PREFIX */}
               <Card>
                 <label className="flex items-center gap-2 mb-4">
                   <input
@@ -97,16 +168,22 @@ export default function CreateEmployeeId() {
                 </label>
 
                 <p className="text-xs text-gray-500 mb-1">Select Prefix Type</p>
-                <select className="w-full border rounded-lg p-2 mb-4">
-                  <option>Choose Account</option>
-                  <option>Department</option>
-                  <option>Custom</option>
+                <select
+                  className="w-full border rounded-lg p-2 mb-4"
+                  value={prefixType}
+                  onChange={(e) => setPrefixType(e.target.value)}
+                >
+                  <option value="">Choose Account</option>
+                  <option value="department">Department</option>
+                  <option value="custom_text">Custom</option>
                 </select>
 
                 <p className="text-xs text-gray-500 mb-1">Custom Text</p>
                 <input
                   className="w-full border rounded-lg p-2 mb-4"
                   placeholder="Choose Account"
+                  value={prefixText}
+                  onChange={(e) => setPrefixText(e.target.value)}
                 />
 
                 <div className="flex items-center justify-between">
@@ -115,7 +192,7 @@ export default function CreateEmployeeId() {
                 </div>
               </Card>
 
-              {/* Mid */}
+              {/* MID */}
               <Card>
                 <label className="flex items-center gap-2 mb-4">
                   <input
@@ -127,9 +204,13 @@ export default function CreateEmployeeId() {
                 </label>
 
                 <p className="text-xs text-gray-500 mb-1">Select Prefix Type</p>
-                <select className="w-full border rounded-lg p-2 mb-4">
-                  <option>Choose Account</option>
-                  <option>Random</option>
+                <select
+                  className="w-full border rounded-lg p-2 mb-4"
+                  value={midType}
+                  onChange={(e) => setMidType(e.target.value)}
+                >
+                  <option value="">Choose Account</option>
+                  <option value="numerical_series">Random</option>
                 </select>
 
                 <p className="text-xs text-gray-500 mb-1">
@@ -139,6 +220,8 @@ export default function CreateEmployeeId() {
                   type="number"
                   className="w-full border rounded-lg p-2 mb-4"
                   placeholder="Choose Account"
+                  value={midChars}
+                  onChange={(e) => setMidChars(e.target.value)}
                 />
 
                 <div className="flex items-center justify-between">
@@ -147,7 +230,7 @@ export default function CreateEmployeeId() {
                 </div>
               </Card>
 
-              {/* Suffix */}
+              {/* SUFFIX */}
               <Card>
                 <label className="flex items-center gap-2 mb-4">
                   <input
@@ -159,10 +242,14 @@ export default function CreateEmployeeId() {
                 </label>
 
                 <p className="text-xs text-gray-500 mb-1">Select Prefix Type</p>
-                <select className="w-full border rounded-lg p-2 mb-4">
-                  <option>Choose Account</option>
-                  <option>Year</option>
-                  <option>Custom</option>
+                <select
+                  className="w-full border rounded-lg p-2 mb-4"
+                  value={suffixType}
+                  onChange={(e) => setSuffixType(e.target.value)}
+                >
+                  <option value="">Choose Account</option>
+                  <option value="year">Year</option>
+                  <option value="custom_text">Custom</option>
                 </select>
 
                 <p className="text-xs text-gray-500 mb-1">
@@ -172,6 +259,8 @@ export default function CreateEmployeeId() {
                   type="number"
                   className="w-full border rounded-lg p-2 mb-4"
                   placeholder="Choose Account"
+                  value={suffixText}
+                  onChange={(e) => setSuffixText(e.target.value)}
                 />
 
                 <div className="flex items-center justify-between">
@@ -181,7 +270,6 @@ export default function CreateEmployeeId() {
               </Card>
             </div>
 
-            {/* Assignment */}
             <p className="text-sm font-medium mb-3">
               How do we assign these IDs to the existing employees?
             </p>
@@ -204,7 +292,6 @@ export default function CreateEmployeeId() {
                     onChange={() => setIncludeDeactivated("yes")}
                     label="Yes"
                   />
-
                   <RadioBox
                     checked={includeDeactivated === "no"}
                     onChange={() => setIncludeDeactivated("no")}
@@ -222,6 +309,13 @@ export default function CreateEmployeeId() {
           </>
         )}
       </div>
+
+      <button
+        onClick={sendConfig}
+        className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg"
+      >
+        Save Employee ID Config
+      </button>
     </div>
   );
 }
