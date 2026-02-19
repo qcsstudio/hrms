@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const Department = () => {
+  const { token } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
+
+  const axiosInstance = createAxios(token);
 
   const [data, setData] = useState([
     {
@@ -42,6 +47,20 @@ const Department = () => {
     setData(data.filter((item) => item.id !== id));
     setOpenMenu(null);
   };
+
+  // useEffect(() => {
+  //   const fetchDepartmantData = async () => {
+  //     try {
+  //       const res = await axiosInstance.get("/config/all-department", { meta: { auth: "ADMIN_AUTH" } });
+  //       setData(res.data.departments);
+
+  //     } catch (error) {
+  //       confirm.error("Error fetching department data:", error);
+
+  //     }
+  //   };
+  //   fetchDepartmantData();
+  // }, [])
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -119,9 +138,12 @@ const Department = () => {
                     <button
                       onClick={() =>
                         navigate(
-                          `/config/Company_data/department/edit/${item.id}`,
+                          `/config/hris/Company_data/department/create`,
                           {
-                            state: { department: item },
+                            state: {
+                              department: item,
+                              isEdit: true,
+                            },
                           },
                         )
                       }
