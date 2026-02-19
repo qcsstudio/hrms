@@ -9,7 +9,7 @@ const {token} = useSelector((state) => state.user);
   const navigate = useNavigate();
 const axiosInstance = createAxios(token);
 
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
 
   const handleDelete = async(id) => {
     try {
@@ -80,7 +80,11 @@ const axiosInstance = createAxios(token);
 
       {/* Rows */}
       <div className="space-y-3 mt-3">
-        {data.map((unit) => (
+          {data.length === 0 ? (
+          <div className="text-center text-gray-400 py-10">
+            No Business Units Found
+          </div>
+        ) :  data.map((unit) => (
           <div
             key={unit.id}
             className="grid grid-cols-6 items-center bg-white p-4 rounded-xl border shadow-sm"
