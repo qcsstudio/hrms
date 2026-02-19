@@ -1,25 +1,82 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const CreateBusinessUnit = () => {
+  const { token } = useSelector((state) => state.user);
   const navigate = useNavigate();
-  const [assignHead, setAssignHead] = useState("yes");
-  const [logo, setLogo] = useState(null);
+  const axiosInstance = createAxios(token);
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-    //   setLogo(URL.createObjectURL(file));
-    }
+  const [assignHead, setAssignHead] = useState(false);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
+
+  const [form, setForm] = useState({
+    businessUnitName: "",
+    locationName: "",
+    businessHead: ""
+  });
+
+  /* ================= HANDLE CHANGE ================= */
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  /* ================= IMAGE UPLOAD ================= */
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
+  /* ================= UPLOAD LOGO ================= */
+  const uploadLogo = async () => {
+    if (!logoFile) return "";
+
+    const formData = new FormData();
+    formData.append("file", logoFile);
+
+    const res = await axiosInstance.post(
+      "/upload/logo",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    return res?.data?.url || "";
+  };
+
+  /* ================= CANCEL ================= */
   const handleCancel = () => {
     navigate("/config/hris/Company_data/buisness-unit-list");
   };
 
-  const handleSave = () => {
-    // Save logic here
-    navigate("/config/hris/Company_data/buisness-unit-list");
+  /* ================= SAVE ================= */
+  const handleSave = async () => {
+    try {
+      const logoUrl = await uploadLogo();
+
+      const payload = {
+        businessUnitName: form.businessUnitName,
+        locationName: form.locationName,
+        logo: logoUrl,
+        assignBusinessHead: assignHead,
+        businessHead: assignHead ? form.businessHead : null
+      };
+
+      await axiosInstance.post(
+        "/config/create-buinessUnit",
+        payload,
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+
+      navigate("/config/hris/Company_data/buisness-unit-list");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -32,15 +89,16 @@ const CreateBusinessUnit = () => {
         </p>
       </div>
 
-      <div className="max-w-3xl space-y-6">
-
+      <div className="space-y-6">
         {/* Business Unit Name */}
         <div>
           <label className="text-sm font-semibold block mb-2">
             Business Unit Name
           </label>
           <input
-            type="text"
+            name="businessUnitName"
+            value={form.businessUnitName}
+            onChange={handleChange}
             placeholder="Choose Account"
             className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -51,11 +109,16 @@ const CreateBusinessUnit = () => {
           <label className="text-sm font-semibold block mb-2">
             Location
           </label>
-          <select className="w-full border rounded-lg px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>Choose Account</option>
-            <option>Mohali Office</option>
-            <option>Delhi Office</option>
-            <option>Mumbai Office</option>
+          <select
+            name="locationName"
+            value={form.locationName}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Choose Account</option>
+            <option value="Mohali Office">Mohali Office</option>
+            <option value="Delhi Main Branch">Delhi Main Branch</option>
+            <option value="Mumbai Office">Mumbai Office</option>
           </select>
         </div>
 
@@ -71,11 +134,10 @@ const CreateBusinessUnit = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            {/* Preview Box */}
             <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
-              {logo ? (
+              {logoPreview ? (
                 <img
-                  src={logo}
+                  src={logoPreview}
                   alt="preview"
                   className="object-cover w-full h-full"
                 />
@@ -109,47 +171,50 @@ const CreateBusinessUnit = () => {
             Do you want to assign a Business Unit Head? (Optional)
           </label>
 
-          {/* YES Option */}
           <div className="border rounded-xl p-4 mb-3 bg-white">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                value="yes"
-                checked={assignHead === "yes"}
-                onChange={(e) => setAssignHead(e.target.value)}
+                checked={assignHead === true}
+                onChange={() => setAssignHead(true)}
               />
-              yes
+              Yes
             </label>
 
-            {assignHead === "yes" && (
+            {assignHead && (
               <div className="mt-4">
                 <label className="text-sm font-semibold block mb-2">
                   Business Unit Head
                 </label>
-                <select className="w-full border rounded-lg px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option>Choose Account</option>
-                  <option>John Doe</option>
-                  <option>Jane Smith</option>
+                <select
+                  name="businessHead"
+                  value={form.businessHead}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="" disabled hidden>
+                    Choose Account
+                  </option>
+                  <option value="john doe">John Doe</option>
+                  <option value="jane smith">Jane Smith</option>
                 </select>
               </div>
             )}
           </div>
 
-          {/* NO Option */}
           <div className="border rounded-xl p-4 bg-white">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                value="no"
-                checked={assignHead === "no"}
-                onChange={(e) => setAssignHead(e.target.value)}
+                checked={assignHead === false}
+                onChange={() => setAssignHead(false)}
               />
               No
             </label>
           </div>
         </div>
 
-        {/* Footer Buttons */}
+        {/* Footer */}
         <div className="flex justify-end gap-4 pt-6">
           <button
             onClick={handleCancel}
