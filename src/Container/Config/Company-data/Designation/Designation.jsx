@@ -1,34 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
 
 const Designation = () => {
+    const { token } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
 
-  const [data, setData] = useState([
-    {
-      id: 1,
-      name: "Leap Of Faith",
-      date: "12 Jun 2025  11:10 AM",
-      linkedDept: "HR",
-      createdBy: "Admin",
-      assignedEmployees: [],
-    },
-    {
-      id: 2,
-      name: "Senior Manager",
-      date: "12 Jun 2025  11:10 AM",
-      linkedDept: "Finance",
-      createdBy: "Admin",
-      assignedEmployees: [
-        { name: "A B" },
-        { name: "C D" },
-        { name: "E F" },
-        { name: "G H" },
-        { name: "I J" },
-      ],
-    },
-  ]);
+  const [data, setData] = useState([]);
 
   const handleDelete = (id) => {
     setData(data.filter((item) => item.id !== id));
@@ -41,6 +21,17 @@ const Designation = () => {
       .map((n) => n[0])
       .join("");
   };
+
+  
+ const axiosInstance = createAxios(token);
+
+
+
+
+  
+
+
+
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
