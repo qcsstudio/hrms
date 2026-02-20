@@ -10,7 +10,7 @@ const Designation = () => {
 
   const [data, setData] = useState([]);
 
-  const handleDelete = (id) => {
+  const handleDelete= (id) => {
     setData(data.filter((item) => item.id !== id));
     setOpenMenu(null);
   };
