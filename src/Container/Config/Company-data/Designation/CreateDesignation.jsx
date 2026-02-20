@@ -10,6 +10,7 @@ const CreateDesignation = ({ onCancel }) => {
   const [department, setDepartment] = useState("");
 
   const navigate = useNavigate()
+     const axiosInstance = createAxios(token);
 
   const handleSave = async () => {
     try {
@@ -21,7 +22,7 @@ const CreateDesignation = ({ onCancel }) => {
       if (partOfDept === "yes" && !department)
         return alert("Select department");
 
-      const axiosInstance = createAxios(token);
+   
 
 
 
@@ -37,7 +38,9 @@ const CreateDesignation = ({ onCancel }) => {
 
       const res = await axiosInstance.post(
         "/config/create-designation",
-        payload
+        payload,{
+          meta:{auth:"ADMIN_AUTH"}
+        }
       );
 
       console.log("Created:", res.data);
