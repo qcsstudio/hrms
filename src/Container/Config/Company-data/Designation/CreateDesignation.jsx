@@ -1,23 +1,53 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import createAxios from "../../../../utils/axios.config";
 
 const CreateDesignation = ({ onCancel }) => {
-  const [partOfDept, setPartOfDept] = useState("no");
+  const { token } = useSelector((state) => state.user);
+  const [partOfDept, setPartOfDept] = useState(false);
   const [designationName, setDesignationName] = useState("");
   const [department, setDepartment] = useState("");
 
   const navigate = useNavigate()
 
-  const handleSave = () => {
-    const payload = {
-      designationName,
-      partOfDepartment: partOfDept,
-      department: partOfDept === "yes" ? department : null,
-    };
+  const handleSave = async () => {
+    try {
+      if (!token) return;
 
-    console.log("Saved Data:", payload);
+      if (!designationName)
+        return alert("Enter designation name");
 
-    if (onCancel) onCancel();
+      if (partOfDept === "yes" && !department)
+        return alert("Select department");
+
+      const axiosInstance = createAxios(token);
+
+
+
+
+      const payload = {
+        designationName,
+        isPartOfDepartment: partOfDept === "yes",
+        ...(partOfDept === "yes" && {
+          departmentId: "65fa11111111111111111111",
+          departmentName: department
+        })
+      };
+
+      const res = await axiosInstance.post(
+        "/config/create-designation",
+        payload
+      );
+
+      console.log("Created:", res.data);
+      alert("Designation created");
+
+
+    } catch (error) {
+      console.error(error.response?.data || error.message);
+      alert("Error creating designation");
+    }
   };
 
   return (
@@ -32,7 +62,7 @@ const CreateDesignation = ({ onCancel }) => {
 
       {/* Form */}
       <div className="bg-white border rounded-lg p-6 max-w-2xl space-y-6">
-        
+
         {/* Designation Name */}
         <div>
           <label className="block text-sm font-medium mb-2">
@@ -104,7 +134,7 @@ const CreateDesignation = ({ onCancel }) => {
         <div className="flex justify-end gap-3 pt-4">
           <button
             // onClick={onCancel}
-            onClick={()=>navigate('/config/hris/Company_data/designation')}
+            onClick={() => navigate('/config/hris/Company_data/designation')}
             className="px-4 py-2 border rounded-md text-sm"
           >
             Cancel
