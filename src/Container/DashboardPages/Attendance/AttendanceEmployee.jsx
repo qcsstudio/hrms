@@ -1,5 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { action } from '../../../allAssetsImport/allAssets'
+import { useSelector } from 'react-redux'
+import createAxios from '../../../utils/axios.config'
 
 const cards = [
     {
@@ -139,6 +141,36 @@ const myattandanceLog = [
 
 
 const AttendanceEmployee = () => {
+const {token} = useSelector(state=>state.user)
+
+const [openPunchMenu, setOpenPunchMenu] = useState(false);
+  const [selectedPunch, setSelectedPunch] = useState("Punch Out");
+
+  const axiosInstance = createAxios(token)
+
+  const handlePunchAction = async (type) => {
+  try {
+    let url = "";
+
+    switch (type) {
+      case "Punch In":
+        url = "/attendance/punch-in";
+        break;
+
+      case "Punch Out":
+        url = "/attendance/punch-out";
+        break;
+      default:
+        return;
+    }
+
+    const res = await axiosInstance.post(url);
+    console.log("Success:", res.data);
+  } catch (error) {
+    console.error("Punch API failed", error);
+  }
+};
+
     return (
         <div className='p-[10px] bg-[#F8F9FA] '>
 
@@ -150,12 +182,41 @@ const AttendanceEmployee = () => {
                 {/* <div className='p-[10px] flex gap[8px] w-[25%] gap-[5px] border'> */}
                 {/* <button className='border-2 border-[#868E961A] text-[#344054] rounded-md  bg-[#E4E9EE4D] p-[10px] font-medium'>+ Download Report</button> */}
                 {/* <button className='text-[white] rounded-md bg-[#0575E6] p-[10px] w-[147px]'>Punch Out</button> */}
-                <select className='text-[white] rounded-md bg-[#0575E6] px-5 w-[147px]'>
+                {/* <select className='text-[white] rounded-md bg-[#0575E6] px-5 w-[147px]'>
                     <option>Punch Out</option>
                     <option>Punch In</option>
                     <option>Meeting</option>
                     <option>Away</option>
-                </select>
+                </select> */}
+
+                <div className="relative">
+  <button
+    onClick={() => setOpenPunchMenu(!openPunchMenu)}
+    className="text-white rounded-md bg-[#0575E6] px-5 h-[40px] w-[147px] flex items-center justify-between"
+  >
+    {selectedPunch}
+    <span className="ml-2">▾</span>
+  </button>
+
+  {openPunchMenu && (
+    <div className="absolute right-0 mt-2 w-[147px] bg-white border border-[#DEE2E6] rounded-md shadow-lg z-10">
+      {["Punch In", "Punch Out", "Meeting", "Away"].map((item) => (
+        <div
+          key={item}
+          onClick={() => {
+            setSelectedPunch(item);
+            setOpenPunchMenu(false);
+            // 👉 YAHI API CALL LAGEGI
+            handlePunchAction(item)
+          }}
+          className="px-4 py-2 text-[#344054] hover:bg-[#F1F3F5] cursor-pointer text-sm"
+        >
+          {item}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
                 {/* </div> */}
             </div>
 
