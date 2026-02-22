@@ -153,11 +153,11 @@ const [openPunchMenu, setOpenPunchMenu] = useState(false);
     let url = "";
 
     switch (type) {
-      case "Punch In":
+      case "Punch-In":
         url = "/attendance/punch-in";
         break;
 
-      case "Punch Out":
+      case "Punch-Out":
         url = "/attendance/punch-out";
         break;
       default:
@@ -202,7 +202,7 @@ const [openPunchMenu, setOpenPunchMenu] = useState(false);
 
   {openPunchMenu && (
     <div className="absolute right-0 mt-2 w-[147px] bg-white border border-[#DEE2E6] rounded-md shadow-lg z-10">
-      {["Punch In", "Punch Out", "Meeting", "Away"].map((item) => (
+      {["Punch-In", "Punch-Out", "Meeting", "Away"].map((item) => (
         <div
           key={item}
           onClick={() => {
