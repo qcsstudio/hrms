@@ -164,7 +164,9 @@ const [openPunchMenu, setOpenPunchMenu] = useState(false);
         return;
     }
 
-    const res = await axiosInstance.post(url);
+    const res = await axiosInstance.post(url,{
+        meta:{auth:"ADMIN_AUTH"}
+    });
     console.log("Success:", res.data);
   } catch (error) {
     console.error("Punch API failed", error);
