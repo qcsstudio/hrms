@@ -142,6 +142,7 @@ const myattandanceLog = [
 
 const AttendanceEmployee = () => {
 const {token} = useSelector(state=>state.user)
+console.log("token==========",token)
 
 const [openPunchMenu, setOpenPunchMenu] = useState(false);
   const [selectedPunch, setSelectedPunch] = useState("Punch Out");
