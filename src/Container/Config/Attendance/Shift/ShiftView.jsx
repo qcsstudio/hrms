@@ -38,8 +38,6 @@ const mockShifts = {
         startOffHrs: "0",
         startOffMins: "10",
         cutOffHrs: "0",
-        startOffMins: "10",
-        cutOffHrs: "0",
         cutOffMins: "15",
       },
     ],
