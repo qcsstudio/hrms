@@ -101,17 +101,18 @@ const GlobalDefaults = () => {
   }, [globalSettings, countries]);
 
   // =======================
-  useEffect(() => {
+useEffect(() => {
   if (!selectedCountry) return;
 
-  const ianaTimezones =
-    (selectedCountry.timezones || []).filter(tz => tz.includes("/"));
+  const ianaTimezones = (selectedCountry.timezones || []).filter(tz => tz.includes("/"));
+  if (ianaTimezones.length === 0) {
+    setTimezone(""); // fallback
+    return;
+  }
 
-  if (ianaTimezones.length > 0) {
-    setTimezone(ianaTimezones[0]); // ✅ Always IANA
-  } else {
-    // Rare fallback
-    setTimezone("");
+  // If current timezone is already valid, keep it
+  if (!timezone || !ianaTimezones.includes(timezone)) {
+    setTimezone(ianaTimezones[0]);
   }
 }, [selectedCountry]);
 
