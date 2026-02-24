@@ -244,9 +244,12 @@ const GlobalDefaults = () => {
 
 
   // if (!selectedCountry) return <div className="p-8">Loading...</div>;
-  if (!globalSettings || countries.length === 0) {
-    return <div>Loading...</div>;
-  }
+  // if (!globalSettings || countries.length === 0) {
+  //   return <div>Loading...</div>;
+  // }
+  if (!globalSettings || countries.length === 0 || !selectedCountry) {
+  return <div>Loading...</div>;
+}
 
   const CountryOption = ({ data, innerRef, innerProps }) => (
     <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1 cursor-pointer">
@@ -312,7 +315,7 @@ const GlobalDefaults = () => {
             <label className="text-sm font-medium">Currency</label>
             <input
               readOnly
-              value={selectedCountry.currency || ""}
+              value={selectedCountry?.currency || ""}
               className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50"
             />
           </div>
@@ -321,7 +324,7 @@ const GlobalDefaults = () => {
             <label className="text-sm font-medium">Calling Code</label>
             <input
               readOnly
-              value={selectedCountry.callingCode || ""}
+              value={selectedCountry?.callingCode || ""}
               className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50"
             />
           </div>
