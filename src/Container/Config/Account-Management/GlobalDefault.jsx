@@ -99,10 +99,10 @@ const GlobalDefaults = () => {
     }
   }, [selectedCountry]);
 
-  const sanitizeTimezone = (tz, list = []) => {
-    if (tz?.includes("/")) return tz;
-    return list.find(t => t.includes("/")) || "";
-  };
+ const sanitizeTimezone = (tz, list = []) => {
+  const iana = list.find(t => t.includes("/"));
+  return iana || "";
+};
 
   /* ---------------- SAVE ---------------- */
   const handleSave = async () => {
