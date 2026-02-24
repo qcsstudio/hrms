@@ -22,16 +22,14 @@ const GlobalDefaults = () => {
   const [dateFormat, setDateFormat] = useState("DD-MM-YYYY");
   const [timeFormat, setTimeFormat] = useState("24");
   const [subdomain, setSubdomain] = useState("");
-  const [industrytype, setIndustrytype] = useState("");
-  const [name, setName] = useState("");
+  const [industrytype, setIndustrytype] = useState("")
+  const [name, setName] = useState("")
 
-  // 🔹 ONLY IANA TIMEZONES (NO UTC)
-  const getIANATimezones = (zones = []) =>
-    zones.filter(tz => tz.includes("/"));
-
-  // 1️⃣ Fetch countries
+  // 1️ Fetch countries first=======================
   useEffect(() => {
-    fetch("https://restcountries.com/v3.1/all?fields=name,cca2,currencies,idd,timezones,flags")
+    fetch(
+      "https://restcountries.com/v3.1/all?fields=name,cca2,currencies,idd,timezones,flags"
+    )
       .then(res => res.json())
       .then(data => {
         const formatted = data
@@ -39,10 +37,7 @@ const GlobalDefaults = () => {
             label: c.name.common,
             value: c.cca2,
             currency: c.currencies ? Object.keys(c.currencies)[0] : "",
-            callingCode:
-              c.idd?.root && c.idd?.suffixes?.length
-                ? c.idd.root + c.idd.suffixes[0]
-                : "",
+            callingCode: c.idd?.root && c.idd?.suffixes?.length ? c.idd.root + c.idd.suffixes[0] : "",
             timezones: c.timezones || [],
             flag: c.flags?.png || c.flags?.svg
           }))
@@ -52,89 +47,129 @@ const GlobalDefaults = () => {
       });
   }, []);
 
-  // 2️⃣ Fetch global settings
+  // 2️ Fetch global settings get========================
   useEffect(() => {
     const fetchGlobalSettings = async () => {
-      const res = await axiosInstance.get("/companies/global-setting-get", {
-        meta: { auth: "ADMIN_AUTH" }
-      });
-      setGlobalSettings(res?.data?.data);
+      try {
+        const res = await axiosInstance.get("/companies/global-setting-get", {
+          meta: { auth: "ADMIN_AUTH" }
+        });
+        setGlobalSettings(res?.data?.data);
+        console.log(res?.data?.data)
+      } catch (err) {
+        console.error("Error fetching global settings:", err);
+      }
     };
     fetchGlobalSettings();
   }, []);
 
-  // 3️⃣ Prefill
   useEffect(() => {
-    if (!globalSettings || !countries.length) return;
+    if (!globalSettings || countries.length === 0) return;
 
-    const country =
+    const gs = globalSettings; // 👈 API ka direct object
+
+    // Country mapping (API me sirf country name hai)
+    // const countryOption =
+    //   countries.find(c => c.label === gs.country) || null;
+    const countryOption =
       countries.find(
-        c => c.label.toLowerCase() === globalSettings.country?.toLowerCase()
+        c => c.label.toLowerCase().trim() === gs.country?.toLowerCase().trim()
       ) || countries[0];
 
-    setSelectedCountry(country);
+    setSelectedCountry(countryOption);
 
-    const ianaZones = getIANATimezones(country.timezones);
+    // Timezone (agar API me ho to, warna empty)
+   const normalizedTimezone = getValidTimezone(
+  gs.timezone,
+  countryOption?.timezones || []
+);
+    setTimezone(normalizedTimezone);
 
-    setTimezone(
-      globalSettings.timezone?.includes("/")
-        ? globalSettings.timezone
-        : ianaZones[0] || ""
-    );
+    // setTimezone(gs.timezone || "");
 
-    setWeekStart("Monday");
-    setLeaveCycleStartMonth(globalSettings.leaveCycleStartMonth || "April");
-    setFinancialYearStartMonth(globalSettings.financialYearStartMonth || "April");
-    setDateFormat(globalSettings.dateFormat || "DD-MM-YYYY");
-    setTimeFormat(globalSettings.timeFormat === "24-hour" ? "24" : "12");
-    setSubdomain(globalSettings.slug || "");
-    setIndustrytype(globalSettings.industryType || "");
-    setName(globalSettings.name || "");
+    // Ye fields API me nahi / null hain → empty hi rehne do
+    setWeekStart("Monday"); // default UI behaviour
+    setLeaveCycleStartMonth(gs.leaveCycleStartMonth || "");
+    setFinancialYearStartMonth(gs.financialYearStartMonth || "");
+    setDateFormat(gs.dateFormat || "");
+    setTimeFormat(gs.timeFormat || "");
+    setSubdomain(gs.slug || "");
+    setIndustrytype(gs.industryType || "")
+    setName(gs.name || "")
+
+
   }, [globalSettings, countries]);
 
-  // 4️⃣ Country change → timezone auto set
+  // =======================
   useEffect(() => {
-    if (!selectedCountry) return;
-    const zones = getIANATimezones(selectedCountry.timezones);
-    setTimezone(zones[0] || "");
-  }, [selectedCountry]);
+  if (!selectedCountry) return;
 
-  // SAVE
+  const ianaTimezones =
+    (selectedCountry.timezones || []).filter(tz => tz.includes("/"));
+
+  if (ianaTimezones.length > 0) {
+    setTimezone(ianaTimezones[0]); // ✅ Always IANA
+  } else {
+    // Rare fallback
+    setTimezone("");
+  }
+}, [selectedCountry]);
+
+const getValidTimezone = (timezone, countryTimezones = []) => {
+  if (timezone && timezone.includes("/")) return timezone;
+
+  return countryTimezones.find(tz => tz.includes("/")) || "";
+};
+
   const handleSave = async () => {
-    if (!selectedCountry) return;
+    // if (!selectedCountry) return;
+    if (!selectedCountry || !selectedCountry.currency) return;
 
     const payload = {
       name: name.trim(),
       slug: subdomain.trim(),
       industryType: industrytype,
       country: selectedCountry.label,
-      timezone,
+      timezone:getValidTimezone(
+  timezone,
+  selectedCountry.timezones
+),
       currency: selectedCountry.currency,
-      leaveCycleStartMonth,
-      financialYearStartMonth,
-      dateFormat,
+      leaveCycleStartMonth: leaveCycleStartMonth || "April",
+      financialYearStartMonth: financialYearStartMonth || "April",
+      dateFormat: dateFormat || "DD-MM-YYYY",
       timeFormat: timeFormat === "24" ? "24-hour" : "12-hour",
       callingCode: selectedCountry.callingCode
     };
 
     console.log("FINAL PAYLOAD →", payload);
 
-    await axiosInstance.patch(
-      "/companies/global-setting-edit",
-      payload,
-      { meta: { auth: "ADMIN_AUTH" } }
-    );
+    try {
+      await axiosInstance.patch(
+        "/companies/global-setting-edit",
+        payload,
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
 
-    alert("Global defaults saved successfully!");
+      alert("Global defaults saved successfully!");
+    } catch (error) {
+      console.error("SAVE ERROR →", error);
+      alert("Failed to save global defaults");
+    }
   };
 
-  if (!globalSettings || !countries.length || !selectedCountry) {
-    return <div>Loading...</div>;
-  }
+
+  // if (!selectedCountry) return <div className="p-8">Loading...</div>;
+  // if (!globalSettings || countries.length === 0) {
+  //   return <div>Loading...</div>;
+  // }
+  if (!globalSettings || countries.length === 0 || !selectedCountry) {
+  return <div>Loading...</div>;
+}
 
   const CountryOption = ({ data, innerRef, innerProps }) => (
     <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1 cursor-pointer">
-      {data.flag && <img src={data.flag} className="w-5 h-4 rounded-sm object-cover" />}
+      {data.flag && <img src={data.flag} alt="" className="w-5 h-4 rounded-sm object-cover" />}
       <span>{data.label}</span>
     </div>
   );
@@ -142,7 +177,7 @@ const GlobalDefaults = () => {
   const CountrySingleValue = (props) => (
     <components.SingleValue {...props}>
       <div className="flex items-center gap-2">
-        {props.data.flag && <img src={props.data.flag} className="w-5 h-4 rounded-sm object-cover" />}
+        {props.data.flag && <img src={props.data.flag} alt="" className="w-5 h-4 rounded-sm object-cover" />}
         <span>{props.data.label}</span>
       </div>
     </components.SingleValue>
@@ -167,15 +202,18 @@ const GlobalDefaults = () => {
       </div>
 
       <div className="space-y-6">
+        {/* Subdomain */}
         <div>
           <label className="text-sm font-medium">Your slug</label>
           <input
-            className="mt-1 w-full px-4 py-3 border rounded-lg"
+            placeholder="your company slug name"
+            className="mt-1 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
             value={subdomain}
-            onChange={e => setSubdomain(e.target.value)}
+            onChange={(e) => setSubdomain(e.target.value)}
           />
         </div>
 
+        {/* Country, Currency, Calling Code */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="text-sm font-medium">Select Country</label>
@@ -183,6 +221,7 @@ const GlobalDefaults = () => {
               options={countries}
               value={selectedCountry}
               onChange={setSelectedCountry}
+              placeholder="Select Country"
               components={{ Option: CountryOption, SingleValue: CountrySingleValue }}
               className="mt-1 w-full"
             />
@@ -190,28 +229,43 @@ const GlobalDefaults = () => {
 
           <div>
             <label className="text-sm font-medium">Currency</label>
-            <input readOnly value={selectedCountry.currency}
-              className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50" />
+            <input
+              readOnly
+              value={selectedCountry?.currency || ""}
+              className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50"
+            />
           </div>
 
           <div>
             <label className="text-sm font-medium">Calling Code</label>
-            <input readOnly value={selectedCountry.callingCode}
-              className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50" />
+            <input
+              readOnly
+              value={selectedCountry?.callingCode || ""}
+              className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50"
+            />
           </div>
         </div>
 
+        {/* Timezone & Week Start */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="text-sm font-medium">Select Timezone</label>
             <select
               className="mt-1 w-full px-4 py-3 border rounded-lg"
               value={timezone}
-              onChange={e => setTimezone(e.target.value)}
+              onChange={(e) => setTimezone(e.target.value)}
             >
-              {getIANATimezones(selectedCountry.timezones).map(tz => (
-                <option key={tz} value={tz}>{tz}</option>
-              ))}
+
+              {/* {selectedCountry.timezones
+                .filter(tz => tz.includes("/"))
+                .map((tz) => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))} */}
+              {(selectedCountry?.timezones || [])
+                .filter(tz => tz.includes("/"))
+                .map(tz => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
             </select>
           </div>
 
@@ -220,7 +274,7 @@ const GlobalDefaults = () => {
             <select
               className="mt-1 w-full px-4 py-3 border rounded-lg"
               value={weekStart}
-              onChange={e => setWeekStart(e.target.value)}
+              onChange={(e) => setWeekStart(e.target.value)}
             >
               <option>Monday</option>
               <option>Sunday</option>
@@ -228,12 +282,14 @@ const GlobalDefaults = () => {
           </div>
         </div>
 
+        {/* Leave Cycle & Financial Year */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="text-sm font-medium">Select Leave Cycle</label>
-            <select className="mt-1 w-full px-4 py-3 border rounded-lg"
+            <label className="text-sm font-medium">Select Leave Cycle (Start month)</label>
+            <select
+              className="mt-1 w-full px-4 py-3 border rounded-lg"
               value={leaveCycleStartMonth}
-              onChange={e => setLeaveCycleStartMonth(e.target.value)}
+              onChange={(e) => setLeaveCycleStartMonth(e.target.value)}
             >
               {MONTHS.map(m => <option key={m}>{m}</option>)}
             </select>
@@ -241,21 +297,24 @@ const GlobalDefaults = () => {
 
           <div>
             <label className="text-sm font-medium">Financial year starts</label>
-            <select className="mt-1 w-full px-4 py-3 border rounded-lg"
+            <select
+              className="mt-1 w-full px-4 py-3 border rounded-lg"
               value={financialYearStartMonth}
-              onChange={e => setFinancialYearStartMonth(e.target.value)}
+              onChange={(e) => setFinancialYearStartMonth(e.target.value)}
             >
               {MONTHS.map(m => <option key={m}>{m}</option>)}
             </select>
           </div>
         </div>
 
+        {/* Date & Time Format */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="text-sm font-medium">Date format</label>
-            <select className="mt-1 w-full px-4 py-3 border rounded-lg"
+            <label className="text-sm font-medium">Select preferred date format</label>
+            <select
+              className="mt-1 w-full px-4 py-3 border rounded-lg"
               value={dateFormat}
-              onChange={e => setDateFormat(e.target.value)}
+              onChange={(e) => setDateFormat(e.target.value)}
             >
               <option>DD-MM-YYYY</option>
               <option>MM-DD-YYYY</option>
@@ -264,17 +323,16 @@ const GlobalDefaults = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium">Time format</label>
+            <label className="text-sm font-medium">Select preferred time format</label>
             <div className="flex gap-4 mt-2">
-              {["12","24"].map(t => (
+              {["12", "24"].map(t => (
                 <button
                   key={t}
                   onClick={() => setTimeFormat(t)}
-                  className={`flex-1 h-12 rounded-lg font-semibold border ${
-                    timeFormat === t
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-blue-600 border-blue-600"
-                  }`}
+                  className={`flex-1 h-12 md:h-14 rounded-lg font-semibold border transition ${timeFormat === t
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-blue-600 border-blue-600"
+                    }`}
                 >
                   {t} Hours
                 </button>
@@ -282,7 +340,6 @@ const GlobalDefaults = () => {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
