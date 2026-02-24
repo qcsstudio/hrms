@@ -1,65 +1,156 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const ShiftList = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("Active");
+  const dropdownRef = useRef(null);
+
+  /* ================= STATES ================= */
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Active");
+
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedOffice, setSelectedOffice] = useState("");
+  const [applyAll, setApplyAll] = useState(false);
+
   const [openMenu, setOpenMenu] = useState(null);
 
   const [shifts, setShifts] = useState([
     {
       id: 1,
-      name: "Leap Of Faith",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "JD",
+      name: "Morning Shift",
+      date: "12 Jun 2025 11:10 AM",
       assignedCount: 15,
       time: "8:00AM to 6:30PM",
+      country: "India",
+      office: "HeadOffice",
+      status: "Active",
     },
     {
       id: 2,
-      name: "Leap Of Faith",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "AK",
+      name: "Night Shift",
+      date: "15 Jun 2025 10:00 AM",
       assignedCount: 0,
-      time: "XYZ______",
+      time: "9:00PM to 6:00AM",
+      country: "USA",
+      office: "Branch1",
+      status: "Draft",
+    },
+    {
+      id: 3,
+      name: "General Shift",
+      date: "20 Jun 2025",
+      assignedCount: 8,
+      time: "10:00AM to 7:00PM",
+      country: "India",
+      office: "Branch1",
+      status: "Active",
     },
   ]);
 
+  const locationData = {
+    India: ["HeadOffice", "Branch1"],
+    USA: ["Branch1"],
+  };
+
+  const countries = Object.keys(locationData);
+
+  /* ================= OUTSIDE CLICK CLOSE ================= */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenMenu(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* ================= UNIQUE LOCATIONS ================= */
+  const locations = [
+    ...new Set(shifts.map((s) => `${s.country} - ${s.office}`)),
+  ];
+
+  /* ================= FILTER ================= */
+  const filteredShifts = useMemo(() => {
+    let result = shifts;
+
+    if (selectedLocation) {
+      result = result.filter(
+        (shift) => `${shift.country} - ${shift.office}` === selectedLocation
+      );
+    }
+
+    if (statusFilter) {
+      result = result.filter((shift) => shift.status === statusFilter);
+    }
+
+    return result;
+  }, [shifts, selectedLocation, statusFilter]);
+
+  /* ================= DELETE ================= */
   const handleDelete = (id) => {
-    setShifts(shifts.filter((item) => item.id !== id));
+    setShifts((prev) => prev.filter((item) => item.id !== id));
     setOpenMenu(null);
+  };
+
+  /* ================= CLEAR ================= */
+  const handleClear = () => {
+    setSelectedLocation("");
+  };
+
+  /* ================= CONTINUE ================= */
+  const handleContinue = () => {
+    if (!selectedCountry) {
+      alert("Please select country");
+      return;
+    }
+
+    if (!applyAll && !selectedOffice) {
+      alert("Please select office");
+      return;
+    }
+
+    navigate(
+      `/config/track/Attendance/shift/create?country=${encodeURIComponent(
+        selectedCountry
+      )}&office=${applyAll ? "ALL" : encodeURIComponent(selectedOffice)}`
+    );
+
+    setShowDialog(false);
   };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-
-      {/* Header */}
+      {/* ================= HEADER ================= */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-2xl font-semibold">Create Shifts</h1>
+          <h1 className="text-2xl font-semibold">Shift Management</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Manage employee directory, documents, and role-based actions.
+            Manage shifts location wise.
           </p>
         </div>
 
         <button
-          onClick={() => navigate("/config/track/Attendance/shift/create")}
+          onClick={() => setShowDialog(true)}
           className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
         >
           Create +
         </button>
       </div>
 
-      {/* Tabs + Clear */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex bg-gray-100 rounded-lg p-1">
-          {["Active", "Draft", "Me"].map((tab) => (
+      {/* ================= STATUS + FILTER ================= */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-2 bg-gray-200 p-1 rounded-lg">
+          {["Active", "Draft"].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 rounded-md text-sm ${
-                activeTab === tab
-                  ? "bg-white shadow text-black"
+              onClick={() => setStatusFilter(tab)}
+              className={`px-4 py-1.5 text-sm rounded-md transition ${
+                statusFilter === tab
+                  ? "bg-white shadow font-medium"
                   : "text-gray-600"
               }`}
             >
@@ -68,143 +159,200 @@ const ShiftList = () => {
           ))}
         </div>
 
-        <button className="border px-4 py-2 rounded-md text-sm bg-white hover:bg-gray-100">
-          Clear ✕
-        </button>
+        <div className="flex items-center gap-4">
+          <select
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
+            className="border rounded-lg px-4 py-2 bg-white"
+          >
+            <option value="">All Locations</option>
+            {locations.map((loc, index) => (
+              <option key={index} value={loc}>
+                {loc}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={handleClear}
+            className="border px-4 py-2 rounded-lg bg-white hover:bg-gray-100"
+          >
+            Clear ✕
+          </button>
+        </div>
       </div>
 
-      {/* Table Header */}
-      <div className="grid grid-cols-[2fr_1fr_2fr_1.5fr_auto] text-sm text-gray-500 font-medium px-4 py-3 border-b">
+      {/* ================= TABLE HEADER ================= */}
+      <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] text-sm text-gray-500 font-medium px-4 py-3 border-b">
         <div>Shift Name</div>
-        <div>Created By</div>
-        <div>Assigned Employee</div>
-        <div>Shift Time</div>
+        <div>Country</div>
+        <div>Office</div>
+        <div>Employees</div>
+        <div>Time</div>
         <div className="text-right">Action</div>
       </div>
 
-      {/* Rows */}
+      {/* ================= SHIFT LIST ================= */}
       <div className="space-y-4 mt-4">
-        {shifts.map((shift) => (
+        {filteredShifts.map((shift) => (
           <div
             key={shift.id}
-            className="relative bg-white rounded-xl border px-4 py-4 grid grid-cols-[2fr_1fr_2fr_1.5fr_auto] items-center"
+            className="bg-white rounded-xl border px-4 py-4 grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] items-center"
           >
-
-            {/* Shift Name */}
             <div>
-              <p className="font-medium text-sm">{shift.name}</p>
-              <p className="text-xs text-gray-400 mt-1">{shift.date}</p>
+              <p className="font-medium">{shift.name}</p>
+              <p className="text-xs text-gray-400">{shift.date}</p>
             </div>
 
-            {/* Created By */}
-            <div>
-              <div className="w-9 h-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-semibold">
-                {shift.createdBy}
-              </div>
-            </div>
+            <div>{shift.country}</div>
+            <div>{shift.office}</div>
+            <div>{shift.assignedCount}</div>
+            <div>{shift.time}</div>
 
-            {/* Assigned Employees */}
-            <div>
-              {shift.assignedCount > 0 ? (
-                <div className="flex -space-x-2">
-                  {[...Array(4)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white"
-                    />
-                  ))}
-                  {shift.assignedCount > 4 && (
-                    <div className="w-8 h-8 rounded-full bg-black text-white text-xs flex items-center justify-center border-2 border-white">
-                      +{shift.assignedCount - 4}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <span className="text-sm text-gray-500">
-                  No Employee Assigned
-                </span>
-              )}
-            </div>
-
-            {/* Shift Time */}
-            <div className="text-sm">{shift.time}</div>
-
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-2 relative">
-
-              {/* Edit */}
+            {/* ================= ACTION WITH 3 DOT ================= */}
+            <div
+              className="flex items-center justify-end gap-2 relative"
+              ref={dropdownRef}
+            >
               <button
                 onClick={() =>
-                  navigate(`/config/track/Attendance/shift/edit/${shift.id}`)
+                  navigate(
+                    `/config/track/Attendance/shift/edit/${shift.id}`
+                  )
                 }
                 className="p-2 rounded-md hover:bg-gray-100"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5 text-gray-500"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"
-                  />
-                </svg>
+                ✏
               </button>
 
-              {/* 3 Dot */}
               <button
                 onClick={() =>
                   setOpenMenu(openMenu === shift.id ? null : shift.id)
                 }
                 className="p-2 rounded-md hover:bg-gray-100"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5 text-gray-500"
-                >
-                  <circle cx="12" cy="5" r="1.5" />
-                  <circle cx="12" cy="12" r="1.5" />
-                  <circle cx="12" cy="19" r="1.5" />
-                </svg>
+                ⋮
               </button>
 
-              {/* Dropdown */}
               {openMenu === shift.id && (
                 <div className="absolute right-0 top-10 w-36 bg-white border rounded-md shadow-md z-10">
-
-                  {/* View */}
                   <button
-                    onClick={() => {
-                      navigate(`/config/track/Attendance/shift/view/${shift.id}`);
-                      setOpenMenu(null);
-                    }}
+                    onClick={() =>
+                      navigate(
+                        `/config/track/Attendance/shift/view/${shift.id}`
+                      )
+                    }
                     className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                   >
                     👁 View
                   </button>
 
-                  {/* Delete */}
                   <button
                     onClick={() => handleDelete(shift.id)}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                   >
                     🗑 Delete
                   </button>
-
                 </div>
               )}
-
             </div>
-
           </div>
         ))}
       </div>
+
+      {/* ================= MODAL ================= */}
+      {showDialog && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white w-[480px] rounded-2xl shadow-xl p-6 relative">
+
+            <button
+              onClick={() => setShowDialog(false)}
+              className="absolute top-5 right-5 text-gray-500 hover:text-black text-lg"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-xl font-semibold mb-1">
+              Creating for Which Country
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              Please select where this shift will be applied.
+            </p>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">
+                Select Country
+              </label>
+              <select
+                value={selectedCountry}
+                onChange={(e) => {
+                  setSelectedCountry(e.target.value);
+                  setSelectedOffice("");
+                }}
+                className="w-full border rounded-xl px-4 py-3 bg-gray-50 focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Choose Country</option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+
+              <div className="flex items-center gap-2 mt-3">
+                <input
+                  type="checkbox"
+                  checked={applyAll}
+                  onChange={() => setApplyAll(!applyAll)}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm text-gray-500">
+                  Apply to all offices in this country
+                </span>
+              </div>
+            </div>
+
+            {!applyAll && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Select Office
+                </label>
+                <select
+                  value={selectedOffice}
+                  onChange={(e) => setSelectedOffice(e.target.value)}
+                  disabled={!selectedCountry}
+                  className="w-full border rounded-xl px-4 py-3 bg-gray-50 focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Choose Office</option>
+                  {selectedCountry &&
+                    locationData[selectedCountry].map((office) => (
+                      <option key={office} value={office}>
+                        {office}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDialog(false)}
+                className="px-5 py-2.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleContinue}
+                className="px-5 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Continue
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };
