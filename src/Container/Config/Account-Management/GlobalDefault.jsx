@@ -3,6 +3,11 @@ import Select, { components } from "react-select";
 import createAxios from "../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
+const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
+
 const GlobalDefaults = () => {
   const { token } = useSelector(state => state.user);
   const axiosInstance = createAxios(token);
@@ -10,15 +15,21 @@ const GlobalDefaults = () => {
   const [globalSettings, setGlobalSettings] = useState(null);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
-
   const [timezone, setTimezone] = useState("");
   const [weekStart, setWeekStart] = useState("Monday");
-
+  const [leaveCycleStartMonth, setLeaveCycleStartMonth] = useState("April");
+  const [financialYearStartMonth, setFinancialYearStartMonth] = useState("April");
+  const [dateFormat, setDateFormat] = useState("DD-MM-YYYY");
+  const [timeFormat, setTimeFormat] = useState("24");
   const [subdomain, setSubdomain] = useState("");
   const [industrytype, setIndustrytype] = useState("");
   const [name, setName] = useState("");
 
-  /* ---------------- COUNTRIES ---------------- */
+  /* ---------- helpers ---------- */
+  const getIANATimezones = (zones = []) =>
+    zones.filter(z => z.includes("/"));
+
+  /* ---------- fetch countries ---------- */
   useEffect(() => {
     fetch("https://restcountries.com/v3.1/all?fields=name,cca2,currencies,idd,timezones,flags")
       .then(res => res.json())
@@ -32,7 +43,7 @@ const GlobalDefaults = () => {
               c.idd?.root && c.idd?.suffixes?.length
                 ? c.idd.root + c.idd.suffixes[0]
                 : "",
-            timezones: c.timezones || [],
+            timezones: getIANATimezones(c.timezones || []),
             flag: c.flags?.png || c.flags?.svg
           }))
           .sort((a, b) => a.label.localeCompare(b.label));
@@ -41,82 +52,73 @@ const GlobalDefaults = () => {
       });
   }, []);
 
-  /* ---------------- GLOBAL SETTINGS ---------------- */
+  /* ---------- fetch global settings ---------- */
   useEffect(() => {
-    const fetchGlobalSettings = async () => {
-      try {
-        const res = await axiosInstance.get(
-          "/companies/global-setting-get",
-          { meta: { auth: "ADMIN_AUTH" } }
-        );
-        setGlobalSettings(res?.data?.data);
-      } catch (err) {
-        console.error(err);
-      }
+    const fetchSettings = async () => {
+      const res = await axiosInstance.get(
+        "/companies/global-setting-get",
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+      setGlobalSettings(res?.data?.data);
     };
-    fetchGlobalSettings();
+    fetchSettings();
   }, []);
 
-  /* ---------------- PREFILL ---------------- */
+  /* ---------- prefill ---------- */
   useEffect(() => {
     if (!globalSettings || countries.length === 0) return;
 
-    const gs = globalSettings;
-
     const country =
       countries.find(
-        c => c.label.toLowerCase() === gs.country?.toLowerCase()
+        c => c.label.toLowerCase() === globalSettings.country?.toLowerCase()
       ) || countries[0];
 
     setSelectedCountry(country);
-    setTimezone(gs.timezone || country.timezones?.[0] || "");
-
-    setSubdomain(gs.slug || "");
-    setIndustrytype(gs.industryType || "");
-    setName(gs.name || "");
+    setTimezone(country.timezones[0] || "");
+    setSubdomain(globalSettings.slug || "");
+    setIndustrytype(globalSettings.industryType || "");
+    setName(globalSettings.name || "");
   }, [globalSettings, countries]);
 
-  /* ---------------- AUTO SET TIMEZONE ON COUNTRY CHANGE ---------------- */
+  /* ---------- country change ---------- */
   useEffect(() => {
-    if (!selectedCountry) return;
-
-    // 🔥 Direct IANA timezone, no UTC
-    if (selectedCountry.timezones?.length > 0) {
+    if (selectedCountry?.timezones?.length) {
       setTimezone(selectedCountry.timezones[0]);
     }
   }, [selectedCountry]);
 
-  /* ---------------- SAVE ---------------- */
+  /* ---------- save ---------- */
   const handleSave = async () => {
-    if (!selectedCountry || !timezone) return;
+    if (!selectedCountry) return;
 
     const payload = {
       name: name.trim(),
       slug: subdomain.trim(),
       industryType: industrytype,
       country: selectedCountry.label,
-      timezone, // ✅ Asia/Kolkata / America/New_York
+      timezone,
       currency: selectedCountry.currency,
-      callingCode: selectedCountry.callingCode,
+      leaveCycleStartMonth,
+      financialYearStartMonth,
+      dateFormat,
+      timeFormat: timeFormat === "24" ? "24-hour" : "12-hour",
+      callingCode: selectedCountry.callingCode
     };
 
-    try {
-      await axiosInstance.patch(
-        "/companies/global-setting-edit",
-        payload,
-        { meta: { auth: "ADMIN_AUTH" } }
-      );
-      alert("Global defaults saved successfully!");
-    } catch {
-      alert("Failed to save");
-    }
+    console.log("FINAL PAYLOAD", payload);
+
+    await axiosInstance.patch(
+      "/companies/global-setting-edit",
+      payload,
+      { meta: { auth: "ADMIN_AUTH" } }
+    );
+
+    alert("Global defaults saved successfully!");
   };
 
-  if (!globalSettings || !selectedCountry) {
-    return <div>Loading...</div>;
-  }
+  if (!globalSettings || !selectedCountry) return <div>Loading...</div>;
 
-  /* ---------------- CUSTOM SELECT UI ---------------- */
+  /* ---------- custom select ---------- */
   const CountryOption = ({ data, innerRef, innerProps }) => (
     <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1">
       <img src={data.flag} className="w-5 h-4 rounded-sm" />
@@ -138,69 +140,32 @@ const GlobalDefaults = () => {
       <div className="flex justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold">Global Defaults</h1>
+          <p className="text-sm text-gray-500">Manage employee settings</p>
         </div>
-        <button
-          onClick={handleSave}
-          className="px-6 py-3 rounded-lg bg-blue-600 text-white"
-        >
+        <button onClick={handleSave} className="px-6 py-3 bg-blue-600 text-white rounded-lg">
           Save Changes
         </button>
       </div>
 
       <div className="space-y-6">
-        <div>
-          <label>Your slug</label>
-          <input
-            className="mt-1 w-full px-4 py-3 border rounded-lg"
-            value={subdomain}
-            onChange={(e) => setSubdomain(e.target.value)}
-          />
-        </div>
+        <input className="w-full px-4 py-3 border rounded-lg" value={subdomain} onChange={e=>setSubdomain(e.target.value)} />
 
         <div className="grid md:grid-cols-3 gap-6">
-          <div>
-            <label>Select Country</label>
-            <Select
-              options={countries}
-              value={selectedCountry}
-              onChange={setSelectedCountry}
-              components={{ Option: CountryOption, SingleValue: CountrySingleValue }}
-            />
-          </div>
-
-          <div>
-            <label>Currency</label>
-            <input readOnly value={selectedCountry.currency} className="input" />
-          </div>
-
-          <div>
-            <label>Calling Code</label>
-            <input readOnly value={selectedCountry.callingCode} className="input" />
-          </div>
+          <Select
+            options={countries}
+            value={selectedCountry}
+            onChange={setSelectedCountry}
+            components={{ Option: CountryOption, SingleValue: CountrySingleValue }}
+          />
+          <input readOnly value={selectedCountry.currency} className="px-4 py-3 border rounded-lg bg-gray-50"/>
+          <input readOnly value={selectedCountry.callingCode} className="px-4 py-3 border rounded-lg bg-gray-50"/>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <label>Select Timezone</label>
-            <select
-              className="mt-1 w-full px-4 py-3 border rounded-lg"
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-            >
-              {selectedCountry.timezones.map(tz => (
-                <option key={tz} value={tz}>{tz}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label>Week starts on</label>
-            <select className="mt-1 w-full px-4 py-3 border rounded-lg">
-              <option>Monday</option>
-              <option>Sunday</option>
-            </select>
-          </div>
-        </div>
+        <select value={timezone} onChange={e=>setTimezone(e.target.value)} className="w-full px-4 py-3 border rounded-lg">
+          {selectedCountry.timezones.map(tz => (
+            <option key={tz}>{tz}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
