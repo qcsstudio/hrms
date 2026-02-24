@@ -92,9 +92,9 @@ const GlobalDefaults = () => {
     // const countryOption =
     //   countries.find(c => c.label === gs.country) || null;
     const countryOption =
-  countries.find(
-    c => c.label.toLowerCase().trim() === gs.country?.toLowerCase().trim()
-  ) || countries[0];
+      countries.find(
+        c => c.label.toLowerCase().trim() === gs.country?.toLowerCase().trim()
+      ) || countries[0];
 
     setSelectedCountry(countryOption);
 
@@ -132,7 +132,7 @@ const GlobalDefaults = () => {
     if (!timezone && selectedCountry?.timezones?.length) {
       setTimezone(selectedCountry.timezones[0]);
     }
-  }, [selectedCountry]);
+  }, [selectedCountry,timezone]);
 
   const getValidTimezone = (country, timezone, countryTimezones = []) => {
     // 1️⃣ Agar already IANA format hai (Asia/Europe/America etc.)
@@ -205,7 +205,8 @@ const GlobalDefaults = () => {
   // };
 
   const handleSave = async () => {
-    if (!selectedCountry) return;
+    // if (!selectedCountry) return;
+    if (!selectedCountry || !selectedCountry.currency) return;
 
     const payload = {
       name: name.trim(),
@@ -244,8 +245,8 @@ const GlobalDefaults = () => {
 
   // if (!selectedCountry) return <div className="p-8">Loading...</div>;
   if (!globalSettings || countries.length === 0) {
-  return <div>Loading...</div>;
-}
+    return <div>Loading...</div>;
+  }
 
   const CountryOption = ({ data, innerRef, innerProps }) => (
     <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1 cursor-pointer">
@@ -311,7 +312,7 @@ const GlobalDefaults = () => {
             <label className="text-sm font-medium">Currency</label>
             <input
               readOnly
-              value={selectedCountry.currency}
+              value={selectedCountry.currency || ""}
               className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50"
             />
           </div>
@@ -320,7 +321,7 @@ const GlobalDefaults = () => {
             <label className="text-sm font-medium">Calling Code</label>
             <input
               readOnly
-              value={selectedCountry.callingCode}
+              value={selectedCountry.callingCode || ""}
               className="mt-1 w-full px-4 py-3 border rounded-lg bg-gray-50"
             />
           </div>
@@ -335,15 +336,17 @@ const GlobalDefaults = () => {
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
             >
-              {/* {selectedCountry.timezones.map((tz) => (
-                <option key={tz} value={tz}>{tz}</option>
-              ))} */}
-              {selectedCountry.timezones
+
+              {/* {selectedCountry.timezones
                 .filter(tz => tz.includes("/"))
                 .map((tz) => (
                   <option key={tz} value={tz}>{tz}</option>
+                ))} */}
+              {(selectedCountry?.timezones || [])
+                .filter(tz => tz.includes("/"))
+                .map(tz => (
+                  <option key={tz} value={tz}>{tz}</option>
                 ))}
-
             </select>
           </div>
 
@@ -408,8 +411,8 @@ const GlobalDefaults = () => {
                   key={t}
                   onClick={() => setTimeFormat(t)}
                   className={`flex-1 h-12 md:h-14 rounded-lg font-semibold border transition ${timeFormat === t
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-blue-600 border-blue-600"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-blue-600 border-blue-600"
                     }`}
                 >
                   {t} Hours
