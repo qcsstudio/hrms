@@ -155,8 +155,6 @@ const GlobalDefaults = () => {
     return timezone;
   };
 
-
-
   // Handle Save
   // const handleSave = async () => {
   //   if (!selectedCountry) return;
