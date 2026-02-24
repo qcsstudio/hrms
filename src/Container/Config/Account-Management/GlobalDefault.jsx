@@ -89,8 +89,12 @@ const GlobalDefaults = () => {
     const gs = globalSettings; // 👈 API ka direct object
 
     // Country mapping (API me sirf country name hai)
+    // const countryOption =
+    //   countries.find(c => c.label === gs.country) || null;
     const countryOption =
-      countries.find(c => c.label === gs.country) || null;
+  countries.find(
+    c => c.label.toLowerCase().trim() === gs.country?.toLowerCase().trim()
+  ) || countries[0];
 
     setSelectedCountry(countryOption);
 
@@ -238,7 +242,10 @@ const GlobalDefaults = () => {
   };
 
 
-  if (!selectedCountry) return <div className="p-8">Loading...</div>;
+  // if (!selectedCountry) return <div className="p-8">Loading...</div>;
+  if (!globalSettings || countries.length === 0) {
+  return <div>Loading...</div>;
+}
 
   const CountryOption = ({ data, innerRef, innerProps }) => (
     <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1 cursor-pointer">
