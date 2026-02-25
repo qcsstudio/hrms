@@ -76,6 +76,7 @@ useEffect(()=>{
         }
       )
       setGetcountries(res?.data)
+      
     } catch (error) {
       console.warn("api is not working",error)
     }
