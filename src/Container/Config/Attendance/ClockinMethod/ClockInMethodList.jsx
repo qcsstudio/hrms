@@ -70,13 +70,13 @@ const axiosInstance = createAxios(token)
 useEffect(()=>{
   const fetchcountries = async () => {
     try {
-      const res = await axiosInstance.get('/config/companyindiaces-data',
+      const res = await axiosInstance.get('/config/company-offices-data',
         {
           meta:{auth:'ADMIN_AUTH'}
         }
       )
       setGetcountries(res?.data)
-      
+
     } catch (error) {
       console.warn("api is not working",error)
     }

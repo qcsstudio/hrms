@@ -107,6 +107,7 @@ const SuperAdminDashboard = () => {
     fetchdashboarddata()
   }, [])
 
+  
   // filter logic (NO DESIGN CHANGE)
   const filteredCompanies =
     activeFilter === 'All'
