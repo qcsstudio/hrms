@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 /* ================= INITIAL DATA ================= */
 const initialMethods = [
@@ -42,6 +44,7 @@ const initialMethods = [
 ];
 
 export default function ClockInMethodList() {
+  const {token} = useSelector(state=>state.user)
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
@@ -56,12 +59,31 @@ export default function ClockInMethodList() {
 
   const [openMenu, setOpenMenu] = useState(null);
 
-  const locationData = {
-    India: ["HeadOffice", "Branch1"],
-    USA: ["Branch1"],
-  };
+  const [getcountries,setGetcountries] = useState([])
 
-  const countries = Object.keys(locationData);
+  // const locationData = {
+  //   India: ["HeadOffice", "Branch1"],
+  //   USA: ["Branch1"],
+  // };
+const axiosInstance = createAxios(token)
+// countries api=====================================
+useEffect(()=>{
+  const fetchcountries = async () => {
+    try {
+      const res = await axiosInstance.get('/config/companyindiaces-data',
+        {
+          meta:{auth:'ADMIN_AUTH'}
+        }
+      )
+      setGetcountries(res?.data)
+      
+    } catch (error) {
+      console.warn("api is not working",error)
+    }
+  };
+  fetchcountries()
+},[])
+  // const countries = Object.keys(locationData);
 
   /* ================= CLOSE DROPDOWN ================= */
   useEffect(() => {
@@ -317,7 +339,7 @@ export default function ClockInMethodList() {
                 className="w-full border rounded-xl px-4 py-3 bg-gray-50 focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Choose Country</option>
-                {countries.map((country) => (
+                {getcountries.map((country) => (
                   <option key={country} value={country}>
                     {country}
                   </option>
