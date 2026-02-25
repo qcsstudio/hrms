@@ -289,6 +289,9 @@ const SideBar = () => {
       // case "attendancereqcycle":
       //   navigate("/config/track/Attendance/extra-time/list");
       //   break;
+
+      case '':
+        navigate('/config/track/deviceintegration')
          
 
 
