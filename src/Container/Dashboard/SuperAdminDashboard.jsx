@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   employee,
   action,
@@ -24,6 +24,8 @@ const SuperAdminDashboard = () => {
     trialDuration: '',
     linkExpiryHours: ''
   })
+
+  const [dashboarddata, setDashboarddata] = useState()
 
   const axiosInstance = createAxios(token)
 
@@ -92,6 +94,18 @@ const SuperAdminDashboard = () => {
       bg: 'bg-emerald-100'
     }
   ]
+
+  useEffect(() => {
+    const fetchdashboarddata = async () => {
+      const res = axiosInstance.get('/auth/super-admin/dashboard', {
+        meta: { auth: "ADMIN_AUTH" }
+      })
+      setDashboarddata(res?.data)
+      console.log("superadmin dashboard data:=====", res?.data)
+
+    };
+    fetchdashboarddata()
+  }, [])
 
   // filter logic (NO DESIGN CHANGE)
   const filteredCompanies =
@@ -178,8 +192,8 @@ const SuperAdminDashboard = () => {
                 key={item}
                 onClick={() => setActiveFilter(item)}
                 className={`px-4 py-2 text-[#212529] ${activeFilter === item
-                    ? ' bg-white rounded-lg'
-                    : ''
+                  ? ' bg-white rounded-lg'
+                  : ''
                   }`}
               >
                 {item}
