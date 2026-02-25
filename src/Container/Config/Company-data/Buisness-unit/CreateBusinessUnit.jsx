@@ -17,6 +17,8 @@ const CreateBusinessUnit = () => {
   const [logoPreview, setLogoPreview] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
 
+  const [companyOfficeId,setCompanyOfficeId] = useState([])
+
   const [form, setForm] = useState({
     businessUnitName: "",
     locationName: "",
@@ -65,7 +67,10 @@ const CreateBusinessUnit = () => {
         locationName: form.locationName,
         logo: logoFile || null, // ✅ direct file
         assignBusinessHead: assignHead,
-        businessHead: assignHead ? form.businessHead : null
+        businessHead: assignHead ? form.businessHead : null,
+         companyOfficeId: [
+          companyOfficeId
+  ]
       };
 
       await axiosInstance.post(

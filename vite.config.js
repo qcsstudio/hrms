@@ -9,5 +9,16 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+   build: {
+    chunkSizeWarningLimit: 1000, // increase limit
+
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom']
+        }
+      }
+    }
+  }
    
 })
