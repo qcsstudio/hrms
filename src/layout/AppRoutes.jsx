@@ -1,191 +1,313 @@
-import React from 'react'
-import Login from '../Components/Auth/Login'
-import { Route, Routes } from 'react-router-dom'
-import SuperAdminDashboard from '../Container/Dashboard/SuperAdminDashboard'
-// import Dashboardemployee from '../Employee'
-// import EmployeeDashboard1 from '../Container/DashboardPages/Employee/DashboardEmployeeHr'
-import AddCompany from '../Components/Adding-Company/AddCompany'
-import MainDashboardLayout from './mainLayout'
-// import Admindashboard from '../Container/Dashboard/Admindashboard'
-// import DashboardAttandance from '../DashboardAttandanceEmployee'
-// import LeaveManagementHr from '../LeaveManagementHr'
-// import DashboardPayroll1 from '../DashboardPayroll1'
-// import DashboardAttandanceEmployee from '../DashboardAttandanceEmployee'
-import DashboardPayroll1 from '../Container/Payroll/DashboardPayroll1'
-import PrivateRoute from './privateRoute'
-import Employee from '../Container/DashboardPages/Employee/Employee'
-import EmployeeHrTL from '../Container/DashboardPages/Employee/EmployeeHrTL'
-import EmployeeHr from '../Container/DashboardPages/Employee/EmployeeHr'
-import AttendanceEmployee from '../Container/DashboardPages/Attendance/AttendanceEmployee'
-import DashboardAttandance2 from '../Container/DashboardPages/Attendance/AttendanceHrTL'
-import AttendanceHrTL from '../Container/DashboardPages/Attendance/AttendanceHrTL'
-import Admindashboard from '../Container/Dashboard/Admindashboard'
-import PrivateRouteOrg from './privateRouteOrg'
-import Addingyourself from '../Container/DashboardPages/Employee/AddingYourself/Addingyourself'
-// import PersonalProfile from '../Container/DashboardPages/Employee/AddingYourself/PersonalProfile'
-import EmployeeProfile from '../Container/DashboardPages/Employee/AddingYourself/EmployeeProfile'
-import LeavemanagementHr from '../Container/DashboardPages/LeaveManagement/LeavemanagementEmployee'
-import LeaveManagement2 from '../Container/DashboardPages/LeaveManagement/LeaveManagementTLHr'
-import LeaveManagementTLHr from '../Container/DashboardPages/LeaveManagement/LeaveManagementTLHr'
-import LeaveManagementHr1 from '../Container/DashboardPages/LeaveManagement/LeaveManagementHr1'
-import GlobalDefaults from '../Container/Config/Account-Management/GlobalDefault'
-import BrandingSetup from '../Container/Config/Account-Management/BrandingSetup'
-import CompanyOffices from '../Container/Config/Account-Management/Company/CompanyOffices'
-import CompanyOfficeCreate from '../Container/Config/Account-Management/Company/CompanyOfficeCreate'
-import CompanyOfficeEdit from '../Container/Config/Account-Management/Company/CompanyOfficeEdit'
-import IncorporationDetails from '../Container/Config/Account-Management/IncorporationDetails'
-import CreateEmployeeId from '../Container/Config/Employee-data/CreateEmployeeId'
-import ProbationList from '../Container/Config/Employee-data/Probation/ProbationList'
-import CreateProbation from '../Container/Config/Employee-data/Probation/CreateProbation'
-import ProbationEdit from '../Container/Config/Employee-data/Probation/ProbationEdit'
-import ProbationView from '../Container/Config/Employee-data/Probation/ProbationView'
-import ExitReasonList from '../Container/Config/Employee-data/Exitreason/ExitReason'
-import CreateExitReason from '../Container/Config/Employee-data/Exitreason/CreateExitReason'
-import CommonAccess from '../Container/Config/Employee-data/CommonAccess'
-import CreateCustomData from '../Container/Config/Employee-data/custom/CreateCustomData'
-import CustomDataList from '../Container/Config/Employee-data/custom/CustomDataList'
-import ApprovalWorkflowList from '../Container/Config/Employee-data/Approvalworkflow/ApprovalWorkflow'
-import CreateApprovalWorkflow from '../Container/Config/Employee-data/Approvalworkflow/CreateApprovalworkflow'
-import EditApprovalWorkflow from '../Container/Config/Employee-data/Approvalworkflow/EditApprovalWorkflow'
-import ExitPolicyList from '../Container/Config/Employee-data/ExitPolicy/ExitPolicyList'
-import ExitPolicyCreate from '../Container/Config/Employee-data/ExitPolicy/ExitPolicyCreate'
-import EditExitPolicy from '../Container/Config/Employee-data/ExitPolicy/EditExitPolicy'
-import ViewExitPolicy from '../Container/Config/Employee-data/ExitPolicy/ViewExitPolicy'
-import DefaultPrivacyPolicy from '../Container/Config/Employee-data/DefaultPrivacyPolicy'
-import DefaultPermission from '../Container/Config/Employee-data/DefaultPermission'
-import BusinessUnit from '../Container/Config/Company-data/Buisness-unit/BusinessUnit'
-import CreateBusinessUnit from '../Container/Config/Company-data/Buisness-unit/CreateBusinessUnit'
-import EditBusinessUnit from '../Container/Config/Company-data/Buisness-unit/EditBusinessUnit'
-import ViewBusinessUnit from '../Container/Config/Company-data/Buisness-unit/ViewBusinessUnit'
-import Department from '../Container/Config/Company-data/Department/Department'
-import CreateDepartment from '../Container/Config/Company-data/Department/CreateDepartment'
-import EditDepartment from '../Container/Config/Company-data/Department/EditDepartment'
-import ViewDepartment from '../Container/Config/Company-data/Department/ViewDepartment'
-import Designation from '../Container/Config/Company-data/Designation/Designation'
-import CreateDesignation from '../Container/Config/Company-data/Designation/CreateDesignation'
-import EditDesignation from '../Container/Config/Company-data/Designation/EditDesignation'
-import ViewDesignation from '../Container/Config/Company-data/Designation/ViewDesignation'
-import Grade from '../Container/Config/Company-data/Grade/Grade'
-import CreateGrade from '../Container/Config/Company-data/Grade/CreateGrade'
-import EditGrade from '../Container/Config/Company-data/Grade/EditGrade'
-import ViewGrade from '../Container/Config/Company-data/Grade/ViewGrade'
-import Team from '../Container/Config/Company-data/Team/Team'
-import CreateTeam from '../Container/Config/Company-data/Team/CreateTeam'
-import EditTeam from '../Container/Config/Company-data/Team/EditTeam'
-import ViewTeam from '../Container/Config/Company-data/Team/ViewTeam'
-import ShiftCreate from '../Container/Config/Attendance/Shift/ShiftCreate'
-import ShiftList from '../Container/Config/Attendance/Shift/ShiftList'
-import ShiftEdit from '../Container/Config/Attendance/Shift/ShiftEdit'
-import ShiftView from '../Container/Config/Attendance/Shift/ShiftView'
-import ClockInMethodList from '../Container/Config/Attendance/ClockinMethod/ClockInMethodList'
-import ClockInMethodCreate from '../Container/Config/Attendance/ClockinMethod/ClockInMethodCreate'
-import ClockInMethodEdit from '../Container/Config/Attendance/ClockinMethod/ClockInMethodEdit'
-import ClockInMethodView from '../Container/Config/Attendance/ClockinMethod/ClockInMethodView'
-import AttendancePolicyList from '../Container/Config/Attendance/AttendancePolicy/AttendancePolicyList'
-import AttendancePolicyCreate from '../Container/Config/Attendance/AttendancePolicy/AttendancePolicyCreate'
-import ExtraTimeCreate from '../Container/Config/Attendance/ExtraTime/ExtraTimeCreate'
-import ExtraTimeList from '../Container/Config/Attendance/ExtraTime/ExtraTimeList'
+import React, { lazy, Suspense } from "react";
+import { Route, Routes } from "react-router-dom";
 
+import PrivateRoute from "./privateRoute";
+import PrivateRouteOrg from "./privateRouteOrg";
+import MainDashboardLayout from "./mainLayout";
+
+/* ================= AUTH / COMMON ================= */
+const Login = lazy(() => import("../Components/Auth/Login"));
+const AddCompany = lazy(() => import("../Components/Adding-Company/AddCompany"));
+
+/* ================= DASHBOARDS ================= */
+const Admindashboard = lazy(() =>
+  import("../Container/Dashboard/Admindashboard")
+);
+const SuperAdminDashboard = lazy(() =>
+  import("../Container/Dashboard/SuperAdminDashboard")
+);
+
+/* ================= MAIN MODULES ================= */
+const EmployeeHrTL = lazy(() =>
+  import("../Container/DashboardPages/Employee/EmployeeHrTL")
+);
+const EmployeeHr = lazy(() =>
+  import("../Container/DashboardPages/Employee/EmployeeHr")
+);
+const AttendanceEmployee = lazy(() =>
+  import("../Container/DashboardPages/Attendance/AttendanceEmployee")
+);
+const LeavemanagementHr = lazy(() =>
+  import("../Container/DashboardPages/LeaveManagement/LeavemanagementEmployee")
+);
+const DashboardPayroll1 = lazy(() =>
+  import("../Container/Payroll/DashboardPayroll1")
+);
+
+/* ================= PROFILE ================= */
+const Addingyourself = lazy(() =>
+  import("../Container/DashboardPages/Employee/AddingYourself/Addingyourself")
+);
+const EmployeeProfile = lazy(() =>
+  import("../Container/DashboardPages/Employee/AddingYourself/EmployeeProfile")
+);
+
+/* ================= CONFIG : HRIS ================= */
+const GlobalDefaults = lazy(() =>
+  import("../Container/Config/Account-Management/GlobalDefault")
+);
+const BrandingSetup = lazy(() =>
+  import("../Container/Config/Account-Management/BrandingSetup")
+);
+const IncorporationDetails = lazy(() =>
+  import("../Container/Config/Account-Management/IncorporationDetails")
+);
+const CompanyOffices = lazy(() =>
+  import("../Container/Config/Account-Management/Company/CompanyOffices")
+);
+const CompanyOfficeCreate = lazy(() =>
+  import("../Container/Config/Account-Management/Company/CompanyOfficeCreate")
+);
+const CompanyOfficeEdit = lazy(() =>
+  import("../Container/Config/Account-Management/Company/CompanyOfficeEdit")
+);
+
+/* ================= CONFIG : EMPLOYEE DATA ================= */
+const CreateEmployeeId = lazy(() =>
+  import("../Container/Config/Employee-data/CreateEmployeeId")
+);
+const ProbationList = lazy(() =>
+  import("../Container/Config/Employee-data/Probation/ProbationList")
+);
+const CreateProbation = lazy(() =>
+  import("../Container/Config/Employee-data/Probation/CreateProbation")
+);
+const ProbationEdit = lazy(() =>
+  import("../Container/Config/Employee-data/Probation/ProbationEdit")
+);
+const ProbationView = lazy(() =>
+  import("../Container/Config/Employee-data/Probation/ProbationView")
+);
+const ExitReasonList = lazy(() =>
+  import("../Container/Config/Employee-data/Exitreason/ExitReason")
+);
+const CreateExitReason = lazy(() =>
+  import("../Container/Config/Employee-data/Exitreason/CreateExitReason")
+);
+const CommonAccess = lazy(() =>
+  import("../Container/Config/Employee-data/CommonAccess")
+);
+const CreateCustomData = lazy(() =>
+  import("../Container/Config/Employee-data/custom/CreateCustomData")
+);
+const CustomDataList = lazy(() =>
+  import("../Container/Config/Employee-data/custom/CustomDataList")
+);
+const ApprovalWorkflowList = lazy(() =>
+  import("../Container/Config/Employee-data/Approvalworkflow/ApprovalWorkflow")
+);
+const CreateApprovalWorkflow = lazy(() =>
+  import("../Container/Config/Employee-data/Approvalworkflow/CreateApprovalworkflow")
+);
+const EditApprovalWorkflow = lazy(() =>
+  import("../Container/Config/Employee-data/Approvalworkflow/EditApprovalWorkflow")
+);
+const ExitPolicyList = lazy(() =>
+  import("../Container/Config/Employee-data/ExitPolicy/ExitPolicyList")
+);
+const ExitPolicyCreate = lazy(() =>
+  import("../Container/Config/Employee-data/ExitPolicy/ExitPolicyCreate")
+);
+const EditExitPolicy = lazy(() =>
+  import("../Container/Config/Employee-data/ExitPolicy/EditExitPolicy")
+);
+const ViewExitPolicy = lazy(() =>
+  import("../Container/Config/Employee-data/ExitPolicy/ViewExitPolicy")
+);
+const DefaultPrivacyPolicy = lazy(() =>
+  import("../Container/Config/Employee-data/DefaultPrivacyPolicy")
+);
+const DefaultPermission = lazy(() =>
+  import("../Container/Config/Employee-data/DefaultPermission")
+);
+
+/* ================= CONFIG : COMPANY DATA ================= */
+const BusinessUnit = lazy(() =>
+  import("../Container/Config/Company-data/Buisness-unit/BusinessUnit")
+);
+const CreateBusinessUnit = lazy(() =>
+  import("../Container/Config/Company-data/Buisness-unit/CreateBusinessUnit")
+);
+const EditBusinessUnit = lazy(() =>
+  import("../Container/Config/Company-data/Buisness-unit/EditBusinessUnit")
+);
+const ViewBusinessUnit = lazy(() =>
+  import("../Container/Config/Company-data/Buisness-unit/ViewBusinessUnit")
+);
+
+const Department = lazy(() =>
+  import("../Container/Config/Company-data/Department/Department")
+);
+const CreateDepartment = lazy(() =>
+  import("../Container/Config/Company-data/Department/CreateDepartment")
+);
+const EditDepartment = lazy(() =>
+  import("../Container/Config/Company-data/Department/EditDepartment")
+);
+const ViewDepartment = lazy(() =>
+  import("../Container/Config/Company-data/Department/ViewDepartment")
+);
+
+const Designation = lazy(() =>
+  import("../Container/Config/Company-data/Designation/Designation")
+);
+const CreateDesignation = lazy(() =>
+  import("../Container/Config/Company-data/Designation/CreateDesignation")
+);
+const EditDesignation = lazy(() =>
+  import("../Container/Config/Company-data/Designation/EditDesignation")
+);
+const ViewDesignation = lazy(() =>
+  import("../Container/Config/Company-data/Designation/ViewDesignation")
+);
+
+const Grade = lazy(() =>
+  import("../Container/Config/Company-data/Grade/Grade")
+);
+const CreateGrade = lazy(() =>
+  import("../Container/Config/Company-data/Grade/CreateGrade")
+);
+const EditGrade = lazy(() =>
+  import("../Container/Config/Company-data/Grade/EditGrade")
+);
+const ViewGrade = lazy(() =>
+  import("../Container/Config/Company-data/Grade/ViewGrade")
+);
+
+const Team = lazy(() =>
+  import("../Container/Config/Company-data/Team/Team")
+);
+const CreateTeam = lazy(() =>
+  import("../Container/Config/Company-data/Team/CreateTeam")
+);
+const EditTeam = lazy(() =>
+  import("../Container/Config/Company-data/Team/EditTeam")
+);
+const ViewTeam = lazy(() =>
+  import("../Container/Config/Company-data/Team/ViewTeam")
+);
+
+/* ================= CONFIG : TRACK ================= */
+const ShiftCreate = lazy(() =>
+  import("../Container/Config/Attendance/Shift/ShiftCreate")
+);
+const ShiftList = lazy(() =>
+  import("../Container/Config/Attendance/Shift/ShiftList")
+);
+const ShiftEdit = lazy(() =>
+  import("../Container/Config/Attendance/Shift/ShiftEdit")
+);
+const ShiftView = lazy(() =>
+  import("../Container/Config/Attendance/Shift/ShiftView")
+);
+
+const ClockInMethodList = lazy(() =>
+  import("../Container/Config/Attendance/ClockinMethod/ClockInMethodList")
+);
+const ClockInMethodCreate = lazy(() =>
+  import("../Container/Config/Attendance/ClockinMethod/ClockInMethodCreate")
+);
+const ClockInMethodEdit = lazy(() =>
+  import("../Container/Config/Attendance/ClockinMethod/ClockInMethodEdit")
+);
+const ClockInMethodView = lazy(() =>
+  import("../Container/Config/Attendance/ClockinMethod/ClockInMethodView")
+);
+
+const AttendancePolicyList = lazy(() =>
+  import("../Container/Config/Attendance/AttendancePolicy/AttendancePolicyList")
+);
+const AttendancePolicyCreate = lazy(() =>
+  import("../Container/Config/Attendance/AttendancePolicy/AttendancePolicyCreate")
+);
+const ExtraTimeCreate = lazy(() =>
+  import("../Container/Config/Attendance/ExtraTime/ExtraTimeCreate")
+);
+const ExtraTimeList = lazy(() =>
+  import("../Container/Config/Attendance/ExtraTime/ExtraTimeList")
+);
 
 const AppRoutes = () => {
-
-
   return (
-    <>
+    <Suspense fallback={<div>Loading...</div>}>
       <Routes>
+
         <Route path="/login" element={<Login />} />
 
-        <Route path="/org-setup" element={
-          <PrivateRouteOrg >
-            <AddCompany />
-          </PrivateRouteOrg>
-        } />
-        <Route path="/dashboard" element={
-          <PrivateRoute >
-            <MainDashboardLayout />
-          </PrivateRoute>
-        }>
+        <Route
+          path="/org-setup"
+          element={
+            <PrivateRouteOrg>
+              <AddCompany />
+            </PrivateRouteOrg>
+          }
+        />
+
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <MainDashboardLayout />
+            </PrivateRoute>
+          }
+        >
           <Route path="Companyadmin-dashboard" element={<Admindashboard />} />
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
-
           <Route path="employee" element={<EmployeeHrTL />} />
           <Route path="employee/add-Employee" element={<EmployeeHr />} />
-          {/* <Route path="employee" element={<Employee />} /> */}
-          {/* <Route path="employee" element={<EmployeeHr />} /> */}
-
           <Route path="attendance" element={<AttendanceEmployee />} />
-          {/* <Route path="attendance" element={<AttendanceHrTL />} /> */}
-
           <Route path="leave-management" element={<LeavemanagementHr />} />
-          {/* <Route path="leave-management" element={<LeaveManagementTLHr />} /> */}
-          {/* <Route path="leave-management" element={<LeaveManagementHr1 />} /> */}
-
           <Route path="payroll" element={<DashboardPayroll1 />} />
         </Route>
+
         <Route path="/Addingyourself" element={<Addingyourself />} />
         <Route path="/employee-Profile" element={<EmployeeProfile />} />
 
-        {/* ================config=============== */}
-        <Route path="/config/hris"
+        {/* ================= CONFIG HRIS ================= */}
+        <Route
+          path="/config/hris"
           element={
-            <PrivateRoute >
+            <PrivateRoute>
               <MainDashboardLayout />
             </PrivateRoute>
-          }>
-
-          {/*========================== Account Management ===================================*/}
+          }
+        >
           <Route path="Account-management/Global-defaults" element={<GlobalDefaults />} />
           <Route path="Account-management/Branding-setup" element={<BrandingSetup />} />
           <Route path="Account-management/Incorporation-Details" element={<IncorporationDetails />} />
           <Route path="Account-management/Company-office" element={<CompanyOffices />} />
-
           <Route path="Account-management/Company-office/create" element={<CompanyOfficeCreate />} />
           <Route path="Account-management/Company-office/edit/:id" element={<CompanyOfficeEdit />} />
 
-          {/* ========================Employee Data=========================== */}
           <Route path="Employee-data/employeeId" element={<CreateEmployeeId />} />
           <Route path="Employee-data/probation-list" element={<ProbationList />} />
           <Route path="Employee-data/probation-create" element={<CreateProbation />} />
           <Route path="Employee-data/probation-edit/:id" element={<ProbationEdit />} />
           <Route path="Employee-data/probation-view/:id" element={<ProbationView />} />
-
-          {/* <Route path="Employee-data/set-permission" element={<SetPermissions />} />   //page nahi hai */}
-
           <Route path="Employee-data/exit-reason" element={<ExitReasonList />} />
-
           <Route path="Employee-data/exit-reason/create" element={<CreateExitReason />} />
-
           <Route path="Employee-data/common-access" element={<CommonAccess />} />
-
-
           <Route path="Employee-data/custom-create" element={<CreateCustomData />} />
           <Route path="Employee-data/custom-list" element={<CustomDataList />} />
-
           <Route path="Employee-data/approval-workflow" element={<ApprovalWorkflowList />} />
           <Route path="Employee-data/approval-workflow/create" element={<CreateApprovalWorkflow />} />
           <Route path="Employee-data/approval-workflow/edit/:id" element={<EditApprovalWorkflow />} />
-
-
           <Route path="Employee-data/exitPolicy-list" element={<ExitPolicyList />} />
           <Route path="Employee-data/exitPolicy/create" element={<ExitPolicyCreate />} />
           <Route path="Employee-data/exitPolicy-edit/:id" element={<EditExitPolicy />} />
           <Route path="Employee-data/exitPolicy-view/:id" element={<ViewExitPolicy />} />
-
           <Route path="Employee-data/default-privacy-policy" element={<DefaultPrivacyPolicy />} />
           <Route path="Employee-data/default-permission" element={<DefaultPermission />} />
 
-          {/* company data=========================== */}
           <Route path="Company_data/buisness-unit-list" element={<BusinessUnit />} />
           <Route path="Company_data/create-buisness-unit" element={<CreateBusinessUnit />} />
           <Route path="Company_data/edit-buisness-unit/:id" element={<EditBusinessUnit />} />
           <Route path="Company_data/view-buisness-unit/:id" element={<ViewBusinessUnit />} />
 
-
           <Route path="Company_data/department" element={<Department />} />
           <Route path="Company_data/department/create" element={<CreateDepartment />} />
           <Route path="Company_data/department/edit/:id" element={<EditDepartment />} />
           <Route path="Company_data/department/view/:id" element={<ViewDepartment />} />
-
 
           <Route path="Company_data/designation" element={<Designation />} />
           <Route path="Company_data/create-designation" element={<CreateDesignation />} />
@@ -197,22 +319,21 @@ const AppRoutes = () => {
           <Route path="Company_data/edit-grade/:id" element={<EditGrade />} />
           <Route path="Company_data/view-grade/:id" element={<ViewGrade />} />
 
-
           <Route path="Company_data/team" element={<Team />} />
           <Route path="Company_data/create-team" element={<CreateTeam />} />
           <Route path="Company_data/edit-team/:id" element={<EditTeam />} />
           <Route path="Company_data/view-team/:id" element={<ViewTeam />} />
-
         </Route>
 
-        {/* track===================== */}
-        <Route path="/config/track"
+        {/* ================= TRACK ================= */}
+        <Route
+          path="/config/track"
           element={
-            <PrivateRoute >
+            <PrivateRoute>
               <MainDashboardLayout />
             </PrivateRoute>
-          }>
-
+          }
+        >
           <Route path="Attendance/shift/create" element={<ShiftCreate />} />
           <Route path="Attendance/shift/list" element={<ShiftList />} />
           <Route path="Attendance/shift/edit/:id" element={<ShiftEdit />} />
@@ -225,17 +346,14 @@ const AppRoutes = () => {
 
           <Route path="Attendance/attendance-policy/list" element={<AttendancePolicyList />} />
           <Route path="Attendance/attendance-policy/create" element={<AttendancePolicyCreate />} />
-
           <Route path="Attendance/extra-time/create" element={<ExtraTimeCreate />} />
           <Route path="Attendance/extra-time/list" element={<ExtraTimeList />} />
         </Route>
 
-
-
       </Routes>
-
-    </>
-  )
-}
+    </Suspense>
+    
+  );
+};
 
 export default AppRoutes;
