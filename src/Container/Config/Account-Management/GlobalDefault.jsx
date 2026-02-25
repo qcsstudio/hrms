@@ -8,6 +8,206 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December"
 ];
 
+// ✅ Country code → IANA timezone mapping
+// Source: https://timezonedb.com/time-zones
+const COUNTRY_TIMEZONES = {
+  AF: ["Asia/Kabul"],
+  AL: ["Europe/Tirane"],
+  DZ: ["Africa/Algiers"],
+  AD: ["Europe/Andorra"],
+  AO: ["Africa/Luanda"],
+  AG: ["America/Antigua"],
+  AR: ["America/Argentina/Buenos_Aires", "America/Argentina/Cordoba", "America/Argentina/Mendoza"],
+  AM: ["Asia/Yerevan"],
+  AU: ["Australia/Sydney", "Australia/Melbourne", "Australia/Brisbane", "Australia/Perth", "Australia/Adelaide", "Australia/Darwin", "Australia/Hobart"],
+  AT: ["Europe/Vienna"],
+  AZ: ["Asia/Baku"],
+  BS: ["America/Nassau"],
+  BH: ["Asia/Bahrain"],
+  BD: ["Asia/Dhaka"],
+  BB: ["America/Barbados"],
+  BY: ["Europe/Minsk"],
+  BE: ["Europe/Brussels"],
+  BZ: ["America/Belize"],
+  BJ: ["Africa/Porto-Novo"],
+  BT: ["Asia/Thimphu"],
+  BO: ["America/La_Paz"],
+  BA: ["Europe/Sarajevo"],
+  BW: ["Africa/Gaborone"],
+  BR: ["America/Sao_Paulo", "America/Manaus", "America/Fortaleza", "America/Recife", "America/Belem", "America/Porto_Velho", "America/Cuiaba", "America/Noronha"],
+  BN: ["Asia/Brunei"],
+  BG: ["Europe/Sofia"],
+  BF: ["Africa/Ouagadougou"],
+  BI: ["Africa/Bujumbura"],
+  CV: ["Atlantic/Cape_Verde"],
+  KH: ["Asia/Phnom_Penh"],
+  CM: ["Africa/Douala"],
+  CA: ["America/Toronto", "America/Vancouver", "America/Edmonton", "America/Winnipeg", "America/Halifax", "America/St_Johns", "America/Regina"],
+  CF: ["Africa/Bangui"],
+  TD: ["Africa/Ndjamena"],
+  CL: ["America/Santiago", "Pacific/Easter"],
+  CN: ["Asia/Shanghai", "Asia/Urumqi"],
+  CO: ["America/Bogota"],
+  KM: ["Indian/Comoro"],
+  CG: ["Africa/Brazzaville"],
+  CD: ["Africa/Kinshasa", "Africa/Lubumbashi"],
+  CR: ["America/Costa_Rica"],
+  CI: ["Africa/Abidjan"],
+  HR: ["Europe/Zagreb"],
+  CU: ["America/Havana"],
+  CY: ["Asia/Nicosia"],
+  CZ: ["Europe/Prague"],
+  DK: ["Europe/Copenhagen"],
+  DJ: ["Africa/Djibouti"],
+  DM: ["America/Dominica"],
+  DO: ["America/Santo_Domingo"],
+  EC: ["America/Guayaquil", "Pacific/Galapagos"],
+  EG: ["Africa/Cairo"],
+  SV: ["America/El_Salvador"],
+  GQ: ["Africa/Malabo"],
+  ER: ["Africa/Asmara"],
+  EE: ["Europe/Tallinn"],
+  SZ: ["Africa/Mbabane"],
+  ET: ["Africa/Addis_Ababa"],
+  FJ: ["Pacific/Fiji"],
+  FI: ["Europe/Helsinki"],
+  FR: ["Europe/Paris"],
+  GA: ["Africa/Libreville"],
+  GM: ["Africa/Banjul"],
+  GE: ["Asia/Tbilisi"],
+  DE: ["Europe/Berlin"],
+  GH: ["Africa/Accra"],
+  GR: ["Europe/Athens"],
+  GD: ["America/Grenada"],
+  GT: ["America/Guatemala"],
+  GN: ["Africa/Conakry"],
+  GW: ["Africa/Bissau"],
+  GY: ["America/Guyana"],
+  HT: ["America/Port-au-Prince"],
+  HN: ["America/Tegucigalpa"],
+  HU: ["Europe/Budapest"],
+  IS: ["Atlantic/Reykjavik"],
+  IN: ["Asia/Kolkata"],
+  ID: ["Asia/Jakarta", "Asia/Makassar", "Asia/Jayapura"],
+  IR: ["Asia/Tehran"],
+  IQ: ["Asia/Baghdad"],
+  IE: ["Europe/Dublin"],
+  IL: ["Asia/Jerusalem"],
+  IT: ["Europe/Rome"],
+  JM: ["America/Jamaica"],
+  JP: ["Asia/Tokyo"],
+  JO: ["Asia/Amman"],
+  KZ: ["Asia/Almaty", "Asia/Aqtau", "Asia/Aqtobe", "Asia/Atyrau", "Asia/Oral", "Asia/Qostanay", "Asia/Qyzylorda"],
+  KE: ["Africa/Nairobi"],
+  KI: ["Pacific/Tarawa", "Pacific/Enderbury", "Pacific/Kiritimati"],
+  KP: ["Asia/Pyongyang"],
+  KR: ["Asia/Seoul"],
+  KW: ["Asia/Kuwait"],
+  KG: ["Asia/Bishkek"],
+  LA: ["Asia/Vientiane"],
+  LV: ["Europe/Riga"],
+  LB: ["Asia/Beirut"],
+  LS: ["Africa/Maseru"],
+  LR: ["Africa/Monrovia"],
+  LY: ["Africa/Tripoli"],
+  LI: ["Europe/Vaduz"],
+  LT: ["Europe/Vilnius"],
+  LU: ["Europe/Luxembourg"],
+  MG: ["Indian/Antananarivo"],
+  MW: ["Africa/Blantyre"],
+  MY: ["Asia/Kuala_Lumpur", "Asia/Kuching"],
+  MV: ["Indian/Maldives"],
+  ML: ["Africa/Bamako"],
+  MT: ["Europe/Malta"],
+  MH: ["Pacific/Majuro"],
+  MR: ["Africa/Nouakchott"],
+  MU: ["Indian/Mauritius"],
+  MX: ["America/Mexico_City", "America/Cancun", "America/Monterrey", "America/Merida", "America/Chihuahua", "America/Mazatlan", "America/Hermosillo", "America/Tijuana"],
+  FM: ["Pacific/Pohnpei", "Pacific/Chuuk", "Pacific/Kosrae"],
+  MD: ["Europe/Chisinau"],
+  MC: ["Europe/Monaco"],
+  MN: ["Asia/Ulaanbaatar", "Asia/Hovd", "Asia/Choibalsan"],
+  ME: ["Europe/Podgorica"],
+  MA: ["Africa/Casablanca"],
+  MZ: ["Africa/Maputo"],
+  MM: ["Asia/Rangoon"],
+  NA: ["Africa/Windhoek"],
+  NR: ["Pacific/Nauru"],
+  NP: ["Asia/Kathmandu"],
+  NL: ["Europe/Amsterdam"],
+  NZ: ["Pacific/Auckland", "Pacific/Chatham"],
+  NI: ["America/Managua"],
+  NE: ["Africa/Niamey"],
+  NG: ["Africa/Lagos"],
+  MK: ["Europe/Skopje"],
+  NO: ["Europe/Oslo"],
+  OM: ["Asia/Muscat"],
+  PK: ["Asia/Karachi"],
+  PW: ["Pacific/Palau"],
+  PS: ["Asia/Gaza", "Asia/Hebron"],
+  PA: ["America/Panama"],
+  PG: ["Pacific/Port_Moresby", "Pacific/Bougainville"],
+  PY: ["America/Asuncion"],
+  PE: ["America/Lima"],
+  PH: ["Asia/Manila"],
+  PL: ["Europe/Warsaw"],
+  PT: ["Europe/Lisbon", "Atlantic/Azores", "Atlantic/Madeira"],
+  QA: ["Asia/Qatar"],
+  RO: ["Europe/Bucharest"],
+  RU: ["Europe/Moscow", "Europe/Kaliningrad", "Europe/Samara", "Asia/Yekaterinburg", "Asia/Omsk", "Asia/Krasnoyarsk", "Asia/Irkutsk", "Asia/Yakutsk", "Asia/Vladivostok", "Asia/Magadan", "Asia/Sakhalin", "Asia/Srednekolymsk", "Asia/Kamchatka", "Asia/Anadyr"],
+  RW: ["Africa/Kigali"],
+  KN: ["America/St_Kitts"],
+  LC: ["America/St_Lucia"],
+  VC: ["America/St_Vincent"],
+  WS: ["Pacific/Apia"],
+  SM: ["Europe/San_Marino"],
+  ST: ["Africa/Sao_Tome"],
+  SA: ["Asia/Riyadh"],
+  SN: ["Africa/Dakar"],
+  RS: ["Europe/Belgrade"],
+  SC: ["Indian/Mahe"],
+  SL: ["Africa/Freetown"],
+  SG: ["Asia/Singapore"],
+  SK: ["Europe/Bratislava"],
+  SI: ["Europe/Ljubljana"],
+  SB: ["Pacific/Guadalcanal"],
+  SO: ["Africa/Mogadishu"],
+  ZA: ["Africa/Johannesburg"],
+  SS: ["Africa/Juba"],
+  ES: ["Europe/Madrid", "Africa/Ceuta", "Atlantic/Canary"],
+  LK: ["Asia/Colombo"],
+  SD: ["Africa/Khartoum"],
+  SR: ["America/Paramaribo"],
+  SE: ["Europe/Stockholm"],
+  CH: ["Europe/Zurich"],
+  SY: ["Asia/Damascus"],
+  TW: ["Asia/Taipei"],
+  TJ: ["Asia/Dushanbe"],
+  TZ: ["Africa/Dar_es_Salaam"],
+  TH: ["Asia/Bangkok"],
+  TL: ["Asia/Dili"],
+  TG: ["Africa/Lome"],
+  TO: ["Pacific/Tongatapu"],
+  TT: ["America/Port_of_Spain"],
+  TN: ["Africa/Tunis"],
+  TR: ["Europe/Istanbul"],
+  TM: ["Asia/Ashgabat"],
+  TV: ["Pacific/Funafuti"],
+  UG: ["Africa/Kampala"],
+  UA: ["Europe/Kiev", "Europe/Uzhgorod", "Europe/Zaporozhye"],
+  AE: ["Asia/Dubai"],
+  GB: ["Europe/London"],
+  US: ["America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "America/Anchorage", "America/Adak", "Pacific/Honolulu"],
+  UY: ["America/Montevideo"],
+  UZ: ["Asia/Tashkent", "Asia/Samarkand"],
+  VU: ["Pacific/Efate"],
+  VE: ["America/Caracas"],
+  VN: ["Asia/Ho_Chi_Minh"],
+  YE: ["Asia/Aden"],
+  ZM: ["Africa/Lusaka"],
+  ZW: ["Africa/Harare"],
+};
+
 const GlobalDefaults = () => {
   const { token } = useSelector(state => state.user);
   const axiosInstance = createAxios(token);
@@ -16,29 +216,35 @@ const GlobalDefaults = () => {
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [timezone, setTimezone] = useState("");
+  const [availableTimezones, setAvailableTimezones] = useState([]);
   const [weekStart, setWeekStart] = useState("Monday");
   const [leaveCycleStartMonth, setLeaveCycleStartMonth] = useState("January");
   const [financialYearStartMonth, setFinancialYearStartMonth] = useState("April");
   const [dateFormat, setDateFormat] = useState("DD-MM-YYYY");
   const [timeFormat, setTimeFormat] = useState("24");
   const [subdomain, setSubdomain] = useState("");
-  const [industrytype, setIndustrytype] = useState("")
-  const [name, setName] = useState("")
+  const [industrytype, setIndustrytype] = useState("");
+  const [name, setName] = useState("");
 
-  // 1️ Fetch countries first=======================
+  // ✅ Helper: Get IANA timezones for a country code
+  const getTimezonesForCountry = (countryCode) => {
+    return COUNTRY_TIMEZONES[countryCode] || [];
+  };
+
+  // 1️ Fetch countries
   useEffect(() => {
-    fetch(
-      "https://restcountries.com/v3.1/all?fields=name,cca2,currencies,idd,timezones,flags"
-    )
+    fetch("https://restcountries.com/v3.1/all?fields=name,cca2,currencies,idd,flags")
       .then(res => res.json())
       .then(data => {
         const formatted = data
           .map(c => ({
             label: c.name.common,
-            value: c.cca2,
+            value: c.cca2, // ISO country code e.g. "IN", "US"
             currency: c.currencies ? Object.keys(c.currencies)[0] : "",
-            callingCode: c.idd?.root && c.idd?.suffixes?.length ? c.idd.root + c.idd.suffixes[0] : "",
-            timezones: c.timezones || [],
+            callingCode:
+              c.idd?.root && c.idd?.suffixes?.length
+                ? c.idd.root + c.idd.suffixes[0]
+                : "",
             flag: c.flags?.png || c.flags?.svg
           }))
           .sort((a, b) => a.label.localeCompare(b.label));
@@ -47,7 +253,7 @@ const GlobalDefaults = () => {
       });
   }, []);
 
-  // 2️ Fetch global settings get========================
+  // 2️ Fetch global settings
   useEffect(() => {
     const fetchGlobalSettings = async () => {
       try {
@@ -63,14 +269,12 @@ const GlobalDefaults = () => {
     fetchGlobalSettings();
   }, []);
 
+  // 3️ Once both countries + settings loaded → populate form
   useEffect(() => {
     if (!globalSettings || countries.length === 0) return;
 
-    const gs = globalSettings; // 👈 API ka direct object
+    const gs = globalSettings;
 
-    // Country mapping (API me sirf country name hai)
-    // const countryOption =
-    //   countries.find(c => c.label === gs.country) || null;
     const countryOption =
       countries.find(
         c => c.label.toLowerCase().trim() === gs.country?.toLowerCase().trim()
@@ -78,52 +282,37 @@ const GlobalDefaults = () => {
 
     setSelectedCountry(countryOption);
 
-    // Timezone (agar API me ho to, warna empty)
-   const normalizedTimezone = getValidTimezone(
-  gs.timezone,
-  countryOption?.timezones || []
-);
-    setTimezone(normalizedTimezone);
+    // ✅ Get IANA timezones for the country
+    const tzList = getTimezonesForCountry(countryOption.value);
+    setAvailableTimezones(tzList);
 
-    // setTimezone(gs.timezone || "");
+    // ✅ Try to match saved timezone, else fallback to first
+    const savedTz = gs.timezone || "";
+    const matchedTz = tzList.includes(savedTz) ? savedTz : tzList[0] || "";
+    setTimezone(matchedTz);
 
-    // Ye fields API me nahi / null hain → empty hi rehne do
-    setWeekStart("Monday"); // default UI behaviour
-    setLeaveCycleStartMonth(gs.leaveCycleStartMonth || "");
-    setFinancialYearStartMonth(gs.financialYearStartMonth || "");
-    setDateFormat(gs.dateFormat || "");
-    setTimeFormat(gs.timeFormat || "");
+    setWeekStart(gs.weekStart || "Monday");
+    setLeaveCycleStartMonth(gs.leaveCycleStartMonth || "January");
+    setFinancialYearStartMonth(gs.financialYearStartMonth || "April");
+    setDateFormat(gs.dateFormat || "DD-MM-YYYY");
+    setTimeFormat(gs.timeFormat === "12-hour" ? "12" : "24");
     setSubdomain(gs.slug || "");
-    setIndustrytype(gs.industryType || "")
-    setName(gs.name || "")
-
-
+    setIndustrytype(gs.industryType || "");
+    setName(gs.name || "");
   }, [globalSettings, countries]);
 
-  // =======================
-useEffect(() => {
-  if (!selectedCountry) return;
+  // 4️ ✅ When country changes → update timezones + reset timezone to first
+  const handleCountryChange = (option) => {
+    setSelectedCountry(option);
 
-  const ianaTimezones = (selectedCountry.timezones || []).filter(tz => tz.includes("/"));
-  if (ianaTimezones.length === 0) {
-    setTimezone(""); // fallback
-    return;
-  }
+    const tzList = getTimezonesForCountry(option.value);
+    setAvailableTimezones(tzList);
 
-  // If current timezone is already valid, keep it
-  if (!timezone || !ianaTimezones.includes(timezone)) {
-    setTimezone(ianaTimezones[0]);
-  }
-}, [selectedCountry]);
-
-const getValidTimezone = (timezone, countryTimezones = []) => {
-  if (timezone && timezone.includes("/")) return timezone;
-
-  return countryTimezones.find(tz => tz.includes("/")) || "";
-};
+    // Auto-select first timezone of the selected country
+    setTimezone(tzList[0] || "");
+  };
 
   const handleSave = async () => {
-    // if (!selectedCountry) return;
     if (!selectedCountry || !selectedCountry.currency) return;
 
     const payload = {
@@ -131,12 +320,9 @@ const getValidTimezone = (timezone, countryTimezones = []) => {
       slug: subdomain.trim(),
       industryType: industrytype,
       country: selectedCountry.label,
-      timezone:getValidTimezone(
-  timezone,
-  selectedCountry.timezones
-),
+      timezone: timezone,
       currency: selectedCountry.currency,
-      leaveCycleStartMonth: leaveCycleStartMonth || "April",
+      leaveCycleStartMonth: leaveCycleStartMonth || "January",
       financialYearStartMonth: financialYearStartMonth || "April",
       dateFormat: dateFormat || "DD-MM-YYYY",
       timeFormat: timeFormat === "24" ? "24-hour" : "12-hour",
@@ -159,14 +345,9 @@ const getValidTimezone = (timezone, countryTimezones = []) => {
     }
   };
 
-
-  // if (!selectedCountry) return <div className="p-8">Loading...</div>;
-  // if (!globalSettings || countries.length === 0) {
-  //   return <div>Loading...</div>;
-  // }
   if (!globalSettings || countries.length === 0 || !selectedCountry) {
-  return <div>Loading...</div>;
-}
+    return <div>Loading...</div>;
+  }
 
   const CountryOption = ({ data, innerRef, innerProps }) => (
     <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1 cursor-pointer">
@@ -221,7 +402,7 @@ const getValidTimezone = (timezone, countryTimezones = []) => {
             <Select
               options={countries}
               value={selectedCountry}
-              onChange={setSelectedCountry}
+              onChange={handleCountryChange}  
               placeholder="Select Country"
               components={{ Option: CountryOption, SingleValue: CountrySingleValue }}
               className="mt-1 w-full"
@@ -256,17 +437,13 @@ const getValidTimezone = (timezone, countryTimezones = []) => {
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
             >
-
-              {/* {selectedCountry.timezones
-                .filter(tz => tz.includes("/"))
-                .map((tz) => (
+              {availableTimezones.length > 0 ? (
+                availableTimezones.map(tz => (
                   <option key={tz} value={tz}>{tz}</option>
-                ))} */}
-              {(selectedCountry?.timezones || [])
-                .filter(tz => tz.includes("/"))
-                .map(tz => (
-                  <option key={tz} value={tz}>{tz}</option>
-                ))}
+                ))
+              ) : (
+                <option value="">No timezone available</option>
+              )}
             </select>
           </div>
 
@@ -330,10 +507,11 @@ const getValidTimezone = (timezone, countryTimezones = []) => {
                 <button
                   key={t}
                   onClick={() => setTimeFormat(t)}
-                  className={`flex-1 h-12 md:h-14 rounded-lg font-semibold border transition ${timeFormat === t
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-blue-600 border-blue-600"
-                    }`}
+                  className={`flex-1 h-12 md:h-14 rounded-lg font-semibold border transition ${
+                    timeFormat === t
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-blue-600 border-blue-600"
+                  }`}
                 >
                   {t} Hours
                 </button>
