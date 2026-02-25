@@ -80,11 +80,9 @@ useEffect(()=>{
     } catch (error) {
       console.warn("api is not working",error)
     }
-    
   };
   fetchcountries()
 },[])
-
   // const countries = Object.keys(locationData);
 
   /* ================= CLOSE DROPDOWN ================= */
