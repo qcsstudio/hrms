@@ -9,4 +9,16 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+   build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom"],
+          ui: ["react-select"],
+          // charts: ["apexcharts", "react-apexcharts"],
+          utils: ["axios"]
+        }
+      }
+    }
+  }
 })
