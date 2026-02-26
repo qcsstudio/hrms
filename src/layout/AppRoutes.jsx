@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import PrivateRoute from "./privateRoute";
 import PrivateRouteOrg from "./privateRouteOrg";
 import MainDashboardLayout from "./mainLayout";
+import DeviceIntegration from "../Container/Config/Device-Integration/DeviceIntegration";
 
 /* ================= AUTH / COMMON ================= */
 const Login = lazy(() => import("../Components/Auth/Login"));
@@ -348,6 +349,7 @@ const AppRoutes = () => {
           <Route path="Attendance/attendance-policy/create" element={<AttendancePolicyCreate />} />
           <Route path="Attendance/extra-time/create" element={<ExtraTimeCreate />} />
           <Route path="Attendance/extra-time/list" element={<ExtraTimeList />} />
+          <Route path="deviceintegration" element={<DeviceIntegration />} />
         </Route>
 
       </Routes>

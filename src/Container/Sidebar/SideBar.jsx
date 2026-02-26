@@ -39,6 +39,7 @@ const SideBar = () => {
   const [innerconfigdropdowntrack, setInnerConfigdropdowntrack] = useState({
     attendance: false,
     leave: false,
+    deviceintegration:false
   })
 
   const [innerconfigdropdownpay, setInnerConfigdropdownpay] = useState({
@@ -289,9 +290,10 @@ const SideBar = () => {
       // case "attendancereqcycle":
       //   navigate("/config/track/Attendance/extra-time/list");
       //   break;
-         
 
-
+      case 'deviceintegration':
+        navigate('/config/track/deviceintegration');
+        break;
       default:
         navigate("/dashboard");
         break;
@@ -408,11 +410,18 @@ const SideBar = () => {
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} >Leave Cycle Transition</h1>
                   </div>
                 }
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " >Device Integration<span><MdArrowDropDown className={`text-[20px] `} /></span></h1>
-
+                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('deviceintegration', 'track')} >Device Integration<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.deviceintegration ? 'rotate-180' : ''}`} /></span></h1>
+                  {
+                  innerconfigdropdowntrack.deviceintegration && <div className="px-4">
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/track/deviveintegration' ?
+                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`}  onClick={() => changeTab('deviceintegration')} >Device-Integration</h1>
               </div>
             }
+            
           </div>
+           }
+          </div>
+          
           {/* ===================Pay========================== */}
           <div>
             <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('pay')}>Pay</h1>
