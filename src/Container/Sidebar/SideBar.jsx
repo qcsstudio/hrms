@@ -294,9 +294,6 @@ const SideBar = () => {
       case 'deviceintegration':
         navigate('/config/track/deviceintegration');
         break;
-         
-
-
       default:
         navigate("/dashboard");
         break;

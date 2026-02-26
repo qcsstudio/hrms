@@ -20,6 +20,7 @@ const Integrated = [
         action: action
     },
 ]
+
 const DeviceIntegration = () => {
     const { token } = useSelector(state => state.user)
     const [data, setData] = useState([])
