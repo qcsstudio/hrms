@@ -160,7 +160,7 @@ const CompanySetup = ({ onNext, onBack }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const emptyFields = getEmptyFields(fields);
+    const emptyFields = getEmptyFields(formData);
     if (emptyFields.length > 0) {
       emptyFields.forEach(field => {
         setErrors((prev) => ({ ...prev, [field]: `${field} is required` })); // setErrors fields 
