@@ -7,7 +7,9 @@ import { getEmptyFields } from 'get_input_empty_fields';
 
 
 const Accountsetup = ({ onNext, onBack }) => {
-  const { token, companyId } = useSelector((state) => state.user) // get superAdmintoken from redux store
+  const { token, companyId } = useSelector((state) => state.user)
+  // get superAdmintoken from redux store
+
   console.log(companyId, "11111111111111")
 
   const [formData, setData] = useState({
@@ -36,12 +38,16 @@ const Accountsetup = ({ onNext, onBack }) => {
       role: ""
     })
   }
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get("token")
+  console.log(inviteToken, "invite token============")
   const navigate = useNavigate();
-  const axiosInstance = createAxios(token,inviteToken)
+  const axiosInstance = createAxios(token, inviteToken)
+  
   //  async function handleSuperAdmin() {
 
   async function handlenext() {
-        // e.preventDefault()
+    // e.preventDefault()
     const emptyFields = getEmptyFields(formData);
 
     if (emptyFields.length > 0) {
@@ -67,13 +73,12 @@ const Accountsetup = ({ onNext, onBack }) => {
     }
   }
   async function handleInviteAccountSetup() {
-      // e.preventDefault()
+    // e.preventDefault()
     try {
-      const token = localStorage.getItem("authToken");
       const companyId = localStorage.getItem("companyId");
 
       const res = await axiosInstance.post(`invites/${companyId}/admin-setup`, formData, {
-        meta:{auth:"ADMIN_AUTH"}
+        meta: { auth: "ADMIN_AUTH" }
       });
 
       console.log(res.data);
@@ -83,13 +88,11 @@ const Accountsetup = ({ onNext, onBack }) => {
       console.log("API Error:", error);
     }
   }
-   const [searchParams] = useSearchParams()
-  const inviteToken = searchParams.get("token")
-  console.log(inviteToken,"invite token============")
 
-  const handleSubmit = (e)=>{
-      e.preventDefault()
-    inviteToken? handleInviteAccountSetup() :handlenext()
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    inviteToken ? handleInviteAccountSetup() : handlenext()
   }
 
   return (
