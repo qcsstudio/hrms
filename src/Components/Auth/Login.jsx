@@ -23,12 +23,15 @@ const Login = () => {
   const [isLoader, setIsLoader] = useState(false);
   const [companyData, setCompanyData] = useState(null);
 
-  const [forgetpaswword, setForgetpassword] = useState(false)
+  // const [forgetpaswword, setForgetpassword] = useState(false)
   const [confirmforgetemail, setConfirmforgetemail] = useState("")
-  const [verifyotp, setVerifyotp] = useState(false)
+  // const [verifyotp, setVerifyotp] = useState(false)
   const [code, setCode] = useState("");
   const [showCode, setShowCode] = useState(false);
-  const [resetPassword, setResetPassword] = useState(false)
+  // const [resetPassword, setResetPassword] = useState(false)
+
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // Error states
   const [errors, setErrors] = useState({
@@ -247,63 +250,126 @@ const Login = () => {
     return `${baseClass} ${hasError ? 'border-red-500 bg-red-50' : 'border-gray-200'}`;
   };
 
-  const handleSubmit = async (e) => {
+  const STEPS = {
+    LOGIN: "LOGIN",
+    FORGOT: "FORGOT",
+    VERIFY_OTP: "VERIFY_OTP",
+    RESET_PASSWORD: "RESET_PASSWORD",
+  };
+
+  const [step, setStep] = useState(STEPS.LOGIN);
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   // navigate("/verify-code");
+  //   try {
+  //     const payload = {
+  //       email: confirmforgetemail
+  //     }
+  //     await axiosInstance.post('/users/send-otp', payload)
+  //     setVerifyotp(true)
+
+
+  //   } catch (error) {
+  //     console.warn("api is not working ", error)
+
+  //   }
+  // };
+  const handleSendOtp = async (e) => {
     e.preventDefault();
-    // navigate("/verify-code");
     try {
-      const payload = {
-        email: confirmforgetemail
-      }
-      await axiosInstance.post('/users/send-otp', payload)
-      setVerifyotp(true)
+      await axiosInstance.post("/users/send-otp", {
+        email: confirmforgetemail,
+      });
 
-
-    } catch (error) {
-      console.warn("api is not working ", error)
-
+      toast.success("OTP sent");
+      setStep(STEPS.VERIFY_OTP); // ✅ next screen
+    } catch (err) {
+      toast.error("Failed to send OTP");
     }
   };
 
+  // const handleotpSubmit = async (e) => {
+  //   e.preventDefault();
+  //   const payload = {
+  //     email:"uighui",
+  //     otp:""
+  //   }
+  //   try {
+  //     await axiosInstance.post('/users/verify-otp'.payload)
+  //     setResetPassword(true)
 
-  const handleotpSubmit = async (e) => {
+  //   } catch (error) {
+  //     console.warn("api is not working", error)
+
+  //   }
+
+  // }
+
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    const payload = {
-      email:"uighui",
-      otp:""
-    }
     try {
-      await axiosInstance.post('/users/verify-otp'.payload)
-      setResetPassword(true)
+      await axiosInstance.post("/users/verify-otp", {
+        email: confirmforgetemail,
+        otp: code,
+      });
 
-    } catch (error) {
-      console.warn("api is not working", error)
+      toast.success("OTP verified");
+      setStep(STEPS.RESET_PASSWORD); // ✅ next
+    } catch (err) {
+      toast.error("Invalid OTP");
+    }
+  };
+  // const handlechangepassword = async(e)=>{
+  //       e.preventDefault();
+  //   try {
+  //     await axiosInstance.post('/users/reset-password',payload)
+  //     setForgetpassword(false)
+  //     setVerifyotp(false)
+  //     setResetPassword(false)
 
+
+
+  //   } catch (error) {
+  //     console.warn("api is not working",error)
+
+  //   }
+
+  // }
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
     }
 
-  }
-  const handlechangepassword = async(e)=>{
-        e.preventDefault();
     try {
-      await axiosInstance.post('/users/reset-password',payload)
-      setForgetpassword(false)
-      setVerifyotp(false)
-      setResetPassword(false)
+      await axiosInstance.post("/users/reset-password", {
+        email: confirmforgetemail,
+        newPassword,
+        confirmPassword,
+      });
 
+      toast.success("Password reset successful");
 
-      
-    } catch (error) {
-      console.warn("api is not working",error)
-      
+      // cleanup
+      setConfirmforgetemail("");
+      setCode("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setStep(STEPS.LOGIN);
+    } catch (err) {
+      toast.error("Reset failed");
     }
-
-  }
+  };
 
   return (
     <div className='flex h-screen items-center bg-white'>
       <div className="flex w-[1280px] mx-auto bg-gray-50">
 
         {/* LEFT SIDE */}
-        {!forgetpaswword && <div className="w-1/2 mt-[50px]">
+        {step === STEPS.LOGIN && <div className="w-1/2 mt-[50px]">
           <div className="w-4/5 mx-auto">
 
             <div className="mt-[50px]">
@@ -405,7 +471,8 @@ const Login = () => {
                   <button
                     type="button"
                     // onClick={() => navigate("/forget-password")}
-                    onClick={() => setForgetpassword(true)}
+                    // onClick={() => setForgetpassword(true)}
+                    onClick={() => setStep(STEPS.FORGOT)}
                     className="text-[#0575E6] hover:underline font-medium"
                   >
                     Forgot Password?
@@ -446,7 +513,7 @@ const Login = () => {
           </div>
         </div>
         }
-        {forgetpaswword && <div className='w-1/2 mt-[50px]'>
+        {step === STEPS.FORGOT && <div className='w-1/2 mt-[50px]'>
           <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
             {/* Logo */}
             <div className="mb-10">
@@ -461,7 +528,7 @@ const Login = () => {
 
             {/* Back Button */}
             <button
-              onClick={() => setForgetpassword(false)}
+              onClick={() => setStep(STEPS.LOGIN)}
               className="flex items-center gap-2 bg-none border-none cursor-pointer text-[15px] text-[#111] font-medium mb-6 p-0"
             >
               <svg
@@ -489,7 +556,7 @@ const Login = () => {
               Please enter your registered email address.
             </p>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSendOtp}>
               {/* Email Input */}
               <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-[50px] py-[14px] flex items-center">
                 {/* Email Icon */}
@@ -513,6 +580,7 @@ const Login = () => {
                   placeholder="Your Email"
                   value={confirmforgetemail}
                   onChange={(e) => setConfirmforgetemail(e.target.value)}
+                  // disabled
                   required
                   className="w-full border-none outline-none bg-transparent text-[15px] text-[#333]"
                 />
@@ -556,24 +624,24 @@ const Login = () => {
 
         </div>}
 
-        {verifyotp && <div className='w-1/2 mt-[50px]'>
+        {step === STEPS.VERIFY_OTP && <div className='w-1/2 mt-[50px]'>
           <div className="flex min-h-screen font-['Segoe_UI',sans-serif]">
             {/* Left Side */}
             <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
               {/* Logo Placeholder */}
               <div className="mb-10">
-                 {companyData?.company?.logo &&
-                <img
-                  src={companyData?.company?.logo || "/assets/Images/company-logo.png"}
-                  alt="company-logo"
-                  className='w-[280px] h-[110px] object-contain border'
-                />
-              }
+                {companyData?.company?.logo &&
+                  <img
+                    src={companyData?.company?.logo || "/assets/Images/company-logo.png"}
+                    alt="company-logo"
+                    className='w-[280px] h-[110px] object-contain border'
+                  />
+                }
               </div>
 
               {/* Back Button */}
               <button
-                onClick={() => setForgetpassword(false)}
+                onClick={() => setStep(STEPS.LOGIN)}
                 className="flex items-center gap-2 bg-none border-none cursor-pointer text-[15px] text-[#111] font-medium mb-6 p-0"
               >
                 <svg
@@ -601,7 +669,7 @@ const Login = () => {
                 An authentication code has been sent to your email.
               </p>
 
-              <form onSubmit={handleotpSubmit}>
+              <form onSubmit={handleVerifyOtp}>
                 {/* Input Field */}
                 <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-5 py-[14px] flex items-center">
                   <input
@@ -684,113 +752,120 @@ const Login = () => {
           </div>
         </div>}
 
-        {resetPassword && <div className='w-1/2 mt-[50px]'>
-        <div className="flex min-h-screen font-['Segoe_UI',sans-serif]">
-  {/* Left Side */}
-  <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
-    {/* Logo */}
-    <div className="mb-10">
-      <div className="w-[240px] h-[80px] bg-gray-300 rounded" />
-    </div>
+        {step === STEPS.RESET_PASSWORD && <div className='w-1/2 mt-[50px]'>
+          <div className="flex min-h-screen font-['Segoe_UI',sans-serif]">
+            {/* Left Side */}
+            <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
+              {/* Logo */}
+              <div className="mb-10">
+                <div className="w-[240px] h-[80px] bg-gray-300 rounded" />
+              </div>
 
-    {/* Back Button */}
-    <button
-      onClick={() => setForgetpassword(false)}
-      className="flex items-center gap-2 bg-none border-none cursor-pointer text-[15px] text-[#111] font-medium mb-6 p-0"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2}
-        stroke="currentColor"
-        className="w-[18px] h-[18px]"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M15.75 19.5L8.25 12l7.5-7.5"
-        />
-      </svg>
-      Back to login
-    </button>
+              {/* Back Button */}
+              <button
+                onClick={() => setStep(STEPS.LOGIN)}
+                className="flex items-center gap-2 bg-none border-none cursor-pointer text-[15px] text-[#111] font-medium mb-6 p-0"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="w-[18px] h-[18px]"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                  />
+                </svg>
+                Back to login
+              </button>
 
-    <h1 className="text-[32px] font-bold text-[#111] mb-2">
-      Forgot Your Password
-    </h1>
+              <h1 className="text-[32px] font-bold text-[#111] mb-2">
+                Forgot Your Password
+              </h1>
 
-    <p className="text-[15px] text-[#999] mb-9">
-      Please enter your registered email address.
-    </p>
+              <p className="text-[15px] text-[#999] mb-9">
+                 Please create a new secure password.
+              </p>
 
-    <form onSubmit={handlechangepassword}>
-      {/* Email Input */}
-      <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-[50px] py-[14px] flex items-center">
-        {/* Email Icon */}
-        <svg
-          className="absolute left-4 w-[22px] h-[22px] text-[#888]"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
-          />
-        </svg>
+              <form onSubmit={handleResetPassword}>
 
-        <input
-          type="email"
-          placeholder="Your Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full border-none outline-none bg-transparent text-[15px] text-[#333]"
-        />
+                {/* Email (READ ONLY) */}
+                <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-[50px] py-[14px] flex items-center">
+                  <svg
+                    className="absolute left-4 w-[22px] h-[22px] text-[#888]"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75"
+                    />
+                  </svg>
 
-        {/* Check Icon */}
-        <svg
-          className="absolute right-4 w-5 h-5 text-gray-300"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4.5 12.75l6 6 9-13.5"
-          />
-        </svg>
-      </div>
+                  <input
+                    type="email"
+                    value={confirmforgetemail}
+                    disabled
+                    className="w-full border-none outline-none bg-transparent text-[15px] text-[#333] opacity-70"
+                  />
+                </div>
 
-      <button
-        type="submit"
-        className="w-full py-4 bg-[#4A7BF7] text-white rounded-[30px] text-[16px] font-semibold cursor-pointer"
-      >
-        Submit
-      </button>
-    </form>
+                {/* New Password */}
+                <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-[20px] py-[14px]">
+                  <input
+                    type="password"
+                    placeholder="New Password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    className="w-full border-none outline-none bg-transparent text-[15px]"
+                  />
+                </div>
 
-    <p className="text-center text-[13px] text-[#999] mt-auto pt-10">
-      By Logging In, you agree to our{" "}
-      <a href="#" className="text-[#111] underline">
-        Terms of Service
-      </a>{" "}
-      and{" "}
-      <a href="#" className="text-[#111] underline">
-        Privacy Policy
-      </a>.
-    </p>
-  </div>
+                {/* Confirm Password */}
+                <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-[20px] py-[14px]">
+                  <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full border-none outline-none bg-transparent text-[15px]"
+                  />
+                </div>
 
- 
-</div>
-          </div>}
+                <button
+                  type="submit"
+                  className="w-full py-4 bg-[#4A7BF7] text-white rounded-[30px] text-[16px] font-semibold"
+                >
+                  Submit
+                </button>
+
+              </form>
+
+              <p className="text-center text-[13px] text-[#999] mt-auto pt-10">
+                By Logging In, you agree to our{" "}
+                <a href="#" className="text-[#111] underline">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="#" className="text-[#111] underline">
+                  Privacy Policy
+                </a>.
+              </p>
+            </div>
+
+
+          </div>
+        </div>}
 
         {/* RIGHT SIDE */}
         <div className="w-1/2 flex items-center justify-center">
