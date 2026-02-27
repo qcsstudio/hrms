@@ -41,7 +41,7 @@ const Accountsetup = ({ onNext, onBack }) => {
   const [searchParams] = useSearchParams()
   const inviteToken = searchParams.get("token")
   console.log(inviteToken, "invite token============")
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const axiosInstance = createAxios(token, inviteToken)
   
   //  async function handleSuperAdmin() {
@@ -80,7 +80,7 @@ const Accountsetup = ({ onNext, onBack }) => {
       const companyId = localStorage.getItem("companyId");
 
       const res = await axiosInstance.post(`invites/${companyId}/admin-setup`, formData, {
-        meta: { auth: "ADMIN_AUTH" }
+        meta: { auth: "X_TENANT_TOKEN" }
       });
 
       console.log(res.data);
