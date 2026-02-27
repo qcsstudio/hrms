@@ -145,8 +145,9 @@ const WorkSpaceSetup = ({ onBack }) => {
         >
           Cancel
         </button>
-
-        <button
+        <div className='flex gap-5'>
+          <button onClick={()=>navigate('/dashboard')} className="h-11 w-[170px] border rounded-lg">skip</button>
+          <button
           type="button"
           className="h-11 w-[170px] border rounded-lg"
           onClick={handlenext}
@@ -154,6 +155,10 @@ const WorkSpaceSetup = ({ onBack }) => {
         >
           {loading ? 'Uploading...' : 'Continue Setup'}
         </button>
+
+        </div>
+
+        
       </div>
 
       {showSuccessPopup && (
