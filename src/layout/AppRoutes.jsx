@@ -5,6 +5,9 @@ import PrivateRoute from "./privateRoute";
 import PrivateRouteOrg from "./privateRouteOrg";
 import MainDashboardLayout from "./mainLayout";
 import DeviceIntegration from "../Container/Config/Device-Integration/DeviceIntegration";
+import ForgotPassword from "../Components/Auth/ForgotPassword";
+import VerifyCode from "../Components/Auth/VerifyCode";
+import SetPassword from "../Components/Auth/SetPassword";
 
 /* ================= AUTH / COMMON ================= */
 const Login = lazy(() => import("../Components/Auth/Login"));
@@ -234,6 +237,10 @@ const AppRoutes = () => {
       <Routes>
 
         <Route path="/login" element={<Login />} />
+        <Route path="/forget-password" element={<ForgotPassword />} />
+
+        <Route path="/verify-code" element={<VerifyCode />} />
+        <Route path="/set-password" element={<SetPassword />} />
 
         <Route
           path="/org-setup"
@@ -354,7 +361,7 @@ const AppRoutes = () => {
 
       </Routes>
     </Suspense>
-    
+
   );
 };
 
