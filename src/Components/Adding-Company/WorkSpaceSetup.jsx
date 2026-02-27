@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { IoCloudUploadOutline } from 'react-icons/io5'
 import createAxios from '../../utils/axios.config'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const WorkSpaceSetup = ({ onBack }) => {
   const { token, companyId } = useSelector((state) => state.user)
@@ -70,8 +70,12 @@ const WorkSpaceSetup = ({ onBack }) => {
       )
 
       console.log('UPLOAD SUCCESS:', res.data)
-      setShowSuccessPopup(true)
-      // navigate('/')
+      if (inviteToken) {
+        setShowSuccessPopup(true)
+
+      } else {
+        navigate('/dashboard')
+      }
 
     } catch (error) {
       console.error('UPLOAD ERROR:', error.response || error)
@@ -83,6 +87,20 @@ const WorkSpaceSetup = ({ onBack }) => {
       setLoading(false)
     }
   }
+
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get("token")
+
+  const handleskip = () => {
+    if (inviteToken) {
+      setShowSuccessPopup(true)
+
+    } else {
+      navigate('/dashboard')
+    }
+
+  }
+
 
   return (
     <div className="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-sm p-6">
@@ -145,38 +163,29 @@ const WorkSpaceSetup = ({ onBack }) => {
         >
           Cancel
         </button>
+        <div className='flex gap-5'>
+          <button onClick={handleskip} className="h-11 w-[170px] border rounded-lg">skip</button>
+          <button
+            type="button"
+            className="h-11 w-[170px] border rounded-lg"
+            onClick={handlenext}
+            disabled={loading}
+          >
+            {loading ? 'Uploading...' : 'Continue Setup'}
+          </button>
 
-        <button
-          type="button"
-          className="h-11 w-[170px] border rounded-lg"
-          onClick={handlenext}
-          disabled={loading}
-        >
-          {loading ? 'Uploading...' : 'Continue Setup'}
-        </button>
+        </div>
       </div>
 
       {showSuccessPopup && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-[350px] text-center shadow-lg">
-
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Upload Successful
             </h3>
-
             <p className="text-sm text-gray-600 mb-5">
               Please check your email for further instructions.
             </p>
-
-            {/* <button
-        onClick={() => {
-          setShowSuccessPopup(false)
-          // navigate('/')   // ya next page
-        }}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg"
-      >
-        Okay
-      </button> */}
           </div>
         </div>
       )}

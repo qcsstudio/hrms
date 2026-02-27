@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import { IoClose } from 'react-icons/io5'
 import { useSelector } from 'react-redux'
 import createAxios from '../../utils/axios.config'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const BrandAssetsUpload = ({ onNext, onBack }) => {
   const { token, companyId } = useSelector((state) => state.user)
@@ -22,67 +23,54 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
     cover: null,
   })
 
-  // const handleFile = (e, type) => {
-  //   const file = e.target.files[0]
-  //   if (!file) return
-
-  //   setData((prev) => ({
-  //     ...prev,
-  //     [type]: file,
-  //   }))
-
-  //   setPreview((prev) => ({
-  //     ...prev,
-  //     [type]: URL.createObjectURL(file),
-  //   }))
-  // }
+  const [skipmodal,setSkipmodal] = useState(false)
 
   const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2 MB
   const RECOMMENDED_SIZES = {
-  logo: { width: 280, height: 110 },
-  cover: { width: 720, height: 788 },
-}
-
- const handleFile = (e, type) => {
-  const file = e.target.files[0]
-  if (!file) return
-
-  // ❌ size validation (BLOCKING)
-  if (file.size > MAX_FILE_SIZE) {
-    alert("File size should not exceed 2 MB")
-    e.target.value = ""
-    return
+    logo: { width: 280, height: 110 },
+    cover: { width: 720, height: 788 },
   }
 
-  // ✅ STATE IMMEDIATELY SET (IMPORTANT)
-  setData((prev) => ({
-    ...prev,
-    [type]: file,
-  }))
+  const handleFile = (e, type) => {
+    const file = e.target.files[0]
+    if (!file) return
 
-  const previewURL = URL.createObjectURL(file)
-  setPreview((prev) => ({
-    ...prev,
-    [type]: previewURL,
-  }))
-
-  // 🔍 dimension check (NON-BLOCKING)
-  const img = new Image()
-  img.src = previewURL
-
-  img.onload = () => {
-    const { width, height } = img
-    const recommended = RECOMMENDED_SIZES[type]
-
-    if (width !== recommended.width || height !== recommended.height) {
-      alert(
-        `⚠ Recommended size for ${type === "logo" ? "Logo" : "Cover Image"} is ${recommended.width}×${recommended.height}px.\nYou can continue, but better results ke liye image change karein.`
-      )
+    // ❌ size validation (BLOCKING)
+    if (file.size > MAX_FILE_SIZE) {
+      alert("File size should not exceed 2 MB")
+      e.target.value = ""
+      return
     }
 
-    URL.revokeObjectURL(previewURL)
+    // ✅ STATE IMMEDIATELY SET (IMPORTANT)
+    setData((prev) => ({
+      ...prev,
+      [type]: file,
+    }))
+
+    const previewURL = URL.createObjectURL(file)
+    setPreview((prev) => ({
+      ...prev,
+      [type]: previewURL,
+    }))
+
+    // 🔍 dimension check (NON-BLOCKING)
+    const img = new Image()
+    img.src = previewURL
+
+    img.onload = () => {
+      const { width, height } = img
+      const recommended = RECOMMENDED_SIZES[type]
+
+      if (width !== recommended.width || height !== recommended.height) {
+        alert(
+          `⚠ Recommended size for ${type === "logo" ? "Logo" : "Cover Image"} is ${recommended.width}×${recommended.height}px.\nYou can continue, but better results ke liye image change karein.`
+        )
+      }
+
+      URL.revokeObjectURL(previewURL)
+    }
   }
-}
 
 
   const removeFile = (type) => {
@@ -96,6 +84,12 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
       [type]: null,
     }))
   }
+
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get("token")
+
+  const navigate = useNavigate()
+
   const axiosInstance = createAxios(token)
 
   async function handlenext() {
@@ -128,8 +122,32 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
     }
   }
 
+  const handleskip = () => {
+   if (inviteToken) {
+    setSkipmodal(true)
+    
+   } else {
+    navigate('/dashboard')
+   }
+
+  }
+
   return (
     <div className="space-y-6 w-[1280px] mx-auto">
+
+      {/* skip Popup======================= */}
+      {
+        skipmodal &&  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-[350px] h-[350px] flex items-center justify-center shadow-lg">
+
+            <p className="text-sm text-gray-600 mb-5">
+              Please check your email for further instructions.
+            </p>
+
+    
+          </div>
+        </div>
+      }
 
       {/* ================= Brand Logo ================= */}
       <div className="bg-white border border-[#E5E5E5] rounded-xl p-5">
@@ -217,10 +235,15 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
         <button className="h-11 w-[100px] border rounded-lg" onClick={onBack}>
           Cancel
         </button>
+        <div className='flex gap-2'>
+          <button className="h-11 w-[170px] border rounded-lg" onClick={handleskip}>
+            Skip
+          </button>
 
         <button className="h-11 w-[170px] border rounded-lg" onClick={handlenext}>
           Continue Setup
         </button>
+        </div>
       </div>
     </div>
   )

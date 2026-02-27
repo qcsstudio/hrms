@@ -45,7 +45,7 @@ const AddCompany = () => {
     {/* <div className='w-[1280px] mx-auto h-screen  border border-red-400 flex flex-col justify-center'> */}
 
    
-      <div className="flex items-center justify-center gap-2 mt-20 mb-8 w-[1280px] mx-auto">
+      <div className="flex items-center justify-center gap-2 mt-10 mb-8 w-[1280px] mx-auto">
         {steps.map((label, index) => {
           const isActive = index === currentStep;
           const isCompleted = index < currentStep;

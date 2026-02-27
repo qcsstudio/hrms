@@ -5,6 +5,7 @@ import { getSlug } from "../Components/CompanySlug";
 const createAxios = (token,inviteToken) => {
   const instance = axios.create({
     baseURL: "https://api.qcsstudios.com",
+    // baseURL: "http://localhost:4000",
     withCredentials: true,
   });
 

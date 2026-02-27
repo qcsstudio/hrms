@@ -14,6 +14,7 @@ import Select, { components } from "react-select"
 import * as Flags from "country-flag-icons/react/3x2"
 
 import { getEmptyFields } from 'get_input_empty_fields';
+import { toast } from 'react-toastify'
 
 const CompanySetup = ({ onNext, onBack }) => {
 
@@ -123,7 +124,6 @@ const CompanySetup = ({ onNext, onBack }) => {
   }
   const axiosInstance = createAxios(token, inviteToken)
 
-
   const handleSubmitSuperAdmin = async () => {
     try {
       const res = await axiosInstance.post("companies", formData, {
@@ -133,7 +133,8 @@ const CompanySetup = ({ onNext, onBack }) => {
       dispatch(setCompanyData(res.data))
       onNext()
     } catch (error) {
-      console.log("API Error:", error)
+      // console.log("API Error:", error)
+      toast.error(error?.response?.data?.message)
     }
   }
 
