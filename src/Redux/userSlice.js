@@ -13,8 +13,6 @@ const initialState = {
   istemporyPassword:null,
 
    forcePasswordChange: false,
-
-
 }
 
 const userSlice = createSlice({

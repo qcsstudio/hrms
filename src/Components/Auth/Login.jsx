@@ -454,7 +454,6 @@ const Login = () => {
                         disabled={isLoader}
                       />
                       <button type='button' onClick={() => setShowPassword(prev => !prev)}>
-
                       <img src={Password_Show} alt="show" className="cursor-pointer" />
                       </button>
                     </div>
