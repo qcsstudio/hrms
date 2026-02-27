@@ -1,10 +1,128 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Add_employees, Post_job, Approve_leave, Run_payroll, Announcement, Run_reports } from '../../allAssetsImport/allAssets'
 import { statslogo1, statslogo2, statslogo3, statslogo4, TotalPayroll, Processingstatus, paydate, kayecimage } from '../../allAssetsImport/allAssets'
+import { useDispatch, useSelector } from 'react-redux'
+import createAxios from '../../utils/axios.config'
+import { setAddLoginData } from '../../Redux/userSlice'
 
 const Admindashboard = () => {
+  const { istemporyPassword,user } = useSelector(state => state.user)
+  const [changepassword, setChangepassword] = useState({
+    oldPassword: "",
+    newPassword: ""
+  })
+
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+
+  const dispatch = useDispatch()
+  const axiosInstance = createAxios()
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setChangepassword({ ...changepassword, [name]: value })
+  }
+  const handlechangepassSubmit = async () => {
+    const payload = {
+      oldPassword: changepassword.oldPassword,
+      newPassword: changepassword.newPassword,
+      userId: user.id
+    }
+    try {
+      const res = await axiosInstance.post('/users/change-password', payload, {
+        meta: { auth: "TENANT_ONLY" }
+      })
+      console.log("after login change password response========", res.data)
+      dispatch(setAddLoginData(res.data))
+
+    } catch (error) {
+      console.warn("api is not working", error)
+
+    }
+
+  }
   return (
     <div className='p-5'>
+      {/* popup================================== */}
+      {!istemporyPassword && <div className="fixed inset-0 bg-black/50 z-40" >
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-5 py-[14px] flex items-center">
+            <input
+              name='oldPassword'
+               placeholder="Enter old password"
+              type={showOldPassword ? "text" : "password"}
+              value={changepassword.oldPassword}
+              onChange={handleChange}
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowOldPassword(prev => !prev)}
+              className="bg-none border-none cursor-pointer text-[#888] p-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-[22px] h-[22px]"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </button>
+          </div>
+          <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-5 py-[14px] flex items-center">
+            <input
+              name='newPassword'
+              placeholder="Enter new password"
+              type={showNewPassword ? "text" : "password"}
+              value={changepassword.newPassword}
+              onChange={handleChange}
+            />
+            <button
+              type="button"
+              onClick={() => setShowNewPassword(prev => !prev)}
+              className="bg-none border-none cursor-pointer text-[#888] p-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-[22px] h-[22px]"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </button>
+          </div>
+
+
+          <button onClick={handlechangepassSubmit}>save</button>
+
+        </div>
+      </div>}
+
+
       {/* Top Action Buttons */}
       <div className='flex  justify-between gap-4'>
         {[
@@ -189,7 +307,7 @@ const Admindashboard = () => {
         </div>
         <div className='md:w-1/3 border border-red-500 flex items-center justify-center'>hello</div>
       </div>
-    </div>
+    </div >
   )
 }
 
