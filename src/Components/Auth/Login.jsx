@@ -786,7 +786,6 @@ const Login = () => {
               <h1 className="text-[32px] font-bold text-[#111] mb-2">
                 Forgot Your Password
               </h1>
-
               <p className="text-[15px] text-[#999] mb-9">
                  Please create a new secure password.
               </p>
