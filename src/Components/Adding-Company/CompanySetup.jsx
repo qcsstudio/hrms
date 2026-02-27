@@ -157,7 +157,6 @@ const CompanySetup = ({ onNext, onBack }) => {
       console.log("API Error:", error)
     }
   }
-
   const handleSubmit = (e) => {
     e.preventDefault()
     const emptyFields = getEmptyFields(formData);
