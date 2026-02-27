@@ -10,6 +10,7 @@ const initialState = {
 
   // company data
   companyId: null,
+  istemporyPassword:null,
 
    forcePasswordChange: false,
 
@@ -29,6 +30,7 @@ const userSlice = createSlice({
       state.token = action.payload.token;
       state.role = action.payload.user.role;
       state.companyId = action.payload.user.companyId;
+      state.istemporyPassword = action.payload.user.istemporyPassword
 
        state.forcePasswordChange = action.payload.forcePasswordChange; 
 

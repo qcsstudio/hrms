@@ -33,6 +33,8 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [showPassword, setShowPassword] = useState(false);
+
   // Error states
   const [errors, setErrors] = useState({
     email: "",
@@ -442,7 +444,8 @@ const Login = () => {
                     </div>
                     <div className="flex justify-between items-center w-full">
                       <input
-                        type="password"
+                        // type="password"
+                          type={showPassword ? "text" : "password"}
                         placeholder="Password"
                         className={getInputFieldClass('password')}
                         value={password}
@@ -450,7 +453,10 @@ const Login = () => {
                         onBlur={() => handleBlur('password')}
                         disabled={isLoader}
                       />
+                      <button type='button' onClick={() => setShowPassword(prev => !prev)}>
+
                       <img src={Password_Show} alt="show" className="cursor-pointer" />
+                      </button>
                     </div>
                   </div>
                   {/* Password Error Message */}
@@ -729,26 +735,7 @@ const Login = () => {
               </p>
             </div>
 
-            {/* Right Side */}
-            <div className="flex-1 relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#7EB4F5] via-[#4A7BF7] to-[#3B5FCC]">
-              {/* Decorative Circles */}
-              <div className="absolute -top-[60px] -right-[60px] w-[300px] h-[300px] border-2 border-white/15 rounded-full" />
-              <div className="absolute -bottom-[80px] -right-[40px] w-[400px] h-[400px] border-2 border-white/10 rounded-full" />
-
-              <div className="relative z-10 text-center p-10">
-                <h2 className="text-white text-[48px] font-extrabold leading-[1.15] mb-10 drop-shadow-lg">
-                  Join the <br />
-                  future of <br />
-                  HR Sign Up
-                </h2>
-
-                <img
-                  // src={authHero}
-                  alt="HR Professional"
-                  className="max-w-[380px] w-full rounded-lg object-cover"
-                />
-              </div>
-            </div>
+          
           </div>
         </div>}
 
