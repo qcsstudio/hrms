@@ -165,9 +165,9 @@ const CompanySetup = ({ onNext, onBack }) => {
       emptyFields.forEach(field => {
         setErrors((prev) => ({ ...prev, [field]: `${field} is required` })); // setErrors fields 
       });
-      alert(JSON.stringify(emptyFields))
+      // alert(JSON.stringify(emptyFields))
     } else {
-      console.log("All fields filled:", fields);
+      console.log("All fields filled:", formData);
       // Add further logic for data submission or API calls here
     }
     inviteToken ? handleSubmitInvite() : handleSubmitSuperAdmin()
@@ -236,7 +236,7 @@ const CompanySetup = ({ onNext, onBack }) => {
                   })
                 }}
               />
-              {errors.selectedCountry && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.selectedCountry}.</p>}
+              {/* {errors.selectedCountry && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.selectedCountry}.</p>} */}
 
             </div>
           </div>
@@ -250,7 +250,7 @@ const CompanySetup = ({ onNext, onBack }) => {
                 readOnly
                 className="w-full h-10 border border-black/10 rounded-lg px-3 bg-gray-100"
               />
-              {errors.timezone && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.timezone}.</p>}
+              {/* {errors.timezone && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.timezone}.</p>} */}
 
             </div>
 
@@ -262,7 +262,7 @@ const CompanySetup = ({ onNext, onBack }) => {
                 readOnly
                 className="w-full h-10 border border-black/10 rounded-lg px-3 bg-gray-100"
               />
-              {errors.currency && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.currency}.</p>}
+              {/* {errors.currency && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.currency}.</p>} */}
 
             </div>
           </div>
