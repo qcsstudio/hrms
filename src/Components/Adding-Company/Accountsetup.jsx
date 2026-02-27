@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
 import createAxios from '../../utils/axios.config'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+
+import { getEmptyFields } from 'get_input_empty_fields';
+
 
 const Accountsetup = ({ onNext, onBack }) => {
   const { token, companyId } = useSelector((state) => state.user) // get superAdmintoken from redux store
@@ -13,6 +16,7 @@ const Accountsetup = ({ onNext, onBack }) => {
     contact: "",
     role: ""
   })
+  const [errors, setErrors] = useState({})
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -33,9 +37,22 @@ const Accountsetup = ({ onNext, onBack }) => {
     })
   }
   const navigate = useNavigate();
-  const axiosInstance = createAxios(token)
+  const axiosInstance = createAxios(token,inviteToken)
   //  async function handleSuperAdmin() {
+
   async function handlenext() {
+        // e.preventDefault()
+    const emptyFields = getEmptyFields(formData);
+
+    if (emptyFields.length > 0) {
+      emptyFields.forEach(field => {
+        setErrors((prev) => ({ ...prev, [field]: `${field} is required` })); // setErrors fields 
+      });
+      // alert(JSON.stringify(emptyFields))
+    } else {
+      console.log("All fields filled:", formData);
+    }
+
     try {
       const res = await axiosInstance.post(`companies/${companyId}/admin`, formData, {
         meta: { auth: "ADMIN_AUTH" }
@@ -49,22 +66,31 @@ const Accountsetup = ({ onNext, onBack }) => {
       console.log("API Error:", error);
     }
   }
-  // async function handleInviteAccountSetup() {
-  //   try {
-  //     const token = localStorage.getItem("authToken");
-  //     const companyId = localStorage.getItem("companyId");
+  async function handleInviteAccountSetup() {
+      // e.preventDefault()
+    try {
+      const token = localStorage.getItem("authToken");
+      const companyId = localStorage.getItem("companyId");
 
-  //     const res = await axiosInstance.post(`companies/${companyId}/admin`, formData, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
+      const res = await axiosInstance.post(`invites/${companyId}/admin-setup`, formData, {
+        meta:{auth:"ADMIN_AUTH"}
+      });
 
-  //     console.log(res.data);
-  //     onNext()
+      console.log(res.data);
+      onNext()
 
-  //   } catch (error) {
-  //     console.log("API Error:", error);
-  //   }
-  // }
+    } catch (error) {
+      console.log("API Error:", error);
+    }
+  }
+   const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get("token")
+  console.log(inviteToken,"invite token============")
+
+  const handleSubmit = (e)=>{
+      e.preventDefault()
+    inviteToken? handleInviteAccountSetup() :handlenext()
+  }
 
   return (
     <div className="bg-[#F9FAFB] p-6 rounded-lg w-[1280px]">
@@ -90,6 +116,8 @@ const Accountsetup = ({ onNext, onBack }) => {
             onChange={handleChange}
             className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
           />
+          {errors.fullName && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.fullName}.</p>}
+
         </div>
 
         {/* Mail & Contact */}
@@ -104,6 +132,8 @@ const Accountsetup = ({ onNext, onBack }) => {
               onChange={handleChange}
               className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
             />
+            {errors.email && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.email}.</p>}
+
           </div>
 
           <div className="flex-1">
@@ -116,6 +146,8 @@ const Accountsetup = ({ onNext, onBack }) => {
               onChange={handleChange}
               className="w-full h-10 border border-black/10 rounded-lg px-3 outline-none focus:ring-2 focus:ring-indigo-500"
             />
+            {errors.contact && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.contact}.</p>}
+
           </div>
         </div>
         <div>
@@ -132,6 +164,8 @@ const Accountsetup = ({ onNext, onBack }) => {
             <option value="COMPANY_ADMIN">Admin</option>
             {/* <option value="SUPER_ADMIN">Super Admin</option> */}
           </select>
+          {errors.role && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.role}.</p>}
+
         </div>
 
         {/* Buttons */}
@@ -147,7 +181,7 @@ const Accountsetup = ({ onNext, onBack }) => {
           <button
             type="submit"
             className="h-11 w-[170px] border border-[#30333D] rounded-lg bg-white"
-            onClick={handlenext}
+            onClick={handleSubmit}
           >
             Continue Setup
           </button>

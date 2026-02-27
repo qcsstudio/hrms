@@ -10,13 +10,14 @@ import { FaAngleDown, FaPlus } from 'react-icons/fa'
 import createAxios from '../../utils/axios.config'
 import Statics from './Statics'
 import { useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
 
 const SuperAdminDashboard = () => {
   const { token } = useSelector((state) => state.user)
 
 
   const [openInviteModal, setOpenInviteModal] = useState(false)
-  const [activeFilter, setActiveFilter] = useState('All')
+  const [activeFilter, setActiveFilter] = useState("")
 
   // popup form
   const [formData, setFormData] = useState({
@@ -25,8 +26,10 @@ const SuperAdminDashboard = () => {
     linkExpiryHours: ''
   })
 
-  const [dashboarddata, setDashboarddata] = useState()
-
+  const [dashboarddata, setDashboarddata] = useState({
+    companies: [],
+    total: 0
+  })
   const axiosInstance = createAxios(token)
 
   const companiesData = [
@@ -59,8 +62,8 @@ const SuperAdminDashboard = () => {
           Total<br />Companies
         </>
       ),
-      value: '257',
-      subtitle: '+08 this month',
+      value: dashboarddata.total,
+      subtitle: dashboarddata.thisMonthCompanies,
       icon: statslogo1,
       bg: 'bg-indigo-100'
     },
@@ -70,8 +73,8 @@ const SuperAdminDashboard = () => {
           Active<br />Companies
         </>
       ),
-      value: '89',
-      subtitle: '76% activation rate',
+      value: dashboarddata.activeCompanies,
+      subtitle: dashboarddata.activationRate,
       icon: statslogo2,
       bg: 'bg-indigo-100'
     },
@@ -97,24 +100,20 @@ const SuperAdminDashboard = () => {
 
   useEffect(() => {
     const fetchdashboarddata = async () => {
-      const res = axiosInstance.get('/auth/super-admin/dashboard', {
+      const statusParam =
+        activeFilter === "All" ? "" : `status=${activeFilter.toUpperCase()}`;
+      const res = await axiosInstance.get(`/auth/super-admin/dashboard${statusParam ? `?${statusParam}` : ""}`, {
         meta: { auth: "ADMIN_AUTH" }
       })
-      setDashboarddata(res?.data)
+      setDashboarddata({
+        companies: res?.data?.data,
+        total: res?.data?.total
+      })
       console.log("superadmin dashboard data:=====", res?.data)
 
     };
     fetchdashboarddata()
-  }, [])
-
-  
-  // filter logic (NO DESIGN CHANGE)
-  const filteredCompanies =
-    activeFilter === 'All'
-      ? companiesData
-      : companiesData.filter(
-        (item) => item.status === activeFilter
-      )
+  }, [activeFilter])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -138,19 +137,15 @@ const SuperAdminDashboard = () => {
       }
 
       await axiosInstance.post('invites/send-setup-link', payload,
-        //   {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // }
-
         {
           meta: { auth: "ADMIN_AUTH" }
         }
       )
-
       setOpenInviteModal(false)
       setFormData({ email: '', trialDuration: '', linkExpiryHours: '' })
     } catch (error) {
       console.log(error)
+      toast.error(error.message)
     }
   }
 
@@ -220,7 +215,8 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* Rows */}
-        {filteredCompanies.map((row, idx) => (
+        {/* {filteredCompanies.map((row, idx) => ( */}
+        {dashboarddata?.companies?.map((row, idx) => (
           <div
             key={idx}
             className="flex justify-between items-center border-2 border-gray-300 rounded-2xl p-3 my-4"
@@ -231,8 +227,8 @@ const SuperAdminDashboard = () => {
             </div>
 
             <div className="w-1/5">
-              <h3 className="text-[15px]">HR Admin</h3>
-              <p className="text-[12px] text-[#000000]/35">hr@dashglobal.com</p>
+              <h3 className="text-[15px]">{row.adminDetails.name || "No Admin Assign"}</h3>
+              <p className="text-[12px] text-[#000000]/35">{row.adminDetails.email}</p>
             </div>
 
             <div className="w-1/5">
@@ -246,7 +242,7 @@ const SuperAdminDashboard = () => {
             <div className="w-1/5">
               <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1 w-fit">
                 <img src={employee} />
-                <span>{row.emp}</span>
+                <span>{row.totalEmployees}</span>
               </div>
             </div>
 

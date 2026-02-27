@@ -183,7 +183,7 @@ const Login = () => {
       const role = res?.data?.user?.role;
 
       // Success toast
-      toast.success("Login successful! Redirecting...");
+      toast.success("Login successful");
 
       if (role === "SUPER_ADMIN") {
         navigate("/dashboard/superadmin-dashboard");
