@@ -14,7 +14,6 @@ const initialState = {
 
    forcePasswordChange: false,
 }
-
 const userSlice = createSlice({
   name: "user",
   initialState,
