@@ -145,7 +145,7 @@ const CompanySetup = ({ onNext, onBack }) => {
     }
 
     try {
-      await axiosInstance.post("/invites/company-setup", formData,
+      const res  = await axiosInstance.post("/invites/company-setup", formData,
         //   {
         //   headers: { "x-invite-token": inviteToken },
         // }
@@ -153,6 +153,7 @@ const CompanySetup = ({ onNext, onBack }) => {
           meta: { auth: "X_TENANT_TOKEN" }
         }
       )
+      localStorage.setItem("companyId",res.data.companyId)
       onNext()
     } catch (error) {
       console.log("API Error:", error)
