@@ -189,6 +189,7 @@ const CompanySetup = ({ onNext, onBack }) => {
             </p>
           </div>
 
+
           <div>
             <p className="text-[15px] mb-1">Company name</p>
             <input
