@@ -8,12 +8,12 @@ import { setAddLoginData } from '../../Redux/userSlice'
 const Admindashboard = () => {
   const { istemporyPassword, user } = useSelector(state => state.user)
   const [changepassword, setChangepassword] = useState({
-    oldPassword: "",
+    confirmPassword: "",
     newPassword: ""
   })
 
-  const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 
   const dispatch = useDispatch()
@@ -23,10 +23,19 @@ const Admindashboard = () => {
     setChangepassword({ ...changepassword, [name]: value })
   }
   const handlechangepassSubmit = async () => {
+     if (!changepassword.newPassword || !changepassword.confirmPassword) {
+    alert("Both fields are required");
+    return;
+  }
+
+  if (changepassword.newPassword !== changepassword.confirmPassword) {
+    alert("New Password and Confirm Password do not match");
+    return;
+  }
     const payload = {
-      oldPassword: changepassword.oldPassword,
+      userId: user.id,
       newPassword: changepassword.newPassword,
-      userId: user.id
+      confirmPassword: changepassword.confirmPassword
     }
     try {
       const res = await axiosInstance.post('/users/change-password', payload, {
@@ -48,31 +57,12 @@ const Admindashboard = () => {
           {/* Popup Box */}
           <div className="bg-white rounded-2xl p-6 w-[420px] shadow-xl">
 
-            {/* Old Password */}
+            {/*New Password==================== */}
             <div className="relative mb-4 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
-              <input
-                name="oldPassword"
-                placeholder="Enter old password"
-                type={showOldPassword ? "text" : "password"}
-                value={changepassword.oldPassword}
-                onChange={handleChange}
-                className="flex-1 outline-none"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowOldPassword(prev => !prev)}
-                className="text-gray-500"
-              >
-                👁
-              </button>
-            </div>
-
-            {/* New Password */}
-            <div className="relative mb-6 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
+              <h2>New Password</h2>
               <input
                 name="newPassword"
-                placeholder="Enter new password"
+                placeholder="Enter New password"
                 type={showNewPassword ? "text" : "password"}
                 value={changepassword.newPassword}
                 onChange={handleChange}
@@ -82,6 +72,27 @@ const Admindashboard = () => {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(prev => !prev)}
+                className="text-gray-500"
+              >
+                👁
+              </button>
+            </div>
+
+            {/* Confirm Password========================= */}
+            <div className="relative mb-6 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
+              <h2>Confirm Password</h2>
+              <input
+                name="confirmPassword"
+                placeholder="Enter new password"
+                type={showConfirmPassword ? "text" : "password"}
+                value={changepassword.confirmPassword}
+                onChange={handleChange}
+                className="flex-1 outline-none"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(prev => !prev)}
                 className="text-gray-500"
               >
                 👁
