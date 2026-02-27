@@ -4,13 +4,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 import { getEmptyFields } from 'get_input_empty_fields';
+import { toast } from 'react-toastify';
 
 
 const Accountsetup = ({ onNext, onBack }) => {
-  const { token, companyId } = useSelector((state) => state.user)
+  const { token } = useSelector((state) => state.user)
   // get superAdmintoken from redux store
 
-  console.log(companyId, "11111111111111")
 
   const [formData, setData] = useState({
     fullName: "",
@@ -65,11 +65,13 @@ const Accountsetup = ({ onNext, onBack }) => {
       });
 
       console.log(res.data);
+      toast.success("Admin Account Setup Successfullly Done!")
       onNext()
       // navigate('/');
 
     } catch (error) {
       console.log("API Error:", error);
+      toast.error(error?.response?.data?.message)
     }
   }
   async function handleInviteAccountSetup() {
