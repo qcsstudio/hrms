@@ -13,6 +13,8 @@ import ct from "countries-and-timezones"
 import Select, { components } from "react-select"
 import * as Flags from "country-flag-icons/react/3x2"
 
+import { getEmptyFields } from 'get_input_empty_fields';
+
 const CompanySetup = ({ onNext, onBack }) => {
 
   const { token } = useSelector((state) => state.user)
@@ -33,6 +35,9 @@ const CompanySetup = ({ onNext, onBack }) => {
   const [searchParams] = useSearchParams()
   const inviteToken = searchParams.get("token")
 
+  // form validation=================
+  const [errors, setErrors] = useState({})
+
 
   useEffect(() => {
     if (!inviteToken) return
@@ -48,6 +53,7 @@ const CompanySetup = ({ onNext, onBack }) => {
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormdata(prev => ({ ...prev, [name]: value }))
+    setErrors({})
   }
 
   // 🌍 COUNTRY → TIMEZONE + CURRENCY
@@ -154,6 +160,16 @@ const CompanySetup = ({ onNext, onBack }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    const emptyFields = getEmptyFields(fields);
+    if (emptyFields.length > 0) {
+      emptyFields.forEach(field => {
+        setErrors((prev) => ({ ...prev, [field]: `${field} is required` })); // setErrors fields 
+      });
+      alert(JSON.stringify(emptyFields))
+    } else {
+      console.log("All fields filled:", fields);
+      // Add further logic for data submission or API calls here
+    }
     inviteToken ? handleSubmitInvite() : handleSubmitSuperAdmin()
   }
 
@@ -173,6 +189,7 @@ const CompanySetup = ({ onNext, onBack }) => {
             </p>
           </div>
 
+
           <div>
             <p className="text-[15px] mb-1">Company name</p>
             <input
@@ -182,6 +199,7 @@ const CompanySetup = ({ onNext, onBack }) => {
               onChange={handleChange}
               className="w-full h-10 border border-black/10 rounded-lg px-3"
             />
+            {errors.name && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.name}.</p>}
           </div>
 
           <div className="flex gap-5">
@@ -194,6 +212,7 @@ const CompanySetup = ({ onNext, onBack }) => {
                 onChange={handleChange}
                 className="w-full h-10 border border-black/10 rounded-lg px-3"
               />
+              {errors.slug && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.slug}.</p>}
             </div>
 
             <div className="flex-1">
@@ -218,6 +237,8 @@ const CompanySetup = ({ onNext, onBack }) => {
                   })
                 }}
               />
+              {errors.selectedCountry && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.selectedCountry}.</p>}
+
             </div>
           </div>
 
@@ -230,6 +251,8 @@ const CompanySetup = ({ onNext, onBack }) => {
                 readOnly
                 className="w-full h-10 border border-black/10 rounded-lg px-3 bg-gray-100"
               />
+              {errors.timezone && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.timezone}.</p>}
+
             </div>
 
             <div className="flex-1">
@@ -240,6 +263,8 @@ const CompanySetup = ({ onNext, onBack }) => {
                 readOnly
                 className="w-full h-10 border border-black/10 rounded-lg px-3 bg-gray-100"
               />
+              {errors.currency && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.currency}.</p>}
+
             </div>
           </div>
 
@@ -257,6 +282,8 @@ const CompanySetup = ({ onNext, onBack }) => {
               <option value="Finance">Finance</option>
               <option value="Healthcare">Healthcare</option>
             </select>
+              {errors.industryType && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.industryType}.</p>}
+
           </div>
 
           <div className="flex justify-between mt-5">

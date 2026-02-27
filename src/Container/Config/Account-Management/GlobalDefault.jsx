@@ -209,7 +209,8 @@ const COUNTRY_TIMEZONES = {
 };
 
 const GlobalDefaults = () => {
-  const { token } = useSelector(state => state.user);
+  // const { token } = useSelector(state => state.user);
+  const token = localStorage.getItem('authToken')
   const axiosInstance = createAxios(token);
 
   const [globalSettings, setGlobalSettings] = useState(null);
