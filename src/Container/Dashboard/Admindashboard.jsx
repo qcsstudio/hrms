@@ -39,13 +39,12 @@ const Admindashboard = () => {
       console.warn("api is not working", error)
 
     }
-
   }
   return (
     <div className='p-5'>
       {/* popup================================== */}
-      {!istemporyPassword && <div className="fixed inset-0 bg-black/50 z-40" >
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+      {!istemporyPassword && <div className="fixed inset-0 bg-black/50 z-1000" >
+        <div className="fixed inset-0 flex items-center justify-center z-500">
           <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-5 py-[14px] flex items-center">
             <input
               name='oldPassword'
