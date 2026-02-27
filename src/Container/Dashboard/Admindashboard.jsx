@@ -6,7 +6,7 @@ import createAxios from '../../utils/axios.config'
 import { setAddLoginData } from '../../Redux/userSlice'
 
 const Admindashboard = () => {
-  const { istemporyPassword,user } = useSelector(state => state.user)
+  const { istemporyPassword, user } = useSelector(state => state.user)
   const [changepassword, setChangepassword] = useState({
     oldPassword: "",
     newPassword: ""
@@ -42,83 +42,63 @@ const Admindashboard = () => {
   return (
     <div className='p-5'>
       {/* popup================================== */}
-      {!istemporyPassword && <div className="fixed inset-0 bg-black/50 z-1000" >
-        <div className="fixed inset-0 bg-white flex items-center justify-center z-500">
-          <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-5 py-[14px] flex items-center">
-            <input
-              name='oldPassword'
-               placeholder="Enter old password"
-              type={showOldPassword ? "text" : "password"}
-              value={changepassword.oldPassword}
-              onChange={handleChange}
-            />
+      {!istemporyPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
 
-            <button
-              type="button"
-              onClick={() => setShowOldPassword(prev => !prev)}
-              className="bg-none border-none cursor-pointer text-[#888] p-0"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-[22px] h-[22px]"
+          {/* Popup Box */}
+          <div className="bg-white rounded-2xl p-6 w-[420px] shadow-xl">
+
+            {/* Old Password */}
+            <div className="relative mb-4 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
+              <input
+                name="oldPassword"
+                placeholder="Enter old password"
+                type={showOldPassword ? "text" : "password"}
+                value={changepassword.oldPassword}
+                onChange={handleChange}
+                className="flex-1 outline-none"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowOldPassword(prev => !prev)}
+                className="text-gray-500"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            </button>
-          </div>
-          <div className="relative mb-6 border-[1.5px] border-gray-300 rounded-xl px-5 py-[14px] flex items-center">
-            <input
-              name='newPassword'
-              placeholder="Enter new password"
-              type={showNewPassword ? "text" : "password"}
-              value={changepassword.newPassword}
-              onChange={handleChange}
-            />
-            <button
-              type="button"
-              onClick={() => setShowNewPassword(prev => !prev)}
-              className="bg-none border-none cursor-pointer text-[#888] p-0"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-[22px] h-[22px]"
+                👁
+              </button>
+            </div>
+
+            {/* New Password */}
+            <div className="relative mb-6 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
+              <input
+                name="newPassword"
+                placeholder="Enter new password"
+                type={showNewPassword ? "text" : "password"}
+                value={changepassword.newPassword}
+                onChange={handleChange}
+                className="flex-1 outline-none"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(prev => !prev)}
+                className="text-gray-500"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
+                👁
+              </button>
+            </div>
+
+            {/* Save Button */}
+            <button
+              onClick={handlechangepassSubmit}
+              className="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700"
+            >
+              Save
             </button>
+
           </div>
-
-
-          <button onClick={handlechangepassSubmit}>save</button>
-
         </div>
-      </div>}
+      )}
 
 
       {/* Top Action Buttons */}
