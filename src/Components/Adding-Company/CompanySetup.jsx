@@ -172,7 +172,6 @@ const CompanySetup = ({ onNext, onBack }) => {
     }
     inviteToken ? handleSubmitInvite() : handleSubmitSuperAdmin()
   }
-
   return (
     <>
       {inviteToken && showOtpModal && !isOtpVerified && (
