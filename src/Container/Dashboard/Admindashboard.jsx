@@ -4,6 +4,7 @@ import { statslogo1, statslogo2, statslogo3, statslogo4, TotalPayroll, Processin
 import { useDispatch, useSelector } from 'react-redux'
 import createAxios from '../../utils/axios.config'
 import { setAddLoginData } from '../../Redux/userSlice'
+import { toast } from 'react-toastify'
 
 const Admindashboard = () => {
   const { istemporyPassword, user } = useSelector(state => state.user)
@@ -15,6 +16,11 @@ const Admindashboard = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [errors, setErrors] = useState({
+    newPassword: "",
+    confirmPassword: ""
+  });
+
 
   const dispatch = useDispatch()
   const axiosInstance = createAxios()
@@ -22,16 +28,44 @@ const Admindashboard = () => {
     const { name, value } = e.target;
     setChangepassword({ ...changepassword, [name]: value })
   }
-  const handlechangepassSubmit = async () => {
-     if (!changepassword.newPassword || !changepassword.confirmPassword) {
-    alert("Both fields are required");
-    return;
-  }
 
-  if (changepassword.newPassword !== changepassword.confirmPassword) {
-    alert("New Password and Confirm Password do not match");
-    return;
-  }
+  const validatePassword = (password) => {
+    if (!password) return "Password is required";
+    if (password.length < 6) return "Password must be at least 6 characters";
+    return "";
+  };
+
+  const handlechangepassSubmit = async () => {
+
+    const newPassError = validatePassword(changepassword.newPassword);
+    const confirmPassError = validatePassword(changepassword.confirmPassword);
+
+    if (newPassError || confirmPassError) {
+      setErrors({
+        newPassword: newPassError,
+        confirmPassword: confirmPassError
+      });
+      toast.error(newPassError || confirmPassError);
+      return;
+    }
+
+    if (changepassword.newPassword !== changepassword.confirmPassword) {
+      setErrors({
+        newPassword: "",
+        confirmPassword: "Passwords do not match"
+      });
+      toast.error("New Password and Confirm Password do not match");
+      return;
+    }
+    if (!changepassword.newPassword || !changepassword.confirmPassword) {
+      toast.info("Both fields are required");
+      return;
+    }
+
+    // if (changepassword.newPassword !== changepassword.confirmPassword) {
+    //   toast.info("New Password and Confirm Password do not match");
+    //   return;
+    // }
     const payload = {
       userId: user.id,
       newPassword: changepassword.newPassword,
@@ -42,6 +76,7 @@ const Admindashboard = () => {
         meta: { auth: "TENANT_ONLY" }
       })
       console.log("after login change password response========", res.data)
+      toast.success("Password changed successfully");
       dispatch(setAddLoginData(res.data))
 
     } catch (error) {
@@ -55,11 +90,10 @@ const Admindashboard = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
 
           {/* Popup Box */}
-          <div className="bg-white rounded-2xl p-6 w-[420px] shadow-xl">
+          <div className="bg-white rounded-2xl p-6 w-[450px] shadow-xl">
             <h1 className='text-[25px] text-center'>Change Password</h1>
-
             {/*New Password==================== */}
-              <h2>New Password</h2>
+            <h2 className='mb-3'>New Password</h2>
             <div className="relative mb-4 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
               <input
                 name="newPassword"
@@ -67,7 +101,8 @@ const Admindashboard = () => {
                 type={showNewPassword ? "text" : "password"}
                 value={changepassword.newPassword}
                 onChange={handleChange}
-                className="flex-1 outline-none"
+                className={`flex-1 outline-none ${errors.newPassword ? "text-red-600" : ""
+                  }`}
               />
 
               <button
@@ -80,7 +115,7 @@ const Admindashboard = () => {
             </div>
 
             {/* Confirm Password========================= */}
-              <h2>Confirm Password</h2>
+            <h2 className='mb-3'>Confirm Password</h2>
             <div className="relative mb-6 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
               <input
                 name="confirmPassword"
@@ -88,8 +123,9 @@ const Admindashboard = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 value={changepassword.confirmPassword}
                 onChange={handleChange}
-                className="flex-1 outline-none"
-              />
+className={`flex-1 outline-none ${
+    errors.confirmPassword ? "text-red-600" : ""
+  }`}              />
 
               <button
                 type="button"
