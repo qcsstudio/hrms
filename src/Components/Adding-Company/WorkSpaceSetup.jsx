@@ -65,12 +65,6 @@ const WorkSpaceSetup = ({ onBack }) => {
       const res = await axiosInstance.post(
         `/companies/${companyId}/bulk-upload-employees`,
         formData,
-        // {
-        //   headers: {
-        //     Authorization: `Bearer ${token}`,
-        //   },
-        // }
-        // {
         {
           meta: { auth: "ADMIN_AUTH" }
         }

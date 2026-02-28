@@ -3,10 +3,12 @@ import { IoClose } from 'react-icons/io5'
 import { useSelector } from 'react-redux'
 import createAxios from '../../utils/axios.config'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 const BrandAssetsUpload = ({ onNext, onBack }) => {
-  const { token, companyId } = useSelector((state) => state.user)
+  const { token } = useSelector((state) => state.user)
 
+      const companyId = localStorage.getItem('companyId')
 
   const logoRef = useRef(null)
   const coverRef = useRef(null)
@@ -122,6 +124,30 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
     }
   }
 
+  async function handleInvitenext() {
+    console.log(token, "000000000000000000000000")
+    // console.log(companyId, "1111111111111111111")
+    try {
+      const payload = new FormData()
+      if (formData.logo) payload.append('brand-logo', formData.logo)
+      if (formData.cover) payload.append('cover-image', formData.cover)
+
+      const res = await axiosInstance.post(
+        // `/companies/${companyId}/company-brandlogoandimage`,
+        `/invites/${companyId}/invite-companyBrandingSetup`,
+        payload,
+        {
+          meta: { auth: "X_TENANT_TOKEN" }
+        }
+      )
+      console.log(res.data)
+      onNext()
+    } catch (error) {
+      console.log('API Error:', error)
+      toast.error(error?.response?.data?.message)
+    }
+  }
+
   const handleskip = () => {
    if (inviteToken) {
     setSkipmodal(true)
@@ -130,6 +156,10 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
     navigate('/dashboard')
    }
 
+  }
+
+  const handleSubmit = ()=> {
+    inviteToken ? handleInvitenext() : handlenext()
   }
 
   return (
@@ -240,7 +270,7 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
             Skip
           </button>
 
-        <button className="h-11 w-[170px] border rounded-lg" onClick={handlenext}>
+        <button className="h-11 w-[170px] border rounded-lg" onClick={handleSubmit}>
           Continue Setup
         </button>
         </div>
