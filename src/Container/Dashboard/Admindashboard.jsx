@@ -92,7 +92,6 @@ const Admindashboard = () => {
           {/* Popup Box */}
           <div className="bg-white rounded-2xl p-6 w-[450px] shadow-xl">
             <h1 className='text-[25px] text-center'>Change Password</h1>
-
             {/*New Password==================== */}
             <h2 className='mb-3'>New Password</h2>
             <div className="relative mb-4 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
