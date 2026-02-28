@@ -147,7 +147,6 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
       toast.error(error?.response?.data?.message)
     }
   }
-
   const handleskip = () => {
    if (inviteToken) {
     setSkipmodal(true)
