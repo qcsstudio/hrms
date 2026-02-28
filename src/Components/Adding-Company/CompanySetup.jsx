@@ -130,6 +130,7 @@ const CompanySetup = ({ onNext, onBack }) => {
         meta: { auth: "ADMIN_AUTH" }
       }
       )
+      localStorage.setItem("companyId", res?.data?.companyId)
       dispatch(setCompanyData(res.data))
       onNext()
     } catch (error) {
@@ -145,7 +146,7 @@ const CompanySetup = ({ onNext, onBack }) => {
     }
 
     try {
-      const res  = await axiosInstance.post("/invites/company-setup", formData,
+      const res = await axiosInstance.post("/invites/company-setup", formData,
         //   {
         //   headers: { "x-invite-token": inviteToken },
         // }
@@ -153,7 +154,7 @@ const CompanySetup = ({ onNext, onBack }) => {
           meta: { auth: "X_TENANT_TOKEN" }
         }
       )
-      localStorage.setItem("companyId",res.data.companyId)
+      localStorage.setItem("companyId", res?.data?.companyId)
       onNext()
     } catch (error) {
       console.log("API Error:", error)
@@ -166,6 +167,7 @@ const CompanySetup = ({ onNext, onBack }) => {
       emptyFields.forEach(field => {
         setErrors((prev) => ({ ...prev, [field]: `${field} is required` })); // setErrors fields 
       });
+      return
       // alert(JSON.stringify(emptyFields))
     } else {
       console.log("All fields filled:", formData);
@@ -282,7 +284,7 @@ const CompanySetup = ({ onNext, onBack }) => {
               <option value="Finance">Finance</option>
               <option value="Healthcare">Healthcare</option>
             </select>
-              {errors.industryType && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.industryType}.</p>}
+            {errors.industryType && <p style={{ color: '#e74c3c', fontSize: '12px', fontStyle: 'italic' }}>{errors.industryType}.</p>}
 
           </div>
 

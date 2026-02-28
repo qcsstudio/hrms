@@ -3,6 +3,7 @@ import { IoCloudUploadOutline } from 'react-icons/io5'
 import createAxios from '../../utils/axios.config'
 import { useSelector } from 'react-redux'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 const WorkSpaceSetup = ({ onBack }) => {
   const { token, companyId } = useSelector((state) => state.user)
@@ -12,9 +13,12 @@ const WorkSpaceSetup = ({ onBack }) => {
 
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
 
+  
+  const [searchParams] = useSearchParams()
+  const inviteToken = searchParams.get("token")
 
   const navigate = useNavigate()
-  const axiosInstance = createAxios(token)
+  const axiosInstance = createAxios(token,inviteToken)
 
   // ✅ FILE CHANGE (Only Excel allowed)
   const handleFileChange = (e) => {
@@ -88,8 +92,53 @@ const WorkSpaceSetup = ({ onBack }) => {
     }
   }
 
-  const [searchParams] = useSearchParams()
-  const inviteToken = searchParams.get("token")
+    const handleInvitenext = async () => {
+    // console.log('CLICKED → Continue Setup')
+    const companyId = localStorage.getItem('companyId')
+
+    if (!file) {
+      toast.info('Please upload an Excel file first')
+      return
+    }
+
+    if (!token || !companyId) {
+      toast.info('Authentication or CompanyId missing')
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await axiosInstance.post(
+        `invites/${companyId}/workspace-setup`,
+        formData,
+        {
+          meta: { auth: "X_TENANT_TOKEN" }
+        }
+      )
+      toast.success("WorkSpace setup Successfully Done!")
+      // console.log('UPLOAD SUCCESS:', res.data)
+      if (inviteToken) {
+        setShowSuccessPopup(true)
+
+      } else {
+        navigate('/dashboard')
+      }
+
+    } catch (error) {
+      console.error('UPLOAD ERROR:', error.response || error)
+      toast.error(
+        error?.response?.data?.message ||
+        'Bulk upload failed'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
 
   const handleskip = () => {
     if (inviteToken) {
@@ -99,6 +148,10 @@ const WorkSpaceSetup = ({ onBack }) => {
       navigate('/dashboard')
     }
 
+  }
+
+  const hnadleSubmit = ()=>{
+    inviteToken? handleInvitenext(): handlenext
   }
 
 
@@ -168,7 +221,7 @@ const WorkSpaceSetup = ({ onBack }) => {
           <button
             type="button"
             className="h-11 w-[170px] border rounded-lg"
-            onClick={handlenext}
+            onClick={hnadleSubmit}
             disabled={loading}
           >
             {loading ? 'Uploading...' : 'Continue Setup'}

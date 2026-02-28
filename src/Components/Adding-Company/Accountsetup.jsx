@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 
 
 const Accountsetup = ({ onNext, onBack }) => {
-  const { token } = useSelector((state) => state.user)
+  const { token} = useSelector((state) => state.user)
   // get superAdmintoken from redux store
 
 
@@ -20,6 +20,8 @@ const Accountsetup = ({ onNext, onBack }) => {
   })
   const [errors, setErrors] = useState({})
 
+  const [loading,setLoading] = useState(false)
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setData({
@@ -28,26 +30,28 @@ const Accountsetup = ({ onNext, onBack }) => {
     })
   }
 
-  const handlesSubmit = (e) => {
-    e.preventDefault()
-    console.log(formData)
-    setData({
-      fullName: "",
-      email: "",
-      contact: "",
-      role: ""
-    })
-  }
+  // const handlesSubmit = (e) => {
+  //   e.preventDefault()
+  //   console.log(formData)
+  //   setData({
+  //     fullName: "",
+  //     email: "",
+  //     contact: "",
+  //     role: ""
+  //   })
+  // }
   const [searchParams] = useSearchParams()
   const inviteToken = searchParams.get("token")
   console.log(inviteToken, "invite token============")
   // const navigate = useNavigate();
   const axiosInstance = createAxios(token, inviteToken)
-  
+    const companyId = localStorage.getItem("companyId");
+
   //  async function handleSuperAdmin() {
 
   async function handlenext() {
     // e.preventDefault()
+    
     const emptyFields = getEmptyFields(formData);
 
     if (emptyFields.length > 0) {
@@ -58,6 +62,8 @@ const Accountsetup = ({ onNext, onBack }) => {
     } else {
       console.log("All fields filled:", formData);
     }
+    setLoading(true)
+      // const companyId = localStorage.getItem("companyId");
 
     try {
       const res = await axiosInstance.post(`companies/${companyId}/admin`, formData, {
@@ -65,6 +71,7 @@ const Accountsetup = ({ onNext, onBack }) => {
       });
 
       console.log(res.data);
+      setLoading(false)
       toast.success("Admin Account Setup Successfullly Done!")
       onNext()
       // navigate('/');
@@ -76,13 +83,13 @@ const Accountsetup = ({ onNext, onBack }) => {
   }
   async function handleInviteAccountSetup() {
     // e.preventDefault()
+    setLoading(true)
     try {
-      const companyId = localStorage.getItem("companyId");
 
       const res = await axiosInstance.post(`invites/${companyId}/admin-setup`, formData, {
         meta: { auth: "X_TENANT_TOKEN" }
       });
-
+setLoading(false)
       console.log(res.data);
       onNext()
 
@@ -106,7 +113,7 @@ const Accountsetup = ({ onNext, onBack }) => {
         Create the main admin who will manage this workspace.
       </p>
 
-      <form onSubmit={handlesSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* Admin Full Name */}
         <div>
@@ -186,9 +193,10 @@ const Accountsetup = ({ onNext, onBack }) => {
           <button
             type="submit"
             className="h-11 w-[170px] border border-[#30333D] rounded-lg bg-white"
-            onClick={handleSubmit}
+            // onClick={handleSubmit}
+            disabled={loading}
           >
-            Continue Setup
+          {loading? "uploading..." :"Continue Setup"}  
           </button>
         </div>
       </form>
