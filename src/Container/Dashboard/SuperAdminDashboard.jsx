@@ -28,7 +28,11 @@ const SuperAdminDashboard = () => {
 
   const [dashboarddata, setDashboarddata] = useState({
     companies: [],
-    total: 0
+    total: 0,
+    thisMonthCompanies:0,
+    activeCompanies:0,
+    activationRate:0
+
   })
   const axiosInstance = createAxios(token)
 
@@ -63,7 +67,7 @@ const SuperAdminDashboard = () => {
         </>
       ),
       value: dashboarddata.total,
-      subtitle: dashboarddata.thisMonthCompanies,
+      subtitle: `+${dashboarddata.thisMonthCompanies} this month` ,
       icon: statslogo1,
       bg: 'bg-indigo-100'
     },
@@ -74,7 +78,7 @@ const SuperAdminDashboard = () => {
         </>
       ),
       value: dashboarddata.activeCompanies,
-      subtitle: dashboarddata.activationRate,
+      subtitle: `${dashboarddata.activationRate}% activation rate`,
       icon: statslogo2,
       bg: 'bg-indigo-100'
     },
@@ -107,7 +111,10 @@ const SuperAdminDashboard = () => {
       })
       setDashboarddata({
         companies: res?.data?.data,
-        total: res?.data?.total
+        total: res?.data?.total,
+        thisMonthCompanies:res?.data?.thisMonthCompanies,
+        activeCompanies:res?.data?.activeCompanies,
+        activationRate:res?.data?.activationRate
       })
       console.log("superadmin dashboard data:=====", res?.data)
 
@@ -223,7 +230,7 @@ const SuperAdminDashboard = () => {
           >
             <div className="w-1/5">
               <h3 className="text-[15px]">{row.name}</h3>
-              <p className="text-[12px] text-[#000000]/35">{row.url}</p>
+              <p className="text-[12px] text-[#000000]/35">{row.industryType}</p>
             </div>
 
             <div className="w-1/5">

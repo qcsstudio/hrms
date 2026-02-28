@@ -56,10 +56,11 @@ const Admindashboard = () => {
 
           {/* Popup Box */}
           <div className="bg-white rounded-2xl p-6 w-[420px] shadow-xl">
+            <h1 className='text-[25px] text-center'>Change Password</h1>
 
             {/*New Password==================== */}
-            <div className="relative mb-4 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
               <h2>New Password</h2>
+            <div className="relative mb-4 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
               <input
                 name="newPassword"
                 placeholder="Enter New password"
@@ -79,8 +80,8 @@ const Admindashboard = () => {
             </div>
 
             {/* Confirm Password========================= */}
-            <div className="relative mb-6 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
               <h2>Confirm Password</h2>
+            <div className="relative mb-6 border border-gray-300 rounded-xl px-4 py-3 flex items-center">
               <input
                 name="confirmPassword"
                 placeholder="Enter new password"
