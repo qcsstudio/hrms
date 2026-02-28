@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 const WorkSpaceSetup = ({ onBack }) => {
-  const { token, companyId } = useSelector((state) => state.user)
+  const { token } = useSelector((state) => state.user)
 
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -16,6 +16,9 @@ const WorkSpaceSetup = ({ onBack }) => {
   
   const [searchParams] = useSearchParams()
   const inviteToken = searchParams.get("token")
+
+      const companyId = localStorage.getItem('companyId')
+
 
   const navigate = useNavigate()
   const axiosInstance = createAxios(token,inviteToken)
@@ -94,7 +97,6 @@ const WorkSpaceSetup = ({ onBack }) => {
 
     const handleInvitenext = async () => {
     // console.log('CLICKED → Continue Setup')
-    const companyId = localStorage.getItem('companyId')
 
     if (!file) {
       toast.info('Please upload an Excel file first')
@@ -151,7 +153,7 @@ const WorkSpaceSetup = ({ onBack }) => {
   }
 
   const hnadleSubmit = ()=>{
-    inviteToken? handleInvitenext(): handlenext
+    inviteToken? handleInvitenext(): handlenext()
   }
 
 
