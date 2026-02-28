@@ -39,7 +39,7 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
 
     // ❌ size validation (BLOCKING)
     if (file.size > MAX_FILE_SIZE) {
-      alert("File size should not exceed 2 MB")
+      toast.info("File size should not exceed 2 MB")
       e.target.value = ""
       return
     }
@@ -65,7 +65,7 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
       const recommended = RECOMMENDED_SIZES[type]
 
       if (width !== recommended.width || height !== recommended.height) {
-        alert(
+        toast.info(
           `⚠ Recommended size for ${type === "logo" ? "Logo" : "Cover Image"} is ${recommended.width}×${recommended.height}px.\nYou can continue, but better results ke liye image change karein.`
         )
       }
