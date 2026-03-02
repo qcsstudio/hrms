@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { setActiveUrl, setOpenMenu, setShowSettingsMenu } from "../../Redux/sidebarSlice";
 import { toast } from "react-toastify";
 import { MdArrowDropDown } from "react-icons/md";
+import { attendance_logo, attendance_logo_blue, dashboard_logo, dashboard_logo_blue, employee_logo, employee_logo_blue, leave_logo, leave_logo_blue, notification_logo, notification_logo_blue, payroll_logo, payroll_logo_blue, settings_logo, support_logo, support_logo_blue } from "../../allAssetsImport/allAssets";
 
 const SideBar = () => {
 
@@ -551,10 +552,10 @@ const SideBar = () => {
                       'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('home')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {loacation.pathname === '/dashboard' ? <img src={homeactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={home} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {loacation.pathname === '/dashboard/superadmin-dashboard' || loacation.pathname === '/dashboard/Companyadmin-dashboard'  ? <img src={dashboard_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={dashboard_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
                 <span>Dashboard</span>
               </li>
 
@@ -562,51 +563,51 @@ const SideBar = () => {
                       'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('employee')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {location.pathname === '/dashboard/createpost' ? <img src={createpostActive} width={20} height={20} alt="createPost_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={createpost} width={20} height={20} alt="createPost_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {location.pathname === '/dashboard/employee' ? <img src={employee_logo_blue} width={20} height={20} alt="createPost_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={employee_logo} width={20} height={20} alt="createPost_icon" className="w-[100%] h-[100%]" />}
+              </div>
                 <span>Employees</span>
               </li>
               <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/attendance'  ?
                       'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('attendance')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'calendar' ? <img src={calenderactive} width={20} height={20} alt="calendar_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={calender} width={20} height={20} alt="calender_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'attendance' ? <img src={attendance_logo_blue} width={20} height={20} alt="calendar_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={attendance_logo} width={20} height={20} alt="calender_icon" className="w-[100%] h-[100%]" />}
+              </div>
                 <span>Attendance</span>
               </li>
               <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/payroll'  ?
                       'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('DashboardPayroll1')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'contentLibrary' ? <img src={libraryactive} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={library} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'DashboardPayroll1' ? <img src={payroll_logo_blue} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={payroll_logo} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" />}
+              </div>
                 <span>Payroll</span>
               </li>
               <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/leave-management'  ?
                       'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('leave-management')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'analytics' ? <img src={analysisactive} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={analysis} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'leave-management' ? <img src={leave_logo_blue} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={leave_logo} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" />}
+              </div>
                 <span>Leave Management</span>
               </li>
               <hr className="text-[#E2E8F0]" />
               <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/leave-management1'  ?
                       'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('inboxAndListing')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'inboxAndListing' ? <img src={inboxactive} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={inbox} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
+                onClick={() => changeTab('Performance')}>
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'Performance' ? <img src={leave_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={leave_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
+              </div>
                 <span>Performance</span>
               </li>
               <li className={`transition-all duration-500 w-[100%] ${location.pathname === 'reportsAndExports' ?
@@ -614,29 +615,18 @@ const SideBar = () => {
                   'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('reportsAndExports')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'reportsAndExports' ? <img src={settingsactive} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={settings} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'reportsAndExports' ? <img src={notification_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={notification_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
+              </div>
                 <span>Announcements</span>
               </li>
-              {/* <li className={`transition-all duration-500 w-[100%] ${location.pathname === '/dashboard/influencer-space' ?
-              `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-              onClick={() => changeTab('influencerSpace')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'influencerSpace' ? <img src={influenceractive} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={influencer} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
-              </div>
-              <span>Settings</span>
-            </li> */}
               <li className={`transition-all duration-500 w-[100%] text-[#64748B]
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('settings')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                <img src={settings} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />
-              </div> */}
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                <img src={settings_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />
+              </div>
                 <span>Settings</span>
               </li>
               <li className={`transition-all duration-500 w-[100%] ${location.pathname === '/dashboard/automation-rules' ?
@@ -644,10 +634,10 @@ const SideBar = () => {
                   'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('automation-rules')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'automation-rules' ? <img src={automationactive} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={automation} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'automation-rules' ? <img src={support_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={support_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
+              </div>
                 <span> Support</span>
               </li>
 
