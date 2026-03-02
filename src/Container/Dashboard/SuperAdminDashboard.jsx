@@ -157,11 +157,11 @@ const SuperAdminDashboard = () => {
   }
 
   return (
-    <div className="w-full p-5 bg-gray-50">
+    <div className="w-full p-5 bg-gray-50 card-animate">
       <Statics data={statsData} />
 
       {/* Companies Header */}
-      <div className="mt-10">
+      <div className="mt-10 card-animate">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-xl font-semibold">Companies</h1>
@@ -223,11 +223,13 @@ const SuperAdminDashboard = () => {
 
         {/* Rows */}
         {/* {filteredCompanies.map((row, idx) => ( */}
-        {dashboarddata?.companies?.map((row, idx) => (
-          <div
-            key={idx}
-            className="flex justify-between items-center border-2 border-gray-300 rounded-2xl p-3 my-4"
-          >
+        <div className="list-stagger">
+          {dashboarddata?.companies?.map((row, idx) => (
+            <div
+              key={idx}
+              className="flex justify-between items-center rounded-2xl p-3 my-4 bg-white/80 surface-card"
+              style={{ "--stagger": idx }}
+            >
             <div className="w-1/5">
               <h3 className="text-[15px]">{row.name}</h3>
               <p className="text-[12px] text-[#000000]/35">{row.industryType}</p>
@@ -253,18 +255,19 @@ const SuperAdminDashboard = () => {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 table-action-icons">
               <img src={action2} />
               <img src={action} />
             </div>
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Invite Modal */}
       {openInviteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white w-[520px] rounded-xl p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overlay-animate">
+          <div className="bg-white w-[520px] rounded-xl p-6 modal-animate">
             <h2 className="text-lg font-semibold">Invite Company Admin</h2>
             <p className="text-sm text-gray-400 mt-1">
               Send a secure setup link so the company can onboard themselves.

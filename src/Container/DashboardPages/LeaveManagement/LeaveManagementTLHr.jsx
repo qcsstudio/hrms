@@ -59,7 +59,7 @@ const LeaveManagementTLHr = () => {
             </div>
 
             {/* 2222222 */}
-            <div className='mt-[20px] border justify-between border-[#DEE2E6] rounded-md bg-[#F3F3F4] flex h-[40px] w-[290px] px-[6px] gap-[6px]'>
+            <div className='mt-[20px] border justify-between border-[#DEE2E6] rounded-md bg-[#F3F3F4] flex h-[40px] w-[290px] px-[6px] gap-[6px] segmented-no-effects'>
   <button >All Employees</button>
   <button className=' bg-white rounded-md text-[14px] w-[80px]'>My Team</button>
   <button>Me</button>

@@ -61,13 +61,13 @@ const InviteEmployeeModal = ({ onClose }) => {
   return (
     <>
       {
-        modal ? <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-          <div className="bg-white w-[560px] rounded-xl shadow-lg p-3">
+        modal ? <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center overlay-animate">
+          <div className="bg-white w-[560px] rounded-xl shadow-lg p-3 modal-animate">
             <h1 className="text-xl text-center">please check your mail</h1>
           </div>
         </div> :
-          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-            <div className="bg-white w-[560px] rounded-xl shadow-lg">
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center overlay-animate">
+            <div className="bg-white w-[560px] rounded-xl shadow-lg modal-animate">
 
               {/* HEADER */}
               <div className="px-6 py-4 border-b flex justify-between items-start">

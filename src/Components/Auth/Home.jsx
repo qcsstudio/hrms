@@ -118,7 +118,7 @@ const Home = () => {
                 <img src={employee} />
               </div>
             </div>
-            <div className='flex gap-2'>
+            <div className='flex gap-2 table-action-icons'>
               <img src={action2} />
               <img src={action} />
             </div>

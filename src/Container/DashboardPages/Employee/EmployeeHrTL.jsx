@@ -147,7 +147,7 @@ const EmployeeHrTL = () => {
       {/* ---------------- HEADER ---------------- */}
       <div className='flex justify-between'>
         <div>
-          <h1 className='text-[20px] font-bold text-[#212529]'>Employees</h1>
+          {/* <h1 className='text-[20px] font-bold text-[#212529]'>Employees</h1> */}
           <p className='text-[#000000]/35 text-[12px]'>
             Manage employee directory, documents, and role-based actions.
           </p>
@@ -177,10 +177,10 @@ const EmployeeHrTL = () => {
       </div>
 
       {/* ---------------- TABS ---------------- */}
-      <div className='my-5 border border-[#DEE2E6] w-[290px] flex justify-around rounded-md h-[40px] bg-[#F4F4F5]'>
-        <button>All Employees</button>
-        <button>My Team</button>
-        <button>Me</button>
+      <div className='my-5 border border-[#DEE2E6] w-[290px] flex justify-around rounded-md h-[40px] bg-[#F4F4F5] segmented-no-effects'>
+        <button >All Employees</button>
+        <button >My Team</button>
+        <button >Me</button>
       </div>
 
       {/* ---------------- FILTER SECTION ---------------- */}
@@ -279,7 +279,7 @@ const EmployeeHrTL = () => {
 
           <div className='text-[#52525B]'>{item.joining}</div>
 
-          <div className='flex gap-2'>
+          <div className='flex gap-2 table-action-icons'>
             {item.actionicon && <img src={item.actionicon} />}
             {item.actionicon1 && <img src={item.actionicon1} />}
             {item.actionicon2 && <img src={item.actionicon2} />}
