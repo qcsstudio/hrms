@@ -33,13 +33,34 @@ import vector2 from "/assets/Images/Vector(2).png"
 
 import create_company from "/assets/Images/create-company-logo.png"
 
+// sidebar logos black=============================================
+
+import attendance_logo from '/assets/sidebarImage-Black/Attendanceblack.png'
+import dashboard_logo from '/assets/sidebarImage-Black/dashboardblack.png'
+import employee_logo from '/assets/sidebarImage-Black/Employeesblack.png'
+import leave_logo from '/assets/sidebarImage-Black/Leavemanagementblack.png'
+import notification_logo from '/assets/sidebarImage-Black/notificationblack.png'
+import payroll_logo from '/assets/sidebarImage-Black/Payrollblack.png'
+import performance_logo from '/assets/sidebarImage-Black/performanceblack.png'
+import settings_logo from '/assets/sidebarImage-Black/settingsblack.png'
+import support_logo from '/assets/sidebarImage-Black/supportblack.png'
 
 
-
-
+// sidebar logos blue=============================================
+import attendance_logo_blue from '/assets/sidebarImage-blue/Attendanceblue.png'
+import dashboard_logo_blue from '/assets/sidebarImage-blue/dashboardblue.png'
+import employee_logo_blue from '/assets/sidebarImage-blue/Employeesblue.png'
+import leave_logo_blue from '/assets/sidebarImage-blue/Leavemanagementblue.png'
+import notification_logo_blue from '/assets/sidebarImage-blue/notificationblue.png'
+import payroll_logo_blue from '/assets/sidebarImage-blue/Payrollblue.png'
+import performance_logo_blue from '/assets/sidebarImage-blue/performanceblue.png'
+import settings_logo_blue from '/assets/sidebarImage-blue/settingsblue.png'
+import support_logo_blue from '/assets/sidebarImage-blue/supportblue.png'
 
 
 export {
+      attendance_logo,dashboard_logo,employee_logo,leave_logo,notification_logo,payroll_logo,performance_logo,settings_logo,support_logo, //black
+      attendance_logo_blue,dashboard_logo_blue,employee_logo_blue,leave_logo_blue,notification_logo_blue,payroll_logo_blue,performance_logo_blue,settings_logo_blue,support_logo_blue, //blue
       navbarLogo, search, notification, avatar, downArrow, create_company,
       login_Google,
       login_Email,
