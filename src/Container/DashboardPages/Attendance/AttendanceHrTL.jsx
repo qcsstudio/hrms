@@ -101,7 +101,7 @@ const AttendanceHrTL = () => {
                         <button className='border border-[#C4DBFF] bg-[#EAF2FF] h-[40px] w-[94px] box-border rounded-lg text-[#1677FF] font-bold'>Policy</button>
                     </div>
                 </div>
-                <div className='border border-[#DEE2E6] bg-[#F4F4F5] w-[283px] justify-evenly flex mt-[20px] h-[40px] rounded-md text-[#212529] '>
+                <div className='border border-[#DEE2E6] bg-[#F4F4F5] w-[283px] justify-evenly flex mt-[20px] h-[40px] rounded-md text-[#212529] segmented-no-effects'>
                     <button>All Employees</button>
                     <button>My Team</button>
                     <button>Me</button>
@@ -150,7 +150,7 @@ const AttendanceHrTL = () => {
                 {/* ................................. */}
 
                 <div className='mt-[20px]'>
-                    <div className='w-[495px] flex justify-around border border-[#DEE2E6] h-[40px] rounded-[5px] font-medium text-[#212529]'>
+                    <div className='w-[495px] flex justify-around border border-[#DEE2E6] h-[40px] rounded-[5px] font-medium text-[#212529] segmented-no-effects'>
                         <button>All Employees</button>
                         <button>Present</button>
                         <button>Late</button>
@@ -226,7 +226,7 @@ const AttendanceHrTL = () => {
 
                                         {/* Action */}
                                         <td className="pr-6 py-4">
-                                            <div className="flex justify-end gap-3">
+                                            <div className="flex justify-end gap-3 table-action-icons">
                                                 {item.actionicon && <img src={item.actionicon} />}
                                                 {item.actionicon1 && <img src={item.actionicon1} />}
                                                 {item.actionicon2 && <img src={item.actionicon2} />}

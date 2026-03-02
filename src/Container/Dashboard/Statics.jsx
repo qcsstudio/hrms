@@ -46,9 +46,13 @@ import { statslogo1, statslogo2, statslogo3, statslogo4 } from '../../allAssetsI
 
 const Statics = ({ data }) => {
   return (
-    <div className="flex gap-5">
+    <div className="flex gap-5 list-stagger">
       {data?.map((item, index) => (
-        <div key={index} className="bg-white w-full p-4 rounded-lg">
+        <div
+          key={index}
+          className="stat-card bg-white w-full p-4 rounded-lg card-animate transition-shadow duration-200 hover:shadow-[0_10px_24px_rgba(15,23,42,0.10)]"
+          style={{ "--stagger": index }}
+        >
           <div className="flex justify-between items-center ">
             <div>
               <h2 className="font-semibold font-plein">
@@ -71,7 +75,7 @@ const Statics = ({ data }) => {
             </div>
             
 
-            <div className={`${item.bg} w-12 h-12 flex items-center justify-center rounded`}>
+            <div className={`${item.bg} stat-icon-wrap w-12 h-12 flex items-center justify-center rounded`}>
               <img src={item.icon} alt="icon" />
             </div>
           </div>

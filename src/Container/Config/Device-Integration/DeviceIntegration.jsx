@@ -102,7 +102,7 @@ const DeviceIntegration = () => {
                         }`}>
                         {item.status}
                     </div>
-                    <div className='w-[50px] flex justify-center'>
+                    <div className='w-[50px] flex justify-center table-action-icons'>
                         <img src={item.action} />
                     </div>
                 </div>
