@@ -329,7 +329,6 @@ const Login = () => {
       toast.error("Reset failed");
     }
   };
-
   return (
     <div className='flex h-screen items-center bg-white'>
       <div className="flex w-[1280px] mx-auto bg-gray-50">
