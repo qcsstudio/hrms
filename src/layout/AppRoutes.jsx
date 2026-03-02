@@ -8,6 +8,8 @@ import DeviceIntegration from "../Container/Config/Device-Integration/DeviceInte
 import ForgotPassword from "../Components/Auth/ForgotPassword";
 import VerifyCode from "../Components/Auth/VerifyCode";
 import SetPassword from "../Components/Auth/SetPassword";
+import HomePage from "../Components/HomePage";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 
 /* ================= AUTH / COMMON ================= */
 const Login = lazy(() => import("../Components/Auth/Login"));
@@ -236,7 +238,18 @@ const AppRoutes = () => {
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
 
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={ <GoogleReCaptchaProvider
+            reCaptchaKey="6Ld9Gn0sAAAAAG7i8ua3csu4bvG3B54cl27yOdtf"
+            scriptProps={{
+              async: true,
+              defer: true,
+              appendTo: "body", // script sirf jab ye page load hoga tab hi attach hoga
+              nonce: undefined,
+            }}
+          >
+            <Login />
+          </GoogleReCaptchaProvider>} />
         <Route path="/forget-password" element={<ForgotPassword />} />
 
         <Route path="/verify-code" element={<VerifyCode />} />

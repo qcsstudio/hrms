@@ -13,10 +13,15 @@ import createAxios from '../../utils/axios.config';
 import { setAddLoginData } from '../../Redux/userSlice';
 import { getSlug } from '../CompanySlug';
 
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+
+
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const axiosInstance = createAxios();
+
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -167,12 +172,18 @@ const Login = () => {
     }
 
     try {
+       if (!executeRecaptcha) {
+        toast.error("Recaptcha not yet loaded, please try again.");
+        return;
+      }
       setIsLoader(true);
+      const recaptchaToken = await executeRecaptcha("login");
       setErrors(prev => ({ ...prev, general: "" }));
 
       const res = await axiosInstance.post("/auth/login", {
         email,
-        password
+        password,
+        recaptchaToken
       },
         slug && { meta: { auth: "TENANT_ONLY" } }
       );
@@ -240,7 +251,7 @@ const Login = () => {
 
   // Get input field class based on error state
   const getInputFieldClass = (field) => {
-    const baseClass = "w-full outline-none text-[16px]";
+    const baseClass = "w-full outline-none text-[16px] focus:outline-none focus:outline-none focus:border-none focus:ring-0";
     const hasError = touched[field] && errors[field];
     return `${baseClass} ${hasError ? 'text-red-600' : 'text-[#A7A7A7]'}`;
   };
