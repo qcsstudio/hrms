@@ -57,8 +57,7 @@ const Statics = ({ data }) => {
             <div>
               <h2 className="font-semibold font-plein">
               {item.title}
-            </h2>
-            
+            </h2>     
           <h1 className="text-2xl font-bold mt-2">
             {item.value}
           </h1>
