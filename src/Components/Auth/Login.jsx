@@ -272,22 +272,6 @@ const Login = () => {
 
   const [step, setStep] = useState(STEPS.LOGIN);
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   // navigate("/verify-code");
-  //   try {
-  //     const payload = {
-  //       email: confirmforgetemail
-  //     }
-  //     await axiosInstance.post('/users/send-otp', payload)
-  //     setVerifyotp(true)
-
-
-  //   } catch (error) {
-  //     console.warn("api is not working ", error)
-
-  //   }
-  // };
   const handleSendOtp = async (e) => {
     e.preventDefault();
     try {
@@ -302,22 +286,6 @@ const Login = () => {
     }
   };
 
-  // const handleotpSubmit = async (e) => {
-  //   e.preventDefault();
-  //   const payload = {
-  //     email:"uighui",
-  //     otp:""
-  //   }
-  //   try {
-  //     await axiosInstance.post('/users/verify-otp'.payload)
-  //     setResetPassword(true)
-
-  //   } catch (error) {
-  //     console.warn("api is not working", error)
-
-  //   }
-
-  // }
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
@@ -333,22 +301,7 @@ const Login = () => {
       toast.error("Invalid OTP");
     }
   };
-  // const handlechangepassword = async(e)=>{
-  //       e.preventDefault();
-  //   try {
-  //     await axiosInstance.post('/users/reset-password',payload)
-  //     setForgetpassword(false)
-  //     setVerifyotp(false)
-  //     setResetPassword(false)
 
-
-
-  //   } catch (error) {
-  //     console.warn("api is not working",error)
-
-  //   }
-
-  // }
   const handleResetPassword = async (e) => {
     e.preventDefault();
 
@@ -382,7 +335,7 @@ const Login = () => {
       <div className="flex w-[1280px] mx-auto bg-gray-50">
 
         {/* LEFT SIDE */}
-        {step === STEPS.LOGIN && <div className="w-1/2 mt-[50px]">
+        {step === STEPS.LOGIN && <div className=" w-full lg:w-1/2 mt-[50px] ">
           <div className="w-4/5 mx-auto">
 
             <div className="mt-[50px]">
@@ -529,7 +482,7 @@ const Login = () => {
           </div>
         </div>
         }
-        {step === STEPS.FORGOT && <div className='w-1/2 mt-[50px]'>
+        {step === STEPS.FORGOT && <div className='w-full lg:w-1/2 mt-[50px] '>
           <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
             {/* Logo */}
             <div className="mb-10">
@@ -640,9 +593,9 @@ const Login = () => {
 
         </div>}
 
-        {step === STEPS.VERIFY_OTP && <div className='w-1/2 mt-[50px]'>
+        {step === STEPS.VERIFY_OTP && <div className='w-full lg:w-1/2 mt-[50px]  '>
           <div className="flex min-h-screen font-['Segoe_UI',sans-serif]">
-            {/* Left Side */}
+         
             <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
               {/* Logo Placeholder */}
               <div className="mb-10">
@@ -749,7 +702,7 @@ const Login = () => {
           </div>
         </div>}
 
-        {step === STEPS.RESET_PASSWORD && <div className='w-1/2 mt-[50px]'>
+        {step === STEPS.RESET_PASSWORD && <div className='w-full lg:w-1/2 mt-[50px] '>
           <div className="flex min-h-screen font-['Segoe_UI',sans-serif]">
             {/* Left Side */}
             <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
@@ -864,7 +817,7 @@ const Login = () => {
         </div>}
 
         {/* RIGHT SIDE */}
-        <div className="w-1/2 flex items-center justify-center">
+        <div className="w-1/2 flex items-center justify-center hidden lg:block">
           <img
             src={companyData?.company?.loginImage || "/assets/Images/login-image.png"}
             alt="login illustration"
