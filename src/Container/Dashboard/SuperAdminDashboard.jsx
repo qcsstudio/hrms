@@ -162,18 +162,18 @@ const SuperAdminDashboard = () => {
 
       {/* Companies Header */}
       <div className="mt-10 card-animate">
-        <div className="flex justify-between items-center">
-          <div>
+        <div className="md:flex justify-between items-center ">
+          <div className='space-y-2 mb-3 md:space-y-0 md:mb-0  md:w-2/5'>
             <h1 className="text-xl font-semibold">Companies</h1>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-400 ">
               Manage all tenants: onboarding, plans, status, and quick actions.
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 ">
             <Link
               to="/org-setup"
-              className="flex items-center gap-2 bg-gray-200 border border-gray-300 rounded-lg px-4 py-2"
+              className="flex items-center gap-2 bg-gray-200 border border-gray-300 rounded-lg px-6 py-2 "
             >
               Create Company <img src={create_company} />
             </Link>

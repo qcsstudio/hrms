@@ -147,7 +147,7 @@ const EmployeeHrTL = () => {
       {/* ---------------- HEADER ---------------- */}
       <div className='flex justify-between'>
         <div>
-          {/* <h1 className='text-[20px] font-bold text-[#212529]'>Employees</h1> */}
+          <h1 className='text-[20px] font-bold text-[#212529]'>Employees</h1>
           <p className='text-[#000000]/35 text-[12px]'>
             Manage employee directory, documents, and role-based actions.
           </p>

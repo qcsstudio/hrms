@@ -46,7 +46,7 @@ import { statslogo1, statslogo2, statslogo3, statslogo4 } from '../../allAssetsI
 
 const Statics = ({ data }) => {
   return (
-    <div className="flex gap-5 list-stagger">
+    <div className={`grid md:grid-cols-2 ${data.length ===4 ? "lg:grid-cols-4": "lg:grid-cols-5"}  gap-5 list-stagger`}>
       {data?.map((item, index) => (
         <div
           key={index}

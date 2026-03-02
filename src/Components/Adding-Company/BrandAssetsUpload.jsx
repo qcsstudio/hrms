@@ -265,7 +265,7 @@ const BrandAssetsUpload = ({ onNext, onBack }) => {
           Cancel
         </button>
         <div className='flex gap-2'>
-          <button className="h-11 w-[170px] border rounded-lg" onClick={handleskip}>
+          <button className="h-11 w-[170px] border rounded-lg" onClick={onNext}>
             Skip
           </button>
 

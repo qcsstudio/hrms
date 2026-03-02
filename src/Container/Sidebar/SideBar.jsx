@@ -546,10 +546,9 @@ const SideBar = () => {
         {/* ===============================Big Sidebar======================== */}
         <div >
           {openMenu && !showSettingsMenu &&
-            <ul className={`w-[100%] h-[100%]  py-[1.5rem]  flex flex-col gap-[.5rem] ${isMobile ? 'pr-[0rem]' : 'pl-[0.93rem'}`}>
-              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
+            <ul className={`w-[100%] h-[100%]  py-[1.5rem]  flex flex-col gap-[.5rem] px-5`}>
+              <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/superadmin-dashboard' || loacation.pathname === '/dashboard/Companyadmin-dashboard' ?
+                      'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('home')}>
                 {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
@@ -559,9 +558,8 @@ const SideBar = () => {
                 <span>Dashboard</span>
               </li>
 
-              <li className={`transition-all duration-500 w-[100%] ${location.pathname === '/dashboard/createpost' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
+              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/employee'  ?
+                      'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('employee')}>
                 {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
@@ -570,9 +568,8 @@ const SideBar = () => {
               </div> */}
                 <span>Employees</span>
               </li>
-              <li className={`transition-all duration-500 w-[100%] ${location.pathname === '/dashboard/schedule-post' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
+              <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/attendance'  ?
+                      'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('attendance')}>
                 {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
@@ -581,9 +578,8 @@ const SideBar = () => {
               </div> */}
                 <span>Attendance</span>
               </li>
-              <li className={`transition-all duration-500 w-[100%] ${location.pathname === 'contentLibrary' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
+              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/payroll'  ?
+                      'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('DashboardPayroll1')}>
                 {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
@@ -592,9 +588,8 @@ const SideBar = () => {
               </div> */}
                 <span>Payroll</span>
               </li>
-              <li className={`transition-all duration-500 w-[100%] ${location.pathname === '/dashboard/analytics' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
+              <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/leave-management'  ?
+                      'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('leave-management')}>
                 {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
@@ -604,9 +599,8 @@ const SideBar = () => {
                 <span>Leave Management</span>
               </li>
               <hr className="text-[#E2E8F0]" />
-              <li className={`transition-all duration-500 w-[100%] ${location.pathname === '/dashboard/inbox' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
+              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/leave-management1'  ?
+                      'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('inboxAndListing')}>
                 {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">

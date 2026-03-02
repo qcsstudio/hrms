@@ -141,7 +141,7 @@ const WorkSpaceSetup = ({ onBack }) => {
       setShowSuccessPopup(true)
 
     } else {
-      navigate('/dashboard')
+      navigate('/dashboard/superadmin-dashboard')
     }
 
   }
