@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import createAxios from "../../../../utils/axios.config";
 import {  useSelector } from "react-redux";
+import createAxios from "../../../../utils/axios.config";
 
 const Team = () => {
-  const { token } = useSelector(state => (state.user))
+  const { token } = useSelector(state => state.user)
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
 
@@ -17,6 +17,7 @@ const Team = () => {
       .join("")
       .toUpperCase();
   };
+    const axiousInstance = createAxios(token)
 
   const handleDelete = async (id) => {
     await axiousInstance.delete(`/config/delete-team/${id}`)
@@ -25,8 +26,8 @@ const Team = () => {
     setOpenMenu(null);
   };
 
-  const axiousInstance = createAxios(token)
-  
+
+  console.log("token hai====",token)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,7 +44,7 @@ const Team = () => {
       }
     }
     fetchData()
-  }, [])
+  }, [token])
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
