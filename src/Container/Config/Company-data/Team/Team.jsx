@@ -4,7 +4,8 @@ import { useSelector } from "react-redux";
 import createAxios from "../../../../utils/axios.config";
 
 const Team = () => {
-  const { token } = useSelector(state => state.user)
+  // const { token } = useSelector(state => state.user)
+  const token = localStorage.getItem('authToken')
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
 
