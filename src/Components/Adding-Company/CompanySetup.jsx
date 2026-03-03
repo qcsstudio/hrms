@@ -53,7 +53,7 @@ const CompanySetup = ({ onNext, onBack }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormdata(prev => ({ ...prev, [name]: value }))
+    setFormdata(prev => ({ ...prev, [name]: name === "slug" ? value.toLowerCase(): value }))
     setErrors({})
   }
 
