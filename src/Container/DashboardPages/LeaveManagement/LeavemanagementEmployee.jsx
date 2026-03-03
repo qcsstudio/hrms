@@ -31,7 +31,6 @@ const LeavemanagementEmployee = () => {
     reason: "",
     attachment: null,
   })
-
   const handleChange = (e) => {
     const { name, value,files } = e.target
     setApplyLeaveData(prev => ({ ...prev, [name]:  files ? files[0] : value, }))
