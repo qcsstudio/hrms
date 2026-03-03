@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 
 const CreateTeam = ({ onCancel }) => {
   const { token } = useSelector((state) => state.user);
+    console.log("token hai====",token)
+
   const [team, setTeam] = useState({
     teamName: "",
     assignTeamLead: false,
