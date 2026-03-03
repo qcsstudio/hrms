@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {  useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import createAxios from "../../../../utils/axios.config";
 
 const Team = () => {
@@ -17,7 +17,7 @@ const Team = () => {
       .join("")
       .toUpperCase();
   };
-    const axiousInstance = createAxios(token)
+  const axiousInstance = createAxios(token)
 
   const handleDelete = async (id) => {
     await axiousInstance.delete(`/config/delete-team/${id}`)
@@ -27,7 +27,7 @@ const Team = () => {
   };
 
 
-  console.log("token hai====",token)
+  console.log("token hai====", token)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +44,7 @@ const Team = () => {
       }
     }
     fetchData()
-  }, [token])
+  }, [])
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -131,7 +131,7 @@ const Team = () => {
                       onClick={() =>
                         navigate(
                           `Company_data/create-team?teamid=${team.id}`
-                         
+
                         )
                       }
                       className="text-gray-600 hover:text-blue-600"
