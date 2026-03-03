@@ -36,8 +36,8 @@ const Team = () => {
           meta: { auth: "ADMIN_AUTH" }
         }
         )
-        console.log(res.data)
-        setData(res?.data)
+        console.log(res.data?.data)
+        setData(res?.data?.data)
       } catch (error) {
         console.log("error", error)
 
