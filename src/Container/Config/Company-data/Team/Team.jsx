@@ -37,7 +37,7 @@ const Team = () => {
         }
         )
         console.log(res.data)
-        setData(res.data)
+        setData(res?.data)
       } catch (error) {
         console.log("error", error)
 
@@ -82,7 +82,7 @@ const Team = () => {
           </thead>
 
           <tbody>
-            {data.map((team) => (
+            {data?.map((team) => (
               <tr key={team.id} className="border-t hover:bg-gray-50">
 
                 {/* Team Name */}
