@@ -6,6 +6,8 @@ import { useSelector } from 'react-redux'
 import { getEmptyFields } from 'get_input_empty_fields';
 import { toast } from 'react-toastify';
 
+import { MoonLoader } from 'react-spinners'
+
 
 const Accountsetup = ({ onNext, onBack }) => {
   const { token} = useSelector((state) => state.user)
@@ -196,10 +198,16 @@ setLoading(false)
             // onClick={handleSubmit}
             disabled={loading}
           >
-          {loading? "uploading..." :"Continue Setup"}  
+          Continue Setup 
           </button>
         </div>
       </form>
+      {
+        loading && <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <MoonLoader  className='text-[25px] text-gray-400'/>
+
+          </div>
+      }
     </div>
   )
 }
