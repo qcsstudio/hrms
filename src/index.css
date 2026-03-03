@@ -118,16 +118,7 @@
     animation: card-rise 620ms var(--ease-standard) both;
     animation-delay: calc(var(--stagger, 0) * 110ms);
   }
-
-  .overlay-animate {
-    animation: overlay-fade 320ms ease-out;
-  }
-
-  .modal-animate {
-    animation: modal-pop 520ms var(--ease-standard);
-  }
-
-  .menuButtonContainer,
+ .menuButtonContainer,
   .notificationConatiner,
   .profileContainer {
     transition:
@@ -313,21 +304,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes overlay-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes modal-pop {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }

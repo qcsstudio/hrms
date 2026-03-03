@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   employee,
   action,
@@ -265,9 +266,9 @@ const SuperAdminDashboard = () => {
       </div>
 
       {/* Invite Modal */}
-      {openInviteModal && (
-        <div className="fixed inset-0 z-50 flex  justify-center bg-black/50 overlay-animate">
-          <div className="bg-white w-[520px] h-[450px] rounded-xl p-6 modal-animate mt-5">
+      {openInviteModal && createPortal(
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50">
+          <div className="bg-white w-[520px] rounded-xl p-6">
             <h2 className="text-lg font-semibold">Invite Company Admin</h2>
             <p className="text-sm text-gray-400 mt-1">
               Send a secure setup link so the company can onboard themselves.
@@ -329,10 +330,13 @@ const SuperAdminDashboard = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
 }
 
 export default SuperAdminDashboard
+
+
