@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import createAxios from "../../../../utils/axios.config";
+import { toast } from "react-toastify";
 
 const Team = () => {
   // const { token } = useSelector(state => state.user)
@@ -40,7 +41,8 @@ const Team = () => {
         console.log(res.data?.data)
         setData(res?.data?.data)
       } catch (error) {
-        console.log("error", error)
+        // console.log("error", error)
+        toast.error(error?.response?.data?.message)
 
       }
     }
