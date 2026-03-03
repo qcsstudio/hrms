@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import createAxios from "../../../../utils/axios.config";
+import { toast } from "react-toastify";
 
 const Team = () => {
-  const { token } = useSelector(state => state.user)
+  // const { token } = useSelector(state => state.user)
+  const token = localStorage.getItem('authToken')
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
 
@@ -31,6 +33,7 @@ const Team = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!token) return;
       try {
         const res = await axiousInstance.get("/config/getAll-team", {
           meta: { auth: "ADMIN_AUTH" }
@@ -39,12 +42,12 @@ const Team = () => {
         console.log(res.data?.data)
         setData(res?.data?.data)
       } catch (error) {
-        console.log("error", error)
-
+        // console.log("error", error)
+        toast.error(error?.response?.data?.message)
       }
     }
     fetchData()
-  }, [])
+  }, [token])
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
