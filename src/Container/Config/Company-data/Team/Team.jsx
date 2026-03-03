@@ -1,42 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import {  useSelector } from "react-redux";
 
 const Team = () => {
+  const { token } = useSelector(state => (state.user))
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
 
-  const [data, setData] = useState([
-    {
-      id: 1,
-      name: "Leap Of Faith",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "Admin",
-      assignedEmployees: [
-        { name: "A B" },
-        { name: "C D" },
-        { name: "E F" },
-        { name: "G H" },
-        { name: "I J" },
-        { name: "K L" },
-      ],
-      lead: "TuPac",
-    },
-    {
-      id: 2,
-      name: "Development Team",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "Admin",
-      assignedEmployees: [
-        { name: "A B" },
-        { name: "C D" },
-        { name: "E F" },
-        { name: "G H" },
-        { name: "I J" },
-        { name: "K L" },
-      ],
-      lead: "Jessi Pinkman",
-    },
-  ]);
+  const [data, setData] = useState([]);
 
   const getInitials = (name) => {
     return name
@@ -46,10 +18,32 @@ const Team = () => {
       .toUpperCase();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
+    await axiousInstance.delete(`/config/delete-team/${id}`)
+
     setData(data.filter((item) => item.id !== id));
     setOpenMenu(null);
   };
+
+  const axiousInstance = createAxios(token)
+  
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await axiousInstance.get("/config/getAll-team", {
+          meta: { auth: "ADMIN_AUTH" }
+        }
+        )
+        console.log(res.data)
+        setData(res.data)
+      } catch (error) {
+        console.log("error", error)
+
+      }
+    }
+    fetchData()
+  }, [])
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -135,8 +129,8 @@ const Team = () => {
                     <button
                       onClick={() =>
                         navigate(
-                          `/config/hris/Company_data/edit-team/${team.id}`,
-                          { state: { team } }
+                          `Company_data/create-team?teamid=${team.id}`
+                         
                         )
                       }
                       className="text-gray-600 hover:text-blue-600"
