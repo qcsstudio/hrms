@@ -302,7 +302,6 @@ const SideBar = () => {
   };
   const loacation = useLocation()
   return <>
-
     {/* flex flex-col justify-between */}
     {isConfig ? <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between   ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
       <div>
@@ -883,9 +882,6 @@ const SideBar = () => {
         </div>
       </nav>
     }
-
-
-
   </>
 };
 
