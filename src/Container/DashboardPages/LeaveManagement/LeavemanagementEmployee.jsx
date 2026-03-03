@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import createAxios from '../../../utils/axios.config';
+import { createPortal } from 'react-dom'
 
 const leaveBalance = [
   { name: "Annual", value: 10 },
@@ -30,7 +31,6 @@ const LeavemanagementEmployee = () => {
     reason: "",
     attachment: null,
   })
-
   const handleChange = (e) => {
     const { name, value,files } = e.target
     setApplyLeaveData(prev => ({ ...prev, [name]:  files ? files[0] : value, }))
@@ -193,7 +193,7 @@ const LeavemanagementEmployee = () => {
 
       {/* =======================================apply leave popup===================================== */}
 
-      {showApplyLeavePopup &&
+      {showApplyLeavePopup && createPortal(
         <div className="fixed inset-0 bg-black/60  flex  justify-end z-50">
           <div className="w-[543px] bg-white rounded-xl shadow-lg p-6 relative">
 
@@ -340,7 +340,9 @@ const LeavemanagementEmployee = () => {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
+      )
       }
 
     </div>
