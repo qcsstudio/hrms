@@ -10,6 +10,40 @@ import VerifyCode from "../Components/Auth/VerifyCode";
 import SetPassword from "../Components/Auth/SetPassword";
 import HomePage from "../Components/HomePage";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
+import LeaveCycle from "../Container/Config/Leave/LeaveCycle";
+import LeaveType from "../Container/Config/Leave/LeaveType";
+import WeeklyOffCreate from "../Container/Config/Leave/Weekly-off/WeeklyOffCreate";
+import WeeklyOffList from "../Container/Config/Leave/Weekly-off/WeeklyOffList";
+import LeavePolicyList from "../Container/Config/Leave/LeavePolicy/LeavePolicyList";
+import CreateLeavePolicy from "../Container/Config/Leave/LeavePolicy/LeavePolicyCreate";
+import HolidayPlanList from "../Container/Config/Leave/Holiday/HolidayPlanList";
+import HolidayPlanCreate from "../Container/Config/Leave/Holiday/HolidayPlanCreate";
+import PayrollComponent from "../Container/Config/pay/payroll/Component/PayrollComponent";
+import OvertimePaymentPolicy from "../Container/Config/pay/payroll/OvertimePaymentPolicy/OvertimePaymentPolicy";
+import PayrollMethod from "../Container/Config/pay/payroll/payroll/PayrollMethod";
+import PayrollMisc from "../Container/Config/pay/payroll/PayrollMisc/PayrollMisc";
+import PayrollSignature from "../Container/Config/pay/payroll/payrollSignature/PayrollSignature";
+import PayrollTagList from "../Container/Config/pay/payroll/Payrolltag/PayrollTagList";
+import SalaryCycle from "../Container/Config/pay/payroll/SalaryCycle/SalaryCycle";
+import CreateSalaryStructure from "../Container/Config/pay/payroll/SalaryStructure/Createsalarystructure";
+import Listsalarystructure from "../Container/Config/pay/payroll/SalaryStructure/Listsalarystructure";
+import Compensator from "../Container/Config/pay/expense/Compensator/Compensator";
+import CurrencyConversion from "../Container/Config/pay/expense/CurrencyConversion/CurrencyConversion";
+import ExpenseCycle from "../Container/Config/pay/expense/ExpenseCycle/ExpenseCycle";
+import CreateExpensePolicy from "../Container/Config/pay/expense/ExpensePolicy/CreateExpensePolicy";
+import EditExpensePolicy from "../Container/Config/pay/expense/ExpensePolicy/Editexpensepolicy";
+import ExpensePolicy from "../Container/Config/pay/expense/ExpensePolicy/ExpensePolicy";
+import FuelConfiguration from "../Container/Config/pay/expense/FuelConfiguration/FuelConfiguration";
+import AuthoritySignature from "../Container/Config/Organise/Authority/AuthoritySignature";
+import PageLayout from "../Container/Config/Organise/PageLayout/PageLayout";
+import CreateAutomaticChecklist from "../Container/Config/Resolve/Checklist/CreateAutomaticChecklist";
+import CreateManualChecklist from "../Container/Config/Resolve/Checklist/CreateManualChecklist";
+import Checklist from "../Container/Config/Resolve/Checklist/Checklist";
+import CreatePolicy from "../Container/Config/Resolve/PolicyCenter/CreatePolicy";
+import PolicyCenter from "../Container/Config/Resolve/PolicyCenter/PolicyCenterList";
+import AssetsCategory from "../Container/Config/HrOps/AssetsCategory";
+import AssetsCategoryCreate from "../Container/Config/HrOps/AssetsCategoryCreate";
+import FNFPolicy from "../Container/Config/pay/payroll/FNFPolicy/FNFPolicy";
 
 /* ================= AUTH / COMMON ================= */
 const Login = lazy(() => import("../Components/Auth/Login"));
@@ -234,23 +268,23 @@ const ExtraTimeList = lazy(() =>
 );
 
 const AppRoutes = () => {
-  
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
 
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={ <GoogleReCaptchaProvider
-            reCaptchaKey="6Ld9Gn0sAAAAAG7i8ua3csu4bvG3B54cl27yOdtf"
-            scriptProps={{
-              async: true,
-              defer: true,
-              appendTo: "body", // script sirf jab ye page load hoga tab hi attach hoga
-              nonce: undefined,
-            }}
-          >
-            <Login />
-          </GoogleReCaptchaProvider>} />
+        <Route path="/login" element={<GoogleReCaptchaProvider
+          reCaptchaKey="6Ld9Gn0sAAAAAG7i8ua3csu4bvG3B54cl27yOdtf"
+          scriptProps={{
+            async: true,
+            defer: true,
+            appendTo: "body", // script sirf jab ye page load hoga tab hi attach hoga
+            nonce: undefined,
+          }}
+        >
+          <Login />
+        </GoogleReCaptchaProvider>} />
         <Route path="/forget-password" element={<ForgotPassword />} />
 
         <Route path="/verify-code" element={<VerifyCode />} />
@@ -356,6 +390,7 @@ const AppRoutes = () => {
             </PrivateRoute>
           }
         >
+          {/* Attendance ===================================== */}
           <Route path="Attendance/shift/create" element={<ShiftCreate />} />
           <Route path="Attendance/shift/list" element={<ShiftList />} />
           <Route path="Attendance/shift/edit/:id" element={<ShiftEdit />} />
@@ -371,10 +406,119 @@ const AppRoutes = () => {
           <Route path="Attendance/extra-time/create" element={<ExtraTimeCreate />} />
           <Route path="Attendance/extra-time/list" element={<ExtraTimeList />} />
           <Route path="deviceintegration" element={<DeviceIntegration />} />
+
+          {/* Leave =======================================*/}
+          <Route path="leave/Weekly-off/list" element={<WeeklyOffList />} />
+          <Route path="leave/Weekly-off/create" element={<WeeklyOffCreate />} />
+          <Route path="leave/leave-type" element={<LeaveType />} />
+
+          <Route path="leave/leave-policy/list" element={<LeavePolicyList />} />
+          <Route path="leave/leave-policy/create" element={<CreateLeavePolicy />} />
+
+          <Route path="leave/holiday-plan/list" element={<HolidayPlanList />} />
+          <Route path="leave/holiday-plan/create" element={<HolidayPlanCreate />} />
+          <Route path="leave/leave-cycle" element={<LeaveCycle />} />
+
+
         </Route>
 
+        {/*========================== config pay====================================== */}
+
+        <Route
+          path="/config/pay"
+          element={
+            <PrivateRoute>
+              <MainDashboardLayout />
+            </PrivateRoute>
+          }
+        >
+
+          <Route path="payroll/payroll-method" element={<PayrollMethod />} />
+          <Route
+            path="payroll/payroll-signature"
+            element={<PayrollSignature />}
+          />
+          <Route path="payroll/salary-cycle" element={<SalaryCycle />} />
+          <Route path="payroll/payroll-misc" element={<PayrollMisc />} />
+          <Route path="payroll/payroll-component" element={<PayrollComponent />} />
+
+          <Route path="payroll/salary-Structure/create" element={<CreateSalaryStructure />} />
+          <Route path="payroll/salary-Structure/list" element={<Listsalarystructure />} />
+
+          <Route path="payroll/payroll-tag" element={<PayrollTagList />} />
+          <Route path="payroll/fnc-policy" element={<FNFPolicy />} />
+          <Route path="payroll/overtime_payment-Policy" element={<OvertimePaymentPolicy />} />
+
+          {/* {expensse} routes=============================== */}
+          <Route path="expensive/expense-cycle" element={<ExpenseCycle />} />|
+          <Route path="expensive/currency-conversion" element={<CurrencyConversion />} />
+          <Route path="expensive/fuel-configuration" element={<FuelConfiguration />} />
+          <Route path="expensive/compensator" element={<Compensator />} />
+
+
+          <Route path="expensive/expense-policy/list" element={<ExpensePolicy />} />
+          <Route path="expensive/create-expense-policy" element={<CreateExpensePolicy />} />
+          <Route path="expensive/edit-expense-policy/:id" element={<EditExpensePolicy />} />
+
+
+        </Route>
+
+        {/* config organise============================== */}
+        <Route
+          path="/config/organise"
+          element={
+            <PrivateRoute>
+              <MainDashboardLayout />
+            </PrivateRoute>
+          }
+        >
+
+          <Route path="authority-signature" element={<AuthoritySignature />} />
+
+          {/* one. route is miisng.  in this. code. will be. disccus. here design with. vishal check. figma */}
+
+          <Route path="page-layout" element={<PageLayout />} />
+
+        </Route>
+
+        {/* config Resolve============================== */}
+        <Route
+          path="/config/resolve"
+          element={
+            <PrivateRoute>
+              <MainDashboardLayout />
+            </PrivateRoute>
+          }
+        >
+
+          <Route path="checklist/create/automatic" element={<CreateAutomaticChecklist />} />
+          <Route path="checklist/create/manual" element={<CreateManualChecklist />} />
+          <Route path="checklist/list" element={<Checklist />} />
+
+          <Route path="policy-center/create" element={<CreatePolicy />} />
+          <Route path="policy-center/list" element={<PolicyCenter />} />
+
+        </Route>
+
+        {/* config hrOpps============================ */}
+        <Route
+          path="/config/hrops"
+          element={
+            <PrivateRoute>
+              <MainDashboardLayout />
+            </PrivateRoute>
+          }
+        >
+          <Route path="hrops-assests/list" element={<AssetsCategory />} />
+          <Route path="assets-category/create" element={<AssetsCategoryCreate />} />
+        </Route>
+
+
+
+
+
       </Routes>
-    </Suspense>
+    </Suspense >
 
   );
 };
