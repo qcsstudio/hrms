@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import createAxios from "../../../../utils/axios.config";
 
 const CustomDataList = () => {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const axiosInstance = createAxios(token);
 
   const [data, setData] = useState([]);

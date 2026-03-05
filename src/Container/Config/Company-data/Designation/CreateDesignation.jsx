@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import createAxios from "../../../../utils/axios.config";
 
 const CreateDesignation = ({ onCancel }) => {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const [partOfDept, setPartOfDept] = useState(false);
   const [designationName, setDesignationName] = useState("");
   const [department, setDepartment] = useState("");

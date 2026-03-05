@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import { Navigate, useSearchParams } from "react-router-dom";
 
 const PrivateRouteOrg = ({ children }) => {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const [searchParams] = useSearchParams();
 
   const inviteToken = searchParams.get("token");

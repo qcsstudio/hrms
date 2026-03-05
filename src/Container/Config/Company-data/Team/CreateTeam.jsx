@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 const CreateTeam = ({ onCancel }) => {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
     console.log("token hai====",token)
 
   const [team, setTeam] = useState({

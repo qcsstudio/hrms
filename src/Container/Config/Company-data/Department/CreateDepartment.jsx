@@ -4,7 +4,7 @@ import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 const CreateDepartment = ({ onCancel }) => {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const location = useLocation();
   const navigate = useNavigate();
 

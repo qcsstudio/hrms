@@ -18,7 +18,7 @@ import { toast } from 'react-toastify'
 
 const CompanySetup = ({ onNext, onBack }) => {
 
-  const { token } = useSelector((state) => state.user)
+  const token = localStorage.getItem("authToken")
   const dispatch = useDispatch()
 
   const [formData, setFormdata] = useState({

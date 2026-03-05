@@ -14,7 +14,8 @@ import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 
 const SuperAdminDashboard = () => {
-  const { token } = useSelector((state) => state.user)
+  // const token = localStorage.getItem("authToken")
+  const token = localStorage.getItem("authToken")
 
 
   const [openInviteModal, setOpenInviteModal] = useState(false)
@@ -162,8 +163,9 @@ const SuperAdminDashboard = () => {
       <Statics data={statsData} />
 
       {/* Companies Header */}
-      <div className="mt-10 card-animate">
-        <div className="md:flex justify-between items-center ">
+      <div className="mt-10 card-animate relative">
+        <div className="scrolldiv sticky top-0 z-[100] bg-white  pb-2 rounded-md">
+        <div className="md:flex justify-between items-center p-3 ">
           <div className='space-y-2 mb-3 md:space-y-0 md:mb-0  md:w-2/5'>
             <h1 className="text-xl font-semibold">Companies</h1>
             <p className="text-sm text-gray-400 ">
@@ -189,7 +191,7 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex justify-between mt-5">
+        <div className="flex justify-between mt-5 px-3">
           <div className="flex bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2">
             {['All', 'Active', 'Paused', 'Completed', 'Draft'].map((item) => (
               <button
@@ -212,7 +214,7 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* Table Header */}
-        <div className="border-b-2 border-gray-300 mt-5">
+        <div className="border-b-2 border-gray-300 mt-5 px-3">
           <ul className="flex justify-between text-gray-400 py-2">
             <li>Company</li>
             <li>Admin</li>
@@ -221,10 +223,10 @@ const SuperAdminDashboard = () => {
             <li>Action</li>
           </ul>
         </div>
-
+</div>
         {/* Rows */}
         {/* {filteredCompanies.map((row, idx) => ( */}
-        <div className="list-stagger">
+        <div className="list-stagger relative z-10 px-3">
           {dashboarddata?.companies?.map((row, idx) => (
             <div
               key={idx}
