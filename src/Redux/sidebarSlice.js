@@ -2,7 +2,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
- 
+
   // Navbar & sidebar
   openMenu: true,
   uiLoading: true,
@@ -11,7 +11,7 @@ const initialState = {
   // Settings
   showSettingsMenu: false,
 
-   // ✅ NEW: Config / Normal mode
+  // ✅ NEW: Config / Normal mode
   isConfig: false,
 
 
@@ -21,20 +21,28 @@ const SidebarSlice = createSlice({
   name: "ui",
   initialState,
   reducers: {
-  
+
 
     setOpenMenu: (state, action) => { state.openMenu = action.payload; },
     setActiveUrl: (state, action) => { state.activeUrl = action.payload; },
     setShowSettingsMenu: (state, action) => { state.showSettingsMenu = action.payload; },
 
-      // ================= ✅ Config Mode =================
+    // ================= ✅ Config Mode =================
     setIsConfig: (state, action) => {
       state.isConfig = action.payload;
+      if (action.payload === true) {
+        state.openMenu = true;
+        localStorage.setItem("openMenu", true);
+      }
     },
 
     // Extra: toggleMenu (same as your setMenu function)
-    
+
     toggleMenu: (state) => {
+      if (state.isConfig) {
+        state.openMenu = true;
+        return;
+      }
       const updatedMenu = !state.openMenu;
       state.openMenu = updatedMenu;
       localStorage.setItem("openMenu", updatedMenu);
@@ -51,15 +59,15 @@ const SidebarSlice = createSlice({
       }
       state.uiLoading = false;
     },
-setLogout:(state)=>{
+    setLogout: (state) => {
 
-}
+    }
 
   },
 });
 
 export const {
-  setOpenMenu,setActiveUrl,
+  setOpenMenu, setActiveUrl,
   setShowSettingsMenu,
   toggleMenu, initializeMenuFromStorage, setIsConfig
 } = SidebarSlice.actions;
