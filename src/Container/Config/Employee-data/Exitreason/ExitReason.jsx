@@ -14,7 +14,7 @@ const terminationReasons = [
 // ==================================================================================================
 
 const ExitReasonList = () => {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const [resignation, setResignation] = useState(resignationReasons);
   const [termination, setTermination] = useState(terminationReasons);
 

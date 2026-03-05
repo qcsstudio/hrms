@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 
 
 const CompanyOffices = () => {
-  const { token } = useSelector((state) => state.user)
+  const token = localStorage.getItem("authToken")
   console.log("Token in CompanyOffices:", token);
 
   const navigate = useNavigate();

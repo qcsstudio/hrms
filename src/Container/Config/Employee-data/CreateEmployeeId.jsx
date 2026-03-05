@@ -69,7 +69,7 @@ export default function CreateEmployeeId() {
   const [suffixText, setSuffixText] = useState("");
   const [suffixUpper, setSuffixUpper] = useState(false);
 
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const axiosInstance = createAxios(token);
 
   /* ================== API ================== */

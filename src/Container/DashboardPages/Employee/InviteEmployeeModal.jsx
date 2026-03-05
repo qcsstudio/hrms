@@ -7,7 +7,7 @@ import { getSlug } from "../../../Components/CompanySlug";
 
 const InviteEmployeeModal = ({ onClose }) => {
 
-  const { token } = useSelector((state) => state.user)
+  const token = localStorage.getItem("authToken")
   const [activeTab, setActiveTab] = useState("email");
 
   const [fullName, setFullName] = useState("");

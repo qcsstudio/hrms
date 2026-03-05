@@ -4,7 +4,7 @@ import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 export default function ProbationList() {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const [probitionData, setProbationData] = useState([]);
 
   const navigate = useNavigate();

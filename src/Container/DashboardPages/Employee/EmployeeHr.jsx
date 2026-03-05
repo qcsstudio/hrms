@@ -7,7 +7,7 @@ import InviteEmployeeModal from './InviteEmployeeModal'
 import { useLocation } from 'react-router-dom'
 
 const EmployeeHr = () => {
-    const { token } = useSelector((state) => state.user)
+    const token = localStorage.getItem("authToken")
     console.log("admin token", token)
 
     const location = useLocation()

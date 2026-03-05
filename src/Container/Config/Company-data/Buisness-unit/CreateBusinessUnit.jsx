@@ -4,7 +4,7 @@ import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 const CreateBusinessUnit = () => {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const navigate = useNavigate();
   const location = useLocation();
   const axiosInstance = createAxios(token);

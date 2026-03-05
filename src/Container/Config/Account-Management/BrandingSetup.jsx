@@ -48,7 +48,7 @@ const FormTextarea = ({ placeholder, rows, value, onChange }) => {
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
 const BrandingSetup = () => {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const axiosInstance = createAxios(token);
 
   const [logoError, setLogoError] = useState("");

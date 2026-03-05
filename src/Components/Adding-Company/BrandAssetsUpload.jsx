@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 const BrandAssetsUpload = ({ onNext, onBack }) => {
-  const { token } = useSelector((state) => state.user)
+  const token = localStorage.getItem("authToken")
 
       const companyId = localStorage.getItem('companyId')
 

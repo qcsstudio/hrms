@@ -4,7 +4,7 @@ import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 const CompanyOfficeEdit = () => {
-  const { token } = useSelector((state) => state.user) // get superAdmintoken from redux store
+  const token = localStorage.getItem("authToken") // get superAdmintoken from redux store
   const navigate = useNavigate();
   const { id } = useParams(); // office id from route
    const { state } = useLocation(); // 👈 yahin se data milega
