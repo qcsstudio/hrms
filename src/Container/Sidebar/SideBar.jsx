@@ -3,14 +3,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import { SlArrowLeft } from "react-icons/sl";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect, useRef } from "react";
-import { setActiveUrl, setOpenMenu, setShowSettingsMenu } from "../../Redux/sidebarSlice";
+import { setActiveUrl, setOpenMenu } from "../../Redux/sidebarSlice";
 import { toast } from "react-toastify";
 import { MdArrowDropDown } from "react-icons/md";
-import { attendance_logo, attendance_logo_blue, dashboard_logo, dashboard_logo_blue, employee_logo, employee_logo_blue, leave_logo, leave_logo_blue, notification_logo, notification_logo_blue, payroll_logo, payroll_logo_blue, settings_logo, support_logo, support_logo_blue } from "../../allAssetsImport/allAssets";
+import { attendance_logo, attendance_logo_blue, dashboard_logo, dashboard_logo_blue, employee_logo, employee_logo_blue, leave_logo, leave_logo_blue, notification_logo, notification_logo_blue, payroll_logo, payroll_logo_blue, settings_logo, settings_logo_blue, support_logo, support_logo_blue } from "../../allAssetsImport/allAssets";
 
 const SideBar = () => {
 
-  const { openMenu, showSettingsMenu, activeUrl, isConfig } = useSelector((state) => state.sidebar)
+  const { openMenu, activeUrl, isConfig } = useSelector((state) => state.sidebar)
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -177,13 +177,6 @@ const SideBar = () => {
 
   // Change Tab
   const changeTab = (tabName) => {
-    if (tabName === "settings") {
-      dispatch(setShowSettingsMenu(true));
-
-    }
-    else {
-      dispatch(setShowSettingsMenu(false));
-    }
     dispatch(setActiveUrl(tabName));
     const slug = getCompanySlug();
     switch (tabName) {
@@ -380,16 +373,22 @@ const SideBar = () => {
         navigate('/config/resolve/policy-center/list')
         break;
 
-        // Hr Opps===================
-        case 'asset-category':
-          navigate('/config/hrops/hrops-assests/list')
+      // Hr Opps===================
+      case 'asset-category':
+        navigate('/config/hrops/hrops-assests/list')
         break;
       // ========================
       case 'deviceintegration':
         navigate('/config/track/deviceintegration');
         break;
       default:
-        navigate("/dashboard");
+        if (slug) {
+          // ✅ company admin
+          navigate("/dashboard/companyadmin-dashboard");
+        } else {
+          // ✅ super admin
+          navigate("/dashboard/superadmin-dashboard");
+        }
         break;
     }
   };
@@ -638,7 +637,7 @@ const SideBar = () => {
       <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
         {/* ===============================Big Sidebar======================== */}
         <div >
-          {openMenu && !showSettingsMenu &&
+          {openMenu &&
             <ul className={`w-[100%] h-[100%]  py-[1.5rem]  flex flex-col gap-[.5rem] px-5`}>
               <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/superadmin-dashboard' || loacation.pathname === '/dashboard/Companyadmin-dashboard' ?
                 'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
@@ -703,8 +702,7 @@ const SideBar = () => {
                 <span>Performance</span>
               </li>
               <li className={`transition-all duration-500 w-[100%] ${location.pathname === 'reportsAndExports' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
+                `bg-[#2597f0] text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('reportsAndExports')}>
                 <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
@@ -716,8 +714,9 @@ const SideBar = () => {
               <li className={`transition-all duration-500 w-[100%] text-[#64748B]
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('settings')}>
-                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  <img src={settings_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />
+                 <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === 'settings' ? <img src={settings_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={settings_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
                 </div>
                 <span>Settings</span>
               </li>
@@ -735,242 +734,76 @@ const SideBar = () => {
 
             </ul>}
 
-          {/*============================= settings tab ====================================*/}
-
-          {openMenu && showSettingsMenu && (
-            <ul className={`w-[100%] h-[100%]  py-[1.5rem] flex flex-col gap-[.5rem] ${isMobile ? 'pr-[0rem]' : 'pl-[0.93rem'}`}>
-              <li className={`transition-all duration-500  w-[80%]  flex justify-center items-center gap-4 my-5 text-[20px]  `} onClick={() => dispatch(setShowSettingsMenu(false))}>
-                <span><SlArrowLeft /></span> Settings</li>
-
-              <li className={`transition-all duration-500 w-[100%] ${activeUrl === 'account-setting' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('account-setting')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'account-setting' ? <img src={'/newUi/images/sidebarImages/white/supportWhite.svg'}
-                  width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={'/newUi/images/sidebarImages/black/supportBlack.svg'}
-                    width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-                Account Settings
-              </li>
-
-              <li className={`transition-all duration-500 w-[100%] ${activeUrl === 'security' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('security')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'security' ? <img src={'/newUi/images/sidebarImages/white/supportWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/supportBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-                Security</li>
-              <li className={`transition-all duration-500 w-[100%] ${activeUrl === 'user-roles' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('user-roles')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'user-roles' ? <img src={'/newUi/images/sidebarImages/white/supportWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/supportBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-                User & Roles</li>
-              {/* <li className={`transition-all duration-500 w-[100%] ${activeUrl === 'channel' ?
-            `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-              'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-            onClick={() => changeTab('channel')}>
-            <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              {activeUrl === 'channel' ? <img src={'/newUi/images/sidebarImages/white/supportWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/supportBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-            </div>
-            Channel
-          </li> */}
-              <li className={`transition-all duration-500 w-[100%] ${activeUrl === 'billing' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('billing')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'billing' ? <img src={'/newUi/images/sidebarImages/white/supportWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/supportBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-                Billing
-              </li>
-              <li className={`transition-all duration-500 w-[100%] ${activeUrl === 'notification' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('notification')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'notification' ? <img src={'/newUi/images/sidebarImages/white/supportWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/supportBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-                Notification
-              </li>
-              <li className={`transition-all duration-500 w-[100%] ${activeUrl === 'help&support' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('help&support')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'help&support' ? <img src={'/newUi/images/sidebarImages/white/supportWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/supportBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-                Help & Support
-              </li>
-              <li className={`transition-all duration-500  w-[100%] ${activeUrl === 'signout' ? 'text-[#ffffff] bg-[#2597f0] active' : 'text-[#64748B] bg-[#ffffff]'} h-[2.76rem] py-[0.75rem] pl-[1.8rem] rounded-s-[3rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`} onClick={() => logouthandle()}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'signout' ? <img src={'/newUi/images/sidebarImages/white/supportWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/supportBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-                Sign Out
-              </li>
-
-            </ul>
-          )}
-
           {/* ========================small settings sidebar============================ */}
 
-          {!openMenu && showSettingsMenu ? (<ul className="w-[100%] h-[100%] px-[1.62rem] py-[1.5rem] flex flex-col gap-[.5rem]">
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'account-setting' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('account-setting')}>
-              {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              {activeUrl === 'account-setting' ? <img src={'/newUi/images/sidebarImages/white/createPostWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/createPostBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-            </div> */}
+          {!openMenu && (<ul className="w-[100%] h-[100%] px-[1.62rem] py-[1.5rem] flex flex-col gap-[.5rem]">
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'home' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('home')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'home' ? <img src={dashboard_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={dashboard_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
 
             </li>
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'security' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('security')}>
-              {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              {activeUrl === 'security' ? <img src={'/newUi/images/sidebarImages/white/createPostWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/createPostBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-            </div> */}
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'employee' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('employee')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'employee' ? <img src={employee_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={employee_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
 
             </li>
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'user-roles' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('user-roles')}>
-              {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              {activeUrl === 'user-roles' ? <img src={'/newUi/images/sidebarImages/white/createPostWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/createPostBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-            </div> */}
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'attendance' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('attendance')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'attendance' ? <img src={attendance_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={attendance_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
 
             </li>
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'channel' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('channel')}>
-              {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              {activeUrl === 'channel' ? <img src={'/newUi/images/sidebarImages/white/createPostWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/createPostBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-            </div> */}
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'leave-management' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('leave-management')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'leave-management' ? <img src={leave_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={leave_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
 
             </li>
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'billing' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('billing')}>
-              {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              {activeUrl === 'billing' ? <img src={'/newUi/images/sidebarImages/white/createPostWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/createPostBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-            </div> */}
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'DashboardPayroll1' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('DashboardPayroll1')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'DashboardPayroll1' ? <img src={payroll_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={payroll_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
 
             </li>
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'notification' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('notification')}>
-              {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              {activeUrl === 'notification' ? <img src={'/newUi/images/sidebarImages/white/createPostWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/createPostBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-            </div> */}
+            {/* //add performance here========>=========>=========>=============> */}
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'notification' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('notification')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'notification' ? <img src={notification_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={notification_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
 
             </li>
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'help&support' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('help&support')}>
-              {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              {activeUrl === 'help&support' ? <img src={'/newUi/images/sidebarImages/white/createPostWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> : <img src={'/newUi/images/sidebarImages/black/createPostBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-            </div> */}
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'settings' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('settings')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'settings' ? <img src={settings_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={settings_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
+
+            </li>
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'support' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('support')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'support' ? <img src={support_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={support_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
 
             </li>
 
           </ul>
-          ) :
-            !openMenu && (<ul className="w-[100%] h-[100%] px-[1.62rem] py-[1.5rem] flex flex-col gap-[.5rem]">
-
-              {/* <li className={`transition-all duration-500 w-[100%] ${activeUrl === 'home' ? 'bg-[#2597f0] active  text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'} h-[2.76rem] py-[0.75rem] pl-[1.8rem] rounded-s-[3rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`} onClick={()=>changeTab('home')}>
-          <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-            {activeUrl === 'home' ? <img src={'/newUi/images/sidebarImages/white/homeWhite.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]"/> :<img src={'/newUi/images/sidebarImages/black/homeBlack.svg'} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]"/>}
-          </div>
-          Home
-        </li> */}
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'home' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('home')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'home' ? <img src={homeactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={home} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'createPost' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('createPost')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'createPost' ? <img src={createpostActive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={createpost} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'calendar' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('calendar')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'calendar' ? <img src={calenderactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={calender} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'contentLibrary' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('contentLibrary')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'contentLibrary' ? <img src={libraryactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={library} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'analytics' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('analytics')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'analytics' ? <img src={analysisactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={analysis} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'inboxAndListing' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('inboxAndListing')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'inboxAndListing' ? <img src={inboxactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={inbox} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'reportsAndExports' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('reportsAndExports')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'reportsAndExports' ? <img src={reportsactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={reports} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'influencerSpace' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('influencerSpace')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'influencerSpace' ? <img src={influenceractive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={influencer} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'automationRules' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('automationRules')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'automationRules' ? <img src={automationactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={automation} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'settings' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('settings')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'settings' ? <img src={settingsactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={settings} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-              <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'support' ? 'bg-[#2597f0]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('support')}>
-                {/* <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'support' ? <img src={supportactive} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={support} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div> */}
-
-              </li>
-
-            </ul>
-            )}
+          )}
 
         </div>
       </nav>
