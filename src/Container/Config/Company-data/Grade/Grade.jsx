@@ -61,9 +61,11 @@ const Grade = () => {
   useEffect(()=>{
     const fetchUsers=async()=>{
       try {
-        const res=await axiosInstance.get("/config/getAll-grade",)
+        const res=await axiosInstance.get("/config/getAll-grade",{
+          meta:{auth:"ADMIN_AUTH"}
+        })
         console.log(res.data)
- setData(res.data)
+        setData(res.data)
         
       } catch (error) {
         console.log("error",error)
@@ -153,7 +155,7 @@ const Grade = () => {
               <button
                 onClick={() =>
                   navigate(
-                    `/config/hris/Company_data/create-grade?id=${g.id}`
+                    `/config/hris/Company_data/create-grade?id=${g._id}`
                     // { state: { grade: g } }
                   )
                 }
