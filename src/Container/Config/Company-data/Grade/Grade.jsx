@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const Grade = () => {
+      const { token } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
 
@@ -37,11 +40,42 @@ const Grade = () => {
   ];
 
   const [data, setData] = useState(initialData);
+  const axiosInstance=createAxios(token)
 
-  const handleDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
-    setOpenMenu(null);
+  const handleDelete = async(id) => {
+
+    try {
+     await axiosInstance.delete(`/config/delete-grade/${id}`)
+      
+      setOpenMenu(null);
+      setData(data.filter((item) => item.id !== id));
+
+    
+    } catch (error) {
+      console.log("error",error)
+      
+    }
   };
+
+
+  useEffect(()=>{
+    const fetchUsers=async()=>{
+      try {
+        const res=await axiosInstance.get("/config/getAll-grade",)
+        console.log(res.data)
+ setData(res.data)
+        
+      } catch (error) {
+        console.log("error",error)
+        
+      }
+      
+    }
+    fetchUsers()
+  },[token])
+
+
+
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -119,8 +153,8 @@ const Grade = () => {
               <button
                 onClick={() =>
                   navigate(
-                    `/config/hris/Company_data/edit-grade/${g.id}`,
-                    { state: { grade: g } }
+                    `/config/hris/Company_data/create-grade?id=${g.id}`
+                    // { state: { grade: g } }
                   )
                 }
                 className="text-gray-600 hover:text-blue-600"
@@ -150,7 +184,6 @@ const Grade = () => {
               >
                 ⋮
               </button>
-
               {/* Dropdown */}
               {openMenu === g.id && (
                 <div className="absolute right-0 top-8 w-36 bg-white border rounded-md shadow-md z-10">

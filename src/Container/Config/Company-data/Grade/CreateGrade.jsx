@@ -1,33 +1,96 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { useSelector } from "react-redux";
 
 const CreateGrade = () => {
+  const { token } = useSelector((state) => state.user);
   const [gradeName, setGradeName] = useState("");
+  const axiosInstance = createAxios(token)
+
+  const [searchParams] = useSearchParams();
+  const gradeId = searchParams.get("id");
+  const navigate = useNavigate()
+
 
   const handleCancel = () => {
     console.log("Cancelled");
     setGradeName("");
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!gradeName.trim()) {
       alert("Grade name is required");
       return;
     }
 
-    console.log("New Grade:", gradeName);
-    setGradeName("");
+    try {
+
+
+      const res = await axiosInstance.post("/config/create-grade", { gradeName }, {
+        meta: { auth: "ADMIN_AUTH" },
+
+      });
+
+      console.log(res.data);
+
+
+      setGradeName("");
+      navigate("/config/hris/Company_data/grade");
+
+    } catch (error) {
+      console.log("error", error);
+    }
   };
 
-  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!gradeId) return;
+    const edituser = async () => {
+
+      try {
+        const res = await axiosInstance.get(`/config/getOne-grade/${gradeId}`)
+        setGradeName(res.data.gradeName)
+        console.log(res.data)
+
+      }
+      catch (error) {
+        console.log("error", error)
+      }
+    }
+    edituser()
+  }, [gradeId])
+
+  const handleupdateGrade = async () => {
+    try {
+      const res = await axiosInstance.patch(`/config/update-grade/${gradeId}`, { gradeName },
+        { meta: { auth: "ADMIN_AUTH" } }
+      )
+      setGradeName(res.data.gradeName)
+      console.log(res.data)
+
+      navigate("/config/hris/Company_data/grade")
+
+    } catch (error) {
+      console.log("error", error)
+    }
+  }
 
   return (
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">
-          Create Grade
-        </h1>
+        {gradeId ? <div className="flex justify-between gap-2">
+          <h1 className="text-2xl font-bold">
+            Update Grade
+          </h1>
+          <button onClick={handleupdateGrade}>Update Changes</button>
+
+        </div>
+          : <h1 className="text-2xl font-bold">
+            Create Grade
+          </h1>}
+
         <p className="text-sm text-gray-500 mt-1">
           Manage employee directory, documents, and role-based actions.
         </p>
@@ -35,7 +98,7 @@ const CreateGrade = () => {
 
       {/* Form */}
       <div className="space-y-6 max-w-2xl">
-        
+
         {/* Grade Name */}
         <div>
           <label className="text-sm font-semibold">
@@ -50,11 +113,15 @@ const CreateGrade = () => {
           />
         </div>
 
-        {/* Buttons */}
-        <div className="flex justify-end gap-3 pt-6">
+
+
+      </div>
+
+      {
+        !gradeId && <div className="flex justify-end gap-3 pt-6">
           <button
             // onClick={handleCancel}
-            onClick={()=>navigate('/config/hris/Company_data/grade')}
+            onClick={() => navigate('/config/hris/Company_data/grade')}
             className="px-4 py-2 border rounded-md hover:bg-gray-100"
           >
             Cancel
@@ -67,8 +134,7 @@ const CreateGrade = () => {
             Save
           </button>
         </div>
-
-      </div>
+      }
     </div>
   );
 };
