@@ -38,7 +38,9 @@ const BusinessUnit = () => {
   useEffect(()=>{
     const fetchallbussinessunit = async () => {
       try {
-        const response = await axiosInstance.get("/config/all-buinessUnit");
+        const response = await axiosInstance.get("/config/all-buinessUnit",{
+          meta:{auth:"ADMIN_AUTH"}
+        });
         setData(response.data);
       } catch (error) {
         console.error("Error fetching business units:", error);
