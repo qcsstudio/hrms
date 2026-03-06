@@ -117,9 +117,9 @@ const Grade = () => {
                   {emp.name.charAt(0) || "No Assign Employee"}
                 </div>
               ))}
-              {g.assignedEmployees.length > 4 && (
+              {g.assignedEmployeeList.length > 4 && (
                 <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs border-2 border-white">
-                  +{g.assignedEmployees.length - 4 || "0"}
+                  +{g.assignedEmployeeList.length - 4 || "0"}
                 </div>
               )}
             </div>
