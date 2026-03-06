@@ -18,7 +18,7 @@ const Grade = () => {
       await axiosInstance.delete(`/config/delete-grade/${id}`)
 
       setOpenMenu(null);
-      setData(data.filter((item) => item.id !== id));
+      setData(data.filter((item) => item._id !== id));
 
 
     } catch (error) {
@@ -83,7 +83,7 @@ const Grade = () => {
       <div className="space-y-4 mt-4">
         {data?.map((g) => (
           <div
-            key={g.id}
+            key={g._id}
             className="grid grid-cols-4 items-center bg-white border rounded-lg px-4 py-4 shadow-sm relative"
           >
 
@@ -157,14 +157,14 @@ const Grade = () => {
               {/* 3 Dot */}
               <button
                 onClick={() =>
-                  setOpenMenu(openMenu === g.id ? null : g.id)
+                  setOpenMenu((prev) => (prev === g._id ? null : g._id))
                 }
                 className="text-lg"
               >
                 ⋮
               </button>
               {/* Dropdown */}
-              {openMenu === g.id && (
+              {openMenu === g._id && (
                 <div className="absolute right-0 top-8 w-36 bg-white border rounded-md shadow-md z-10">
 
                   {/* View */}
