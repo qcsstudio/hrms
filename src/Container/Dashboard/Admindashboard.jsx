@@ -88,7 +88,7 @@ const Admindashboard = () => {
   return (
     <div className='p-5'>
       {/* popup================================== */}
-      {!istemporyPassword && (
+      {istemporyPassword === false && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
 
           {/* Popup Box */}
