@@ -89,8 +89,8 @@ const Grade = () => {
 
             {/* Grade Name */}
             <div>
-              <div className="font-medium">{g.gradeName}</div>
-              <div className="text-xs text-gray-400 mt-1"> {new Date(g.createdAt).toLocaleString("en-US", {
+              <div className="font-medium">{g?.gradeName}</div>
+              <div className="text-xs text-gray-400 mt-1"> {new Date(g?.createdAt).toLocaleString("en-US", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
@@ -109,18 +109,18 @@ const Grade = () => {
 
             {/* Assigned Employees */}
             <div className="flex -space-x-2">
-              {g.assignedEmployeeList.slice(0, 4).map((emp, index) => (
+              {g?.assignedEmployeeList?.slice(0, 4)?.map((emp, index) => (
                 <div
                   key={index}
                   className="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center text-xs border-2 border-white"
-                  title={emp.name}
+                  title={emp?.name}
                 >
-                  {emp.name.charAt(0) || "No Assign Employee"}
+                  {emp?.name?.charAt(0) || "No Assign Employee"}
                 </div>
               ))}
-              {g.assignedEmployeeList.length > 4 && (
+              {g?.assignedEmployeeList?.length > 4 && (
                 <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs border-2 border-white">
-                  +{g.assignedEmployeeList.length - 4 || "0"}
+                  +{g?.assignedEmployeeList?.length - 4 || "0"}
                 </div>
               )}
             </div>

@@ -12,7 +12,7 @@ const Team = () => {
 
   const [data, setData] = useState([]);
 
-  const getInitials = (name) => {
+  const getInitials = (name = "") => {
     return name
       .split(" ")
       .map((n) => n[0])
@@ -99,19 +99,19 @@ const Team = () => {
                 {/* Created By */}
                 <td className="p-4">
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium">
-                    {getInitials(team.createdBy)}
+                    {getInitials(team?.createdBy)}
                   </div>
                 </td>
 
                 {/* Assigned Employees */}
                 <td className="p-4">
                   <div className="flex -space-x-2">
-                    {team.assignedEmployees.slice(0, 4).map((emp, i) => (
+                    {team.assignedEmployees?.slice(0, 4).map((emp, i) => (
                       <div
                         key={i}
                         className="w-8 h-8 rounded-full bg-blue-100 border flex items-center justify-center text-xs font-medium"
                       >
-                        {getInitials(emp.name)}
+                        {getInitials(emp?.name)}
                       </div>
                     ))}
                     {team.assignedEmployees.length > 4 && (
@@ -123,7 +123,7 @@ const Team = () => {
                 </td>
 
                 {/* Team Lead */}
-                <td className="p-4">{team.lead}</td>
+                <td className="p-4">{team?.lead}</td>
 
                 {/* Action Column */}
                 <td className="p-4 text-right relative">
@@ -133,7 +133,7 @@ const Team = () => {
                     <button
                       onClick={() =>
                         navigate(
-                          `Company_data/create-team?teamid=${team.id}`
+                          `Company_data/create-team?teamid=${team?.id}`
 
                         )
                       }

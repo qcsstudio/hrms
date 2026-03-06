@@ -1,6 +1,13 @@
 import { useState } from "react";
 
 /* ------------------ HELPERS ------------------ */
+
+const FieldLabel = ({ children }) => (
+  <label className="text-sm font-medium text-gray-700 block mb-1">
+    {children}
+  </label>
+);
+
 const defaultBifurcation = () => ({
   id: Date.now() + Math.random(),
   startHours: "",
@@ -15,13 +22,11 @@ const SelectInput = ({
   onChange,
   placeholder = "Choose",
   options = [],
-  error = false,
 }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className={`h-10 rounded-md border px-3 text-sm w-full
-      ${error ? "border-red-500" : "border-gray-300"}`}
+    className="h-10 rounded-md border border-gray-300 px-3 text-sm w-full"
   >
     <option value="">{placeholder}</option>
     {options.map((o) => (
@@ -32,15 +37,20 @@ const SelectInput = ({
   </select>
 );
 
+/* ------------------ OPTIONS ------------------ */
+
 const hourOptions = Array.from({ length: 24 }, (_, i) =>
   String(i).padStart(2, "0")
 );
+
 const minOptions = Array.from({ length: 60 }, (_, i) =>
   String(i).padStart(2, "0")
 );
 
 const paymentOptions = ["1x Basic Pay", "1.5x Basic Pay", "2x Basic Pay"];
+
 const calcOptions = ["Punch Based", "Shift Based", "Manual Entry"];
+
 const approvalOptions = [
   "Yes, Only for Current & Future Dates",
   "Yes, for Past, Current & Future Dates",
@@ -48,6 +58,7 @@ const approvalOptions = [
 ];
 
 /* ------------------ SECTION BLOCK ------------------ */
+
 const OvertimeSectionBlock = ({ title, section, onChange }) => {
   const addBifurcation = () =>
     onChange({
@@ -65,9 +76,11 @@ const OvertimeSectionBlock = ({ title, section, onChange }) => {
   };
 
   return (
-    <div className="border rounded-md p-4 space-y-4">
+    <div className="border rounded-md p-5 space-y-5">
+
       <p className="font-semibold">{title}</p>
 
+      {/* YES */}
       <label className="flex gap-2 items-center">
         <input
           type="radio"
@@ -79,52 +92,100 @@ const OvertimeSectionBlock = ({ title, section, onChange }) => {
 
       {section.enabled && (
         <>
-          <div className="grid grid-cols-2 gap-2">
-            <SelectInput
-              value={section.minHours}
-              onChange={(v) => onChange({ ...section, minHours: v })}
-              options={hourOptions}
-              placeholder="Hours"
-            />
-            <SelectInput
-              value={section.minMin}
-              onChange={(v) => onChange({ ...section, minMin: v })}
-              options={minOptions}
-              placeholder="Min"
-            />
+          {/* MINIMUM HOURS */}
+          <div>
+            <FieldLabel>
+              Minimum overtime hours required to be eligible for payment
+            </FieldLabel>
+
+            <div className="grid grid-cols-2 gap-3">
+              <SelectInput
+                value={section.minHours}
+                onChange={(v) => onChange({ ...section, minHours: v })}
+                options={hourOptions}
+                placeholder="Hours"
+              />
+
+              <SelectInput
+                value={section.minMin}
+                onChange={(v) => onChange({ ...section, minMin: v })}
+                options={minOptions}
+                placeholder="Min"
+              />
+            </div>
           </div>
 
+          {/* BIFURCATIONS */}
           {section.bifurcations.map((bif) => (
-            <div key={bif.id} className="grid grid-cols-3 gap-3">
-              <SelectInput
-                value={bif.startHours}
-                onChange={(v) =>
-                  updateBif(bif.id, "startHours", v)
-                }
-                options={hourOptions}
-                placeholder="Start Hr"
-              />
+            <div key={bif.id} className="grid grid-cols-3 gap-4">
 
-              <SelectInput
-                value={bif.endHours}
-                onChange={(v) =>
-                  updateBif(bif.id, "endHours", v)
-                }
-                options={hourOptions}
-                placeholder="End Hr"
-              />
+              {/* START TIME */}
+              <div>
+                <FieldLabel>Start hour & minute</FieldLabel>
 
-              <SelectInput
-                value={bif.paymentCalc}
-                onChange={(v) =>
-                  updateBif(bif.id, "paymentCalc", v)
-                }
-                options={paymentOptions}
-                placeholder="Payment"
-              />
+                <div className="grid grid-cols-2 gap-2">
+                  <SelectInput
+                    value={bif.startHours}
+                    onChange={(v) =>
+                      updateBif(bif.id, "startHours", v)
+                    }
+                    options={hourOptions}
+                    placeholder="Hours"
+                  />
+
+                  <SelectInput
+                    value={bif.startMin}
+                    onChange={(v) =>
+                      updateBif(bif.id, "startMin", v)
+                    }
+                    options={minOptions}
+                    placeholder="Min"
+                  />
+                </div>
+              </div>
+
+              {/* END TIME */}
+              <div>
+                <FieldLabel>End hour & minute</FieldLabel>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <SelectInput
+                    value={bif.endHours}
+                    onChange={(v) =>
+                      updateBif(bif.id, "endHours", v)
+                    }
+                    options={hourOptions}
+                    placeholder="Hours"
+                  />
+
+                  <SelectInput
+                    value={bif.endMin}
+                    onChange={(v) =>
+                      updateBif(bif.id, "endMin", v)
+                    }
+                    options={minOptions}
+                    placeholder="Min"
+                  />
+                </div>
+              </div>
+
+              {/* PAYMENT */}
+              <div>
+                <FieldLabel>Payment calculation</FieldLabel>
+
+                <SelectInput
+                  value={bif.paymentCalc}
+                  onChange={(v) =>
+                    updateBif(bif.id, "paymentCalc", v)
+                  }
+                  options={paymentOptions}
+                  placeholder="Choose"
+                />
+              </div>
             </div>
           ))}
 
+          {/* ADD BIFURCATION */}
           <button
             onClick={addBifurcation}
             className="text-blue-600 text-sm font-medium"
@@ -134,6 +195,7 @@ const OvertimeSectionBlock = ({ title, section, onChange }) => {
         </>
       )}
 
+      {/* NO */}
       <label className="flex gap-2 items-center">
         <input
           type="radio"
@@ -146,38 +208,10 @@ const OvertimeSectionBlock = ({ title, section, onChange }) => {
   );
 };
 
-/* ------------------ RIGHT PANEL ------------------ */
-const RuleHelperPanel = () => (
-  <div className="w-80 border-l bg-gray-50 p-4 space-y-4">
-    <p className="font-semibold text-sm">Package</p>
-    <p className="text-sm">Basic Pay</p>
+/* ------------------ MAIN COMPONENT ------------------ */
 
-    <div className="text-sm space-y-1">
-      <p>If</p>
-      <p>Else</p>
-      <p>Then</p>
-    </div>
-
-    <div className="grid grid-cols-2 gap-2 text-xs">
-      <div className="border rounded p-2">
-        <p className="font-semibold mb-1">Arithmetic</p>
-        <p>+ − × ÷ %</p>
-      </div>
-
-      <div className="border rounded p-2">
-        <p className="font-semibold mb-1">Relational</p>
-        <p>= ≠ &gt; &lt; ≥ ≤</p>
-      </div>
-    </div>
-
-    <p className="text-xs text-gray-500">
-      Dropdown values & logic preview
-    </p>
-  </div>
-);
-
-/* ------------------ MAIN ------------------ */
 export default function OvertimePaymentPolicy() {
+
   const [policyName, setPolicyName] = useState("");
 
   const [workDay, setWorkDay] = useState({
@@ -199,54 +233,68 @@ export default function OvertimePaymentPolicy() {
 
   return (
     <div className="flex min-h-screen">
-      {/* LEFT */}
+
       <div className="flex-1 p-8 space-y-6">
+
         <h1 className="text-xl font-bold">
           New Overtime Payment Policy
         </h1>
 
-        <input
-          value={policyName}
-          onChange={(e) => setPolicyName(e.target.value)}
-          placeholder="Overtime payment policy name"
-          className="w-full h-10 border rounded px-3"
-        />
+        {/* POLICY NAME */}
+        <div>
+          <FieldLabel>Extrtime payment policy name</FieldLabel>
+
+          <input
+            value={policyName}
+            onChange={(e) => setPolicyName(e.target.value)}
+            placeholder="Enter policy name"
+            className="w-full h-10 border rounded px-3"
+          />
+        </div>
 
         <OvertimeSectionBlock
-          title="Pay when employee does overtime on a work day"
+          title="Pay when an employee does overtime on a work day"
           section={workDay}
           onChange={setWorkDay}
         />
 
         <OvertimeSectionBlock
-          title="Pay when employee does overtime on a non-work day"
+          title="Pay when an employee does overtime on a non-work day (includes weekly off & mandatory holiday)"
           section={nonWorkDay}
           onChange={setNonWorkDay}
         />
 
-        <SelectInput
-          value={calcMethod}
-          onChange={setCalcMethod}
-          options={calcOptions}
-          placeholder="How do you want to calculate work hours?"
-        />
+        {/* CALC METHOD */}
+        <div>
+          <FieldLabel>
+            How do you want to calculate work hours?
+          </FieldLabel>
 
-        <SelectInput
-          value={approval}
-          onChange={setApproval}
-          options={approvalOptions}
-          placeholder="Approval requirement"
-        />
-
-        <div className="pt-4">
-          <button className="bg-blue-600 text-white px-6 py-2 rounded">
-            Save Policy
-          </button>
+          <SelectInput
+            value={calcMethod}
+            onChange={setCalcMethod}
+            options={calcOptions}
+          />
         </div>
-      </div>
 
-      {/* RIGHT */}
-      {/* <RuleHelperPanel /> */}
+        {/* APPROVAL */}
+        <div>
+          <FieldLabel>
+            Do you want employees to work extra time only on approval?
+          </FieldLabel>
+
+          <SelectInput
+            value={approval}
+            onChange={setApproval}
+            options={approvalOptions}
+          />
+        </div>
+
+        <button className="bg-blue-600 text-white px-6 py-2 rounded">
+          Save Policy
+        </button>
+
+      </div>
     </div>
   );
 }
