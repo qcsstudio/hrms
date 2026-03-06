@@ -4,77 +4,46 @@ import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 const Grade = () => {
-      const { token } = useSelector((state) => state.user);
+  const { token } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
 
-  const initialData = [
-    {
-      id: 1,
-      name: "Leap Of Faith",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "Admin",
-      assignedEmployees: [
-        { name: "A B" },
-        { name: "C D" },
-        { name: "E F" },
-        { name: "G H" },
-        { name: "I J" },
-        { name: "K L" },
-        { name: "M N" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Senior Grade",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "Admin",
-      assignedEmployees: [
-        { name: "A B" },
-        { name: "C D" },
-        { name: "E F" },
-        { name: "G H" },
-        { name: "I J" },
-      ],
-    },
-  ];
+  const [data, setData] = useState([]);
+  const axiosInstance = createAxios(token)
 
-  const [data, setData] = useState(initialData);
-  const axiosInstance=createAxios(token)
-
-  const handleDelete = async(id) => {
+  const handleDelete = async (id) => {
 
     try {
-     await axiosInstance.delete(`/config/delete-grade/${id}`)
-      
+      await axiosInstance.delete(`/config/delete-grade/${id}`)
+
       setOpenMenu(null);
       setData(data.filter((item) => item.id !== id));
 
-    
+
     } catch (error) {
-      console.log("error",error)
-      
+      console.log("error", error)
+
     }
   };
 
 
-  useEffect(()=>{
-    const fetchUsers=async()=>{
+  useEffect(() => {
+    const fetchUsers = async () => {
       try {
-        const res=await axiosInstance.get("/config/getAll-grade",{
-          meta:{auth:"ADMIN_AUTH"}
+        const res = await axiosInstance.get("/config/getAll-grade", {
+          meta: { auth: "ADMIN_AUTH" }
         })
-        console.log(res.data)
-        setData(res.data)
-        
+        console.log(res.data, "get all grade=================")
+        setData(res?.data?.data)
+
       } catch (error) {
-        console.log("error",error)
-        
+        console.log("error", error)
+
       }
-      
+
     }
     fetchUsers()
-  },[token])
+  }, [token])
 
 
 
@@ -111,7 +80,7 @@ const Grade = () => {
 
       {/* Rows */}
       <div className="space-y-4 mt-4">
-        {data.map((g) => (
+        {data?.map((g) => (
           <div
             key={g.id}
             className="grid grid-cols-4 items-center bg-white border rounded-lg px-4 py-4 shadow-sm relative"
@@ -119,31 +88,38 @@ const Grade = () => {
 
             {/* Grade Name */}
             <div>
-              <div className="font-medium">{g.name}</div>
-              <div className="text-xs text-gray-400 mt-1">{g.date}</div>
+              <div className="font-medium">{g.gradeName}</div>
+              <div className="text-xs text-gray-400 mt-1"> {new Date(g.createdAt).toLocaleString("en-US", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true
+              }).replace(",", "")}</div>
             </div>
 
             {/* Created By */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center text-sm">
-                {g.createdBy.charAt(0)}
+                {g.addedById}
               </div>
             </div>
 
             {/* Assigned Employees */}
             <div className="flex -space-x-2">
-              {g.assignedEmployees.slice(0, 4).map((emp, index) => (
+              {g.assignedEmployeeList.slice(0, 4).map((emp, index) => (
                 <div
                   key={index}
                   className="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center text-xs border-2 border-white"
                   title={emp.name}
                 >
-                  {emp.name.charAt(0)}
+                  {emp.name.charAt(0) || "No Assign Employee"}
                 </div>
               ))}
               {g.assignedEmployees.length > 4 && (
                 <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs border-2 border-white">
-                  +{g.assignedEmployees.length - 4}
+                  +{g.assignedEmployees.length - 4 || "0"}
                 </div>
               )}
             </div>
@@ -194,7 +170,7 @@ const Grade = () => {
                   <button
                     onClick={() => {
                       navigate(
-                        `/config/hris/Company_data/view-grade/${g.id}`,
+                        `/config/hris/Company_data/view-grade/${g._id}`,
                         { state: { grade: g } }
                       );
                       setOpenMenu(null);
@@ -206,7 +182,7 @@ const Grade = () => {
 
                   {/* Delete */}
                   <button
-                    onClick={() => handleDelete(g.id)}
+                    onClick={() => handleDelete(g._id)}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                   >
                     🗑 Delete
