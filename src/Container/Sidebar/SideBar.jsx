@@ -554,7 +554,7 @@ const SideBar = () => {
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('benifit-plan')} >Flexible Benifit plan</h1>
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/payroll-tag' ?
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('payroll-tag')} >Payroll Tag</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/fnc-policy' ?
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('fnf-policy')} >FNF Policy</h1>
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/overtime_payment-Policy' ?
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('overtime-payment')} >Overtime Payment Policy</h1>
