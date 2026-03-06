@@ -329,29 +329,65 @@ const Login = () => {
       toast.error("Reset failed");
     }
   };
+
+  const leftPanelWrapperClass = "w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-10 py-8 lg:py-12";
+  const leftPanelContentClass = "w-full max-w-[560px]";
+
   return (
-    <div className='flex h-screen items-center bg-white'>
-      <div className="flex w-[1280px] mx-auto bg-gray-50">
+    <div className='min-h-screen bg-white'>
+      <style>{`
+        @keyframes authFadeUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes authSoftZoom {
+          from { transform: scale(1.04); }
+          to { transform: scale(1); }
+        }
+        .auth-panel-animate {
+          animation: authFadeUp 520ms ease-out both;
+        }
+        .auth-stagger {
+          opacity: 0;
+          animation: authFadeUp 560ms ease-out both;
+        }
+        .auth-stagger-1 { animation-delay: 70ms; }
+        .auth-stagger-2 { animation-delay: 150ms; }
+        .auth-stagger-3 { animation-delay: 230ms; }
+        .cover-image-animate {
+          animation: authSoftZoom 1200ms ease-out both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .auth-panel-animate,
+          .auth-stagger,
+          .cover-image-animate {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+          }
+        }
+      `}</style>
+      <div className="flex min-h-screen w-full flex-col lg:flex-row">
 
         {/* LEFT SIDE */}
-        {step === STEPS.LOGIN && <div className=" w-full lg:w-1/2 mt-[50px] ">
-          <div className="w-4/5 mx-auto">
+        {step === STEPS.LOGIN && <div className={`${leftPanelWrapperClass} auth-panel-animate`}>
+          <div className={leftPanelContentClass}>
 
-            <div className="mt-[50px]">
+            <div className="mt-2 sm:mt-4 lg:mt-8 auth-stagger auth-stagger-1">
               {companyData?.company?.logo &&
                 <img
                   src={companyData?.company?.logo || "/assets/Images/company-logo.png"}
                   alt="company-logo"
-                  className='w-[280px] h-[110px] object-contain border'
+                  className='w-[180px] sm:w-[220px] lg:w-[280px] h-[90px] sm:h-[100px] lg:h-[110px] object-contain border'
                 />
               }
 
               {companyData?.company?.name ? (
-                <h1 className="text-[34px] font-semibold text-[#000000]">
+                <h1 className="text-[28px] sm:text-[32px] lg:text-[34px] font-semibold text-[#000000]">
                   Welcome back, {companyData?.company?.name}
                 </h1>
               ) : (
-                <h1 className="text-[34px] font-semibold text-[#000000]">
+                <h1 className="text-[28px] sm:text-[32px] lg:text-[34px] font-semibold text-[#000000]">
                   Welcome
                 </h1>
               )}
@@ -371,7 +407,7 @@ const Login = () => {
               </div>
             )}
 
-            <div className="mt-8">
+            <div className="mt-8 auth-stagger auth-stagger-2">
               {/* FORM */}
               <form onSubmit={handelSubmit} noValidate>
 
@@ -441,7 +477,7 @@ const Login = () => {
                     // onClick={() => navigate("/forget-password")}
                     // onClick={() => setForgetpassword(true)}
                     onClick={() => setStep(STEPS.FORGOT)}
-                    className="text-[#0575E6] hover:underline font-medium"
+                    className="text-[#0575E6] hover:underline font-medium bg-transparent shadow-none border-none outline-none focus:outline-none focus:ring-0 active:bg-transparent"
                   >
                     Forgot Password?
                   </button>
@@ -468,12 +504,12 @@ const Login = () => {
 
               </form>
 
-              <div className='mt-12 w-[70%] text-center mx-auto'>
+              <div className='mt-10 sm:mt-12 w-full sm:w-[80%] text-center mx-auto auth-stagger auth-stagger-3'>
                 <p className="text-gray-600">
                   By Logging In, you agree to our{" "}
-                  <Link to="/terms" className="text-[#0575E6] hover:underline">Terms of Service</Link>{" "}
+                  <Link to="https://www.qcsstudio.com/terms-service" className="text-[#0575E6] hover:underline">Terms of Service</Link>{" "}
                   and{" "}
-                  <Link to="/privacy" className="text-[#0575E6] hover:underline">Privacy Policy</Link>.
+                  <Link to="https://www.qcsstudio.com/privacy-policy" className="text-[#0575E6] hover:underline">Privacy Policy</Link>.
                 </p>
               </div>
 
@@ -481,15 +517,15 @@ const Login = () => {
           </div>
         </div>
         }
-        {step === STEPS.FORGOT && <div className='w-full lg:w-1/2 mt-[50px] '>
-          <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
+        {step === STEPS.FORGOT && <div className={`${leftPanelWrapperClass} auth-panel-animate`}>
+          <div className={`flex flex-col ${leftPanelContentClass}`}>
             {/* Logo */}
             <div className="mb-10">
               {companyData?.company?.logo &&
                 <img
                   src={companyData?.company?.logo || "/assets/Images/company-logo.png"}
                   alt="company-logo"
-                  className='w-[280px] h-[110px] object-contain border'
+                  className='w-[180px] sm:w-[220px] lg:w-[280px] h-[90px] sm:h-[100px] lg:h-[110px] object-contain border'
                 />
               }
             </div>
@@ -516,7 +552,7 @@ const Login = () => {
               Back to login
             </button>
 
-            <h1 className="text-[32px] font-bold text-[#111] mb-2">
+            <h1 className="text-[28px] sm:text-[32px] font-bold text-[#111] mb-2">
               Forgot Your Password
             </h1>
 
@@ -592,17 +628,16 @@ const Login = () => {
 
         </div>}
 
-        {step === STEPS.VERIFY_OTP && <div className='w-full lg:w-1/2 mt-[50px]  '>
-          <div className="flex min-h-screen font-['Segoe_UI',sans-serif]">
-         
-            <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
+        {step === STEPS.VERIFY_OTP && <div className={`${leftPanelWrapperClass} auth-panel-animate`}>
+          <div className={`flex flex-col font-['Segoe_UI',sans-serif] ${leftPanelContentClass}`}>
+            <div className="flex-1 flex flex-col bg-white">
               {/* Logo Placeholder */}
               <div className="mb-10">
                 {companyData?.company?.logo &&
                   <img
                     src={companyData?.company?.logo || "/assets/Images/company-logo.png"}
                     alt="company-logo"
-                    className='w-[280px] h-[110px] object-contain border'
+                    className='w-[180px] sm:w-[220px] lg:w-[280px] h-[90px] sm:h-[100px] lg:h-[110px] object-contain border'
                   />
                 }
               </div>
@@ -629,7 +664,7 @@ const Login = () => {
                 Back to login
               </button>
 
-              <h1 className="text-[32px] font-bold text-[#111] mb-2">
+              <h1 className="text-[28px] sm:text-[32px] font-bold text-[#111] mb-2">
                 Verify Code
               </h1>
 
@@ -696,15 +731,13 @@ const Login = () => {
                 </a>.
               </p>
             </div>
-
-          
           </div>
         </div>}
 
-        {step === STEPS.RESET_PASSWORD && <div className='w-full lg:w-1/2 mt-[50px] '>
-          <div className="flex min-h-screen font-['Segoe_UI',sans-serif]">
+        {step === STEPS.RESET_PASSWORD && <div className={`${leftPanelWrapperClass} auth-panel-animate`}>
+          <div className={`flex flex-col font-['Segoe_UI',sans-serif] ${leftPanelContentClass}`}>
             {/* Left Side */}
-            <div className="flex-1 flex flex-col px-[80px] py-[60px] bg-white">
+            <div className="flex-1 flex flex-col bg-white">
               {/* Logo */}
               <div className="mb-10">
                 <div className="w-[240px] h-[80px] bg-gray-300 rounded" />
@@ -732,7 +765,7 @@ const Login = () => {
                 Back to login
               </button>
 
-              <h1 className="text-[32px] font-bold text-[#111] mb-2">
+              <h1 className="text-[28px] sm:text-[32px] font-bold text-[#111] mb-2">
                 Forgot Your Password
               </h1>
               <p className="text-[15px] text-[#999] mb-9">
@@ -810,17 +843,15 @@ const Login = () => {
                 </a>.
               </p>
             </div>
-
-
           </div>
         </div>}
 
         {/* RIGHT SIDE */}
-        <div className="w-1/2 flex items-center justify-center hidden lg:block">
+        <div className="hidden lg:block lg:w-1/2 lg:min-h-screen">
           <img
             src={companyData?.company?.loginImage || "/assets/Images/login-image.png"}
             alt="login illustration"
-            className="max-w-full h-auto"
+            className="h-full w-full object-cover cover-image-animate"
           />
         </div>
 
