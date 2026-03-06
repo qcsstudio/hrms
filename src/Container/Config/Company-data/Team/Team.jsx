@@ -106,7 +106,7 @@ const Team = () => {
                 {/* Assigned Employees */}
                 <td className="p-4">
                   <div className="flex -space-x-2">
-                    {team.assignedEmployees?.slice(0, 4).map((emp, i) => (
+                    {team?.assignedEmployees?.slice(0, 4).map((emp, i) => (
                       <div
                         key={i}
                         className="w-8 h-8 rounded-full bg-blue-100 border flex items-center justify-center text-xs font-medium"
@@ -114,9 +114,9 @@ const Team = () => {
                         {getInitials(emp?.name)}
                       </div>
                     ))}
-                    {team.assignedEmployees.length > 4 && (
+                    {team?.assignedEmployees?.length > 4 && (
                       <div className="w-8 h-8 rounded-full bg-black text-white text-xs flex items-center justify-center">
-                        +{team.assignedEmployees.length - 4}
+                        +{team?.assignedEmployees?.length - 4}
                       </div>
                     )}
                   </div>
