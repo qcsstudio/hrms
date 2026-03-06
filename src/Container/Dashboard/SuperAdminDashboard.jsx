@@ -19,7 +19,7 @@ const SuperAdminDashboard = () => {
 
 
   const [openInviteModal, setOpenInviteModal] = useState(false)
-  const [activeFilter, setActiveFilter] = useState("")
+  const [activeFilter, setActiveFilter] = useState("All")
   const [isSortOpen, setIsSortOpen] = useState(false)
   const [sortBy, setSortBy] = useState("company_asc")
 
@@ -220,9 +220,9 @@ const SuperAdminDashboard = () => {
               <button
                 key={item}
                 onClick={() => setActiveFilter(item)}
-                className={`px-4 py-2 text-[#212529] ${activeFilter === item
-                  ? ' bg-white rounded-lg'
-                  : ''
+                className={`px-4 py-2 rounded-lg transition-colors border-none shadow-none outline-none focus:outline-none focus:ring-0 ${activeFilter === item
+                  ? 'bg-white text-[#212529] border border-[#E5E7EB] shadow-sm'
+                  : 'bg-transparent text-[#6B7280]'
                   }`}
               >
                 {item}
