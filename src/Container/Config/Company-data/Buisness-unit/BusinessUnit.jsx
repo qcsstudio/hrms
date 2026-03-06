@@ -41,7 +41,7 @@ const BusinessUnit = () => {
         const response = await axiosInstance.get("/config/all-buinessUnit",{
           meta:{auth:"ADMIN_AUTH"}
         });
-        setData(response.data);
+        setData(response?.data?.data || []);
       } catch (error) {
         console.error("Error fetching business units:", error);
       }
@@ -91,8 +91,8 @@ const BusinessUnit = () => {
             className="grid grid-cols-6 items-center bg-white p-4 rounded-xl border shadow-sm"
           >
             <div>
-              <p className="font-medium">{unit?.data?.businessUnitName}</p>
-              <p className="text-xs text-gray-400">{new Date(unit?.data?.createdAt).toLocaleString("en-US", {
+              <p className="font-medium">{unit?.businessUnitName}</p>
+              <p className="text-xs text-gray-400">{new Date(unit?.createdAt).toLocaleString("en-US", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
@@ -103,20 +103,20 @@ const BusinessUnit = () => {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm">
-                {unit?.data?.addedByName.charAt(0)}
+                {unit?.addedByName.charAt(0)}
               </div>
-              <span className="text-sm">{unit?.data?.addedByImage || "--"}</span>
+              <span className="text-sm">{unit?.addedByImage || "--"}</span>
             </div>
 
             <div>
-              {unit.assignedEmployees.length > 0 ? (
+              {unit?.assignedEmployeeList.length > 0 ? (
                 <div className="flex -space-x-2">
-                  {unit?.data?.assignedEmployees.slice(0, 3).map((emp, index) => (
+                  {unit?.assignedEmployeeList.map((emp, index) => (
                     <div
                       key={index}
                       className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs border-2 border-white"
                     >
-                      {emp?.name?.charAt(0)}
+                      {emp?.employeeName?.charAt(0)}
                     </div>
                   ))}
                 </div>
@@ -127,8 +127,8 @@ const BusinessUnit = () => {
               )}
             </div>
 
-            <div className="text-sm">{unit?.data?.locationName}</div> 
-            <div className="text-sm">{unit?.data?.businessHead || "—"}</div>
+            <div className="text-sm">{unit?.locationName}</div> 
+            <div className="text-sm">{unit?.businessHead || "—"}</div>
 
             <div className="flex justify-end gap-3">
               <button
