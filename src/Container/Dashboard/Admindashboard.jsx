@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
 import { Add_employees, Post_job, Approve_leave, Run_payroll, Announcement, Run_reports } from '../../allAssetsImport/allAssets'
 import { statslogo1, statslogo2, statslogo3, statslogo4, TotalPayroll, Processingstatus, paydate, kayecimage } from '../../allAssetsImport/allAssets'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, } from 'react-redux'
 import createAxios from '../../utils/axios.config'
 import { setAddLoginData } from '../../Redux/userSlice'
 import { toast } from 'react-toastify'
 
 const Admindashboard = () => {
-  const { istemporyPassword, user } = useSelector(state => state.user)
+ 
+  const istemporyPassword = localStorage.getItem('istemporyPassword')
+  const user = localStorage.getItem('userId')
   const [changepassword, setChangepassword] = useState({
     confirmPassword: "",
     newPassword: ""

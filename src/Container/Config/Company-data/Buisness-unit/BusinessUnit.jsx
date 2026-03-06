@@ -111,7 +111,7 @@ const BusinessUnit = () => {
             <div>
               {unit?.assignedEmployeeList.length > 0 ? (
                 <div className="flex -space-x-2">
-                  {unit?.assignedEmployeeList.map((emp, index) => (
+                  {unit?.assignedEmployeeList?.slice(0,3).map((emp, index) => (
                     <div
                       key={index}
                       className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs border-2 border-white"

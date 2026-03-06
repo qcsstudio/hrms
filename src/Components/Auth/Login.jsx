@@ -190,6 +190,9 @@ const Login = () => {
 
       dispatch(setAddLoginData(res.data));
       localStorage.setItem("authToken", res.data.token);
+      localStorage.setItem('userId',res?.data?.user?.id);
+      localStorage.setItem('istemporyPassword',res?.data?.user?.istemporyPassword)
+
 
       const role = res?.data?.user?.role;
 
