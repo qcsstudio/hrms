@@ -12,6 +12,7 @@ const CreateGrade = () => {
   const [searchParams] = useSearchParams();
   const gradeId = searchParams.get("id");
   const navigate = useNavigate()
+  console.log(gradeId,"grade Id=====================")
 
 
   const handleCancel = () => {
@@ -64,7 +65,7 @@ const CreateGrade = () => {
 
   const handleupdateGrade = async () => {
     try {
-      const res = await axiosInstance.patch(`/config/update-grade/${gradeId}`, { gradeName },
+      const res = await axiosInstance.put(`/config/update-grade/${gradeId}`, { gradeName },
         { meta: { auth: "ADMIN_AUTH" } }
       )
       setGradeName(res.data.gradeName)
