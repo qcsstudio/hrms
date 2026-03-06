@@ -81,11 +81,11 @@ const BusinessUnit = () => {
 
       {/* Rows */}
       <div className="space-y-3 mt-3">
-        {data.length === 0 ? (
+        {data?.length === 0 ? (
           <div className="text-center text-gray-400 py-10">
             No Business Units Found
           </div>
-        ) : data.map((unit,idx) => (
+        ) : data?.map((unit,idx) => (
           <div
             key={idx}
             className="grid grid-cols-6 items-center bg-white p-4 rounded-xl border shadow-sm"
