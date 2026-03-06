@@ -85,32 +85,39 @@ const BusinessUnit = () => {
           <div className="text-center text-gray-400 py-10">
             No Business Units Found
           </div>
-        ) : data.map((unit) => (
+        ) : data.map((unit,idx) => (
           <div
-            key={unit.id}
+            key={idx}
             className="grid grid-cols-6 items-center bg-white p-4 rounded-xl border shadow-sm"
           >
             <div>
-              <p className="font-medium">{unit.name}</p>
-              <p className="text-xs text-gray-400">{unit.date}</p>
+              <p className="font-medium">{unit?.data?.businessUnitName}</p>
+              <p className="text-xs text-gray-400">{new Date(unit?.data?.createdAt).toLocaleString("en-US", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true
+              }).replace(",", "")}</p>
             </div>
 
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm">
-                {unit.createdBy.charAt(0)}
+                {unit?.data?.addedByName.charAt(0)}
               </div>
-              <span className="text-sm">{unit.createdBy}</span>
+              <span className="text-sm">{unit?.data?.addedByImage || "--"}</span>
             </div>
 
             <div>
               {unit.assignedEmployees.length > 0 ? (
                 <div className="flex -space-x-2">
-                  {unit.assignedEmployees.slice(0, 3).map((emp, index) => (
+                  {unit?.data?.assignedEmployees.slice(0, 3).map((emp, index) => (
                     <div
                       key={index}
                       className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs border-2 border-white"
                     >
-                      {emp.name.charAt(0)}
+                      {emp?.name?.charAt(0)}
                     </div>
                   ))}
                 </div>
@@ -121,8 +128,8 @@ const BusinessUnit = () => {
               )}
             </div>
 
-            <div className="text-sm">{unit.location}</div>
-            <div className="text-sm">{unit.head || "—"}</div>
+            <div className="text-sm">{unit?.data?.locationName}</div> 
+            <div className="text-sm">{unit?.data?.businessHead || "—"}</div>
 
             <div className="flex justify-end gap-3">
               <button
