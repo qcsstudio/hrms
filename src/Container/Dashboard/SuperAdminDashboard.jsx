@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
   employee,
@@ -20,6 +20,8 @@ const SuperAdminDashboard = () => {
 
   const [openInviteModal, setOpenInviteModal] = useState(false)
   const [activeFilter, setActiveFilter] = useState("")
+  const [isSortOpen, setIsSortOpen] = useState(false)
+  const [sortBy, setSortBy] = useState("company_asc")
 
   // popup form
   const [formData, setFormData] = useState({
@@ -158,6 +160,27 @@ const SuperAdminDashboard = () => {
     }
   }
 
+  const sortedCompanies = useMemo(() => {
+    const companies = [...(dashboarddata?.companies || [])]
+
+    const getEmployeeCount = (value) => {
+      const count = Number(value)
+      return Number.isFinite(count) ? count : 0
+    }
+
+    switch (sortBy) {
+      case "company_desc":
+        return companies.sort((a, b) => (b?.name || "").localeCompare(a?.name || ""))
+      case "employees_desc":
+        return companies.sort((a, b) => getEmployeeCount(b?.totalEmployees) - getEmployeeCount(a?.totalEmployees))
+      case "employees_asc":
+        return companies.sort((a, b) => getEmployeeCount(a?.totalEmployees) - getEmployeeCount(b?.totalEmployees))
+      case "company_asc":
+      default:
+        return companies.sort((a, b) => (a?.name || "").localeCompare(b?.name || ""))
+    }
+  }, [dashboarddata?.companies, sortBy])
+
   return (
     <div className="w-full p-5 bg-gray-50 card-animate">
       <Statics data={statsData} />
@@ -176,16 +199,16 @@ const SuperAdminDashboard = () => {
           <div className="flex gap-3 ">
             <Link
               to="/org-setup"
-              className="flex items-center gap-2 bg-gray-200 border border-gray-300 rounded-lg px-6 py-2 "
+              className="flex items-center gap-2 bg-gray-200 border border-gray-300 rounded-lg px-6 py-2  shadow-none outline-none focus:outline-none focus:ring-0 active:scale-[0.99]"
             >
-              Create Company <img src={create_company} />
+              <span className="leading-none">Create Company</span> <img src={create_company} className="w-5 h-5 object-contain" />
             </Link>
 
             <button
               onClick={() => setOpenInviteModal(true)}
-              className="flex items-center gap-2 bg-blue-600 text-white rounded-lg px-4 py-2"
+              className="flex items-center gap-2 bg-[#0575E6] border border-[#E4E9EE] rounded-lg px-6 py-2 text-white shadow-none border-none outline-none focus:outline-none focus:ring-0 active:scale-[0.99]"
             >
-              Create Invite Link <FaPlus />
+              <span className="leading-none">Create Invite Link</span> <FaPlus className="text-[14px]" />
             </button>
           </div>
         </div>
@@ -207,27 +230,63 @@ const SuperAdminDashboard = () => {
             ))}
           </div>
 
-          <button className="border flex items-center gap-2 border-gray-300 rounded-lg px-4 py-2 bg-white w-[81px] h-[40px] text-[#3344054]">
-            Sort <FaAngleDown />
+          <div className="relative">
+            <button
+              onClick={() => setIsSortOpen((prev) => !prev)}
+              className="border flex items-center gap-2 border-gray-300 rounded-lg px-4 py-2 bg-white w-[110px] h-[40px] text-[#334155]"
+            >
+              Sort <FaAngleDown className={`${isSortOpen ? "rotate-180" : ""} transition-transform`} />
+            </button>
 
-          </button>
+            {isSortOpen && (
+              <div className="absolute right-0 mt-2 w-[220px] rounded-lg border border-gray-200 bg-white shadow-none z-20 overflow-hidden">
+                <button
+                  onClick={() => { setSortBy("company_asc"); setIsSortOpen(false) }}
+                  className={`w-full text-left px-4 py-2 text-sm border-none shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100 transition-colors ${sortBy === "company_asc" ? "bg-blue-50 font-medium" : ""}`}
+                >
+                  Company (A-Z)
+                </button>
+                <button
+                  onClick={() => { setSortBy("company_desc"); setIsSortOpen(false) }}
+                  className={`w-full text-left px-4 py-2 text-sm border-none shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100 transition-colors ${sortBy === "company_desc" ? "bg-blue-50 font-medium" : ""}`}
+                >
+                  Company (Z-A)
+                </button>
+                <button
+                  onClick={() => { setSortBy("employees_desc"); setIsSortOpen(false) }}
+                  className={`w-full text-left px-4 py-2 text-sm border-none shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100 transition-colors ${sortBy === "employees_desc" ? "bg-blue-50 font-medium" : ""}`}
+                >
+                  Employees (High-Low)
+                </button>
+                <button
+                  onClick={() => { setSortBy("employees_asc"); setIsSortOpen(false) }}
+                  className={`w-full text-left px-4 py-2 text-sm border-none shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100 transition-colors ${sortBy === "employees_asc" ? "bg-blue-50 font-medium" : ""}`}
+                >
+                  Employees (Low-High)
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Table Header */}
-        <div className="border-b-2 border-gray-300 mt-5 px-3">
-          <ul className="flex justify-between text-gray-400 py-2">
-            <li>Company</li>
-            <li>Admin</li>
-            <li>Status</li>
-            <li>Employees</li>
-            <li>Action</li>
-          </ul>
+        <div className="mt-5 px-3 md-768-table-scroll">
+          <div className="border-b-2 border-gray-300 md-768-table-width">
+            <ul className="flex justify-between text-gray-400 py-2">
+              <li>Company</li>
+              <li>Admin</li>
+              <li>Status</li>
+              <li>Employees</li>
+              <li>Action</li>
+            </ul>
+          </div>
         </div>
 </div>
         {/* Rows */}
         {/* {filteredCompanies.map((row, idx) => ( */}
-        <div className="list-stagger relative z-10 px-3">
-          {dashboarddata?.companies?.map((row, idx) => (
+        <div className="list-stagger relative z-10 px-3 md-768-table-scroll">
+          <div className="md-768-table-width">
+          {sortedCompanies?.map((row, idx) => (
             <div
               key={idx}
               className="flex justify-between items-center rounded-2xl p-3 my-4 bg-white/80 surface-card"
@@ -264,11 +323,12 @@ const SuperAdminDashboard = () => {
             </div>
             </div>
           ))}
+          </div>
         </div>
       </div>
 
       {/* Invite Modal */}
-      {openInviteModal && createPortal(
+            {openInviteModal && createPortal(
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50">
           <div className="bg-white w-[520px] rounded-xl p-6">
             <h2 className="text-lg font-semibold">Invite Company Admin</h2>
@@ -340,5 +400,6 @@ const SuperAdminDashboard = () => {
 }
 
 export default SuperAdminDashboard
+
 
 
