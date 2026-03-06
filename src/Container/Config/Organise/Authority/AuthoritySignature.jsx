@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 const initialSignatories = [
   {
@@ -245,74 +246,10 @@ const AuthoritySignature = () => {
       </div>
 
       {/* Country / Office Modal */}
-      {showCountryDialog && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[480px] p-6 rounded-xl relative">
-            <button
-              onClick={() => setShowCountryDialog(false)}
-              className="absolute top-4 right-4"
-            >
-              ✕
-            </button>
+      {showCountryDialog &&
+            <CreateCountryPopup onClose={()=>setShowCountryDialog(false)}/>
 
-            <h2 className="text-xl font-semibold mb-4">
-              Creating for Which Country
-            </h2>
-
-            <select
-              value={selectedCountry}
-              onChange={(e) => {
-                setSelectedCountry(e.target.value);
-                setSelectedOffice("");
-              }}
-              className="w-full border rounded-lg px-4 py-3 mb-4"
-            >
-              <option value="">Choose Country</option>
-              {countries.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-
-            <div className="flex items-center gap-2 mb-4">
-              <input
-                type="checkbox"
-                checked={applyAll}
-                onChange={() => setApplyAll(!applyAll)}
-              />
-              <span className="text-sm">Apply to all offices</span>
-            </div>
-
-            {!applyAll && (
-              <select
-                value={selectedOffice}
-                onChange={(e) => setSelectedOffice(e.target.value)}
-                className="w-full border rounded-lg px-4 py-3 mb-6"
-              >
-                <option value="">Choose Office</option>
-                {selectedCountry &&
-                  locationData[selectedCountry].map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-              </select>
-            )}
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowCountryDialog(false)}
-                className="px-4 py-2 border rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleContinue}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      }
     </div>
         {/* RIGHT SIDE DRAWER */}
       {drawerMode && (

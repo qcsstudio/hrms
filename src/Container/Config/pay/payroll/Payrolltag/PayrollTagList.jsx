@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import CreateCountryPopup from "../../../../../Components/Popup_Modal/CreateCountryPopup";
 
 const PayrollTagList = () => {
   const dropdownRef = useRef(null);
@@ -138,68 +139,10 @@ const PayrollTagList = () => {
       </div>
 
       {/* ================= COUNTRY DIALOG ================= */}
-      {showDialog && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[480px] rounded-2xl shadow-xl p-6 relative">
-            <button
-              onClick={() => setShowDialog(false)}
-              className="absolute top-5 right-5"
-            >
-              ✕
-            </button>
+      {showDialog &&
+            <CreateCountryPopup onClose={()=>setShowDialog(false)}/>
 
-            <h2 className="text-xl font-semibold mb-6">
-              Creating for Which Country
-            </h2>
-
-            <select
-              value={selectedCountry}
-              onChange={(e) => {
-                setSelectedCountry(e.target.value);
-                setSelectedOffice("");
-              }}
-              className="w-full border rounded-xl px-4 py-3 mb-4"
-            >
-              <option value="">Choose Country</option>
-              {countries.map((country) => (
-                <option key={country}>{country}</option>
-              ))}
-            </select>
-
-            <div className="flex items-center gap-2 mb-4">
-              <input
-                type="checkbox"
-                checked={applyAll}
-                onChange={() => setApplyAll(!applyAll)}
-              />
-              Apply to all offices
-            </div>
-
-            {!applyAll && (
-              <select
-                value={selectedOffice}
-                onChange={(e) => setSelectedOffice(e.target.value)}
-                className="w-full border rounded-xl px-4 py-3 mb-6"
-              >
-                <option value="">Choose Office</option>
-                {selectedCountry &&
-                  locationData[selectedCountry].map((office) => (
-                    <option key={office}>{office}</option>
-                  ))}
-              </select>
-            )}
-
-            <div className="flex justify-end">
-              <button
-                onClick={handleContinue}
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      }
 
       {/* ================= RIGHT DRAWER FORM ================= */}
       {showDrawer && (

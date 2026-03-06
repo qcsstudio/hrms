@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 const avatarUrl =
   "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face";
@@ -61,7 +62,7 @@ const PolicyCenter = () => {
         {/* CREATE BUTTON – background color OK */}
         <button
           onClick={() => setShowCountryDialog(true)}
-            className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
         >
           Create +
           {/* {/* <svg
@@ -72,7 +73,7 @@ const PolicyCenter = () => {
             stroke="currentColor"
             strokeWidth="2"
           > */}
-           
+
         </button>
       </div>
 
@@ -83,11 +84,10 @@ const PolicyCenter = () => {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-2 text-sm font-medium ${
-                tab === t
+              className={`px-4 py-2 text-sm font-medium ${tab === t
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:bg-muted/50"
-              }`}
+                }`}
             >
               {t}
             </button>
@@ -148,73 +148,10 @@ const PolicyCenter = () => {
       </div>
 
       {/* COUNTRY SELECT POPUP */}
-      {showCountryDialog && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[480px] p-6 rounded-xl relative">
-            <button
-              onClick={() => setShowCountryDialog(false)}
-              className="absolute top-4 right-4"
-            >
-              ✕
-            </button>
+      {showCountryDialog &&
+        <CreateCountryPopup onClose={() => setShowCountryDialog(false)} />
 
-            <h2 className="text-xl font-semibold mb-4">
-              Creating for Which Country
-            </h2>
-
-            <select
-              value={selectedCountry}
-              onChange={(e) => {
-                setSelectedCountry(e.target.value);
-                setSelectedOffice("");
-              }}
-              className="w-full border rounded-lg px-4 py-3 mb-4"
-            >
-              <option value="">Choose Country</option>
-              {countries.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-
-            <div className="flex items-center gap-2 mb-4">
-              <input
-                type="checkbox"
-                checked={applyAll}
-                onChange={() => setApplyAll(!applyAll)}
-              />
-              <span className="text-sm">Apply to all offices</span>
-            </div>
-
-            {!applyAll && selectedCountry && (
-              <select
-                value={selectedOffice}
-                onChange={(e) => setSelectedOffice(e.target.value)}
-                className="w-full border rounded-lg px-4 py-3 mb-6"
-              >
-                <option value="">Choose Office</option>
-                {locationData[selectedCountry].map((o) => (
-                  <option key={o}>{o}</option>
-                ))}
-              </select>
-            )}
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowCountryDialog(false)}
-                className="px-4 py-2 border rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleContinue}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      }
     </div>
   );
 };
