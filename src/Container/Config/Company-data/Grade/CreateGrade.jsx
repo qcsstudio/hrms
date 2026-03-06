@@ -4,7 +4,8 @@ import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 
 const CreateGrade = () => {
-  const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken")
+  // const { token } = useSelector((state) => state.user);
   const [gradeName, setGradeName] = useState("");
   const axiosInstance = createAxios(token)
 
