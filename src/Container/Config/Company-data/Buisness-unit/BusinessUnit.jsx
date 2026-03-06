@@ -101,7 +101,6 @@ const BusinessUnit = () => {
                 hour12: true
               }).replace(",", "")}</p>
             </div>
-
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm">
                 {unit?.data?.addedByName.charAt(0)}
