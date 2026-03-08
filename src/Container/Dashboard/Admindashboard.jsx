@@ -5,9 +5,10 @@ import { useDispatch, } from 'react-redux'
 import createAxios from '../../utils/axios.config'
 import { setAddLoginData } from '../../Redux/userSlice'
 import { toast } from 'react-toastify'
+import { createPortal } from 'react-dom'
 
 const Admindashboard = () => {
- 
+
   const istemporyPassword = localStorage.getItem('istemporyPassword')
   const user = localStorage.getItem('userId')
   const [changepassword, setChangepassword] = useState({
@@ -88,7 +89,7 @@ const Admindashboard = () => {
   return (
     <div className='p-5'>
       {/* popup================================== */}
-      {istemporyPassword === false && (
+      {!istemporyPassword && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
 
           {/* Popup Box */}
@@ -125,9 +126,8 @@ const Admindashboard = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 value={changepassword.confirmPassword}
                 onChange={handleChange}
-className={`flex-1 outline-none ${
-    errors.confirmPassword ? "text-red-600" : ""
-  }`}              />
+                className={`flex-1 outline-none ${errors.confirmPassword ? "text-red-600" : ""
+                  }`} />
 
               <button
                 type="button"
@@ -147,7 +147,7 @@ className={`flex-1 outline-none ${
             </button>
 
           </div>
-        </div>
+        </div>,document.body
       )}
 
       {/* Top Action Buttons */}
