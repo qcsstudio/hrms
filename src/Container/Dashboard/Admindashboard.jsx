@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom'
 const Admindashboard = () => {
 
   const istemporyPassword = localStorage.getItem('istemporyPassword') === "true";
-  const user = localStorage.getItem('userId')
+  const userId = localStorage.getItem('userId')
   const [changepassword, setChangepassword] = useState({
     confirmPassword: "",
     newPassword: ""
@@ -70,7 +70,7 @@ const Admindashboard = () => {
     //   return;
     // }
     const payload = {
-      userId: user.id,
+      userId: userId,
       newPassword: changepassword.newPassword,
       confirmPassword: changepassword.confirmPassword
     }
@@ -87,7 +87,7 @@ const Admindashboard = () => {
       console.warn("api is not working", error)
     }
   }
-  
+
   return (
     <div className='p-5'>
       {/* popup================================== */}
