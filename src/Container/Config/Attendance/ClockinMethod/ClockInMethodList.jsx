@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 /* ================= INITIAL DATA ================= */
 const initialMethods = [
@@ -153,6 +154,11 @@ useEffect(()=>{
     setShowDialog(false);
   };
 
+     const handleCreate = () => {
+    navigate(`/config/track/Attendance/clock-in-method/create?country=${encodeURIComponent(
+        selectedCountry
+      )}&office=${applyAll ? "ALL" : encodeURIComponent(selectedOffice)}`);
+  };
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
 
@@ -309,100 +315,8 @@ useEffect(()=>{
       </div>
 
       {/* ================= MODAL ================= */}
-      {showDialog && 
-      // (
-      //   <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      //     <div className="bg-white w-[480px] rounded-2xl shadow-xl p-6 relative">
-
-      //       <button
-      //         onClick={() => setShowDialog(false)}
-      //         className="absolute top-5 right-5 text-gray-500 hover:text-black text-lg"
-      //       >
-      //         ✕
-      //       </button>
-
-      //       <h2 className="text-xl font-semibold mb-1">
-      //         Creating for Which Country
-      //       </h2>
-      //       <p className="text-sm text-gray-500 mb-6">
-      //         Please select where this policy will be applied.
-      //       </p>
-
-      //       <div className="mb-4">
-      //         <label className="block text-sm font-medium mb-2">
-      //           Select Country
-      //         </label>
-      //         <select
-      //           value={selectedCountry}
-      //           onChange={(e) => {
-      //             setSelectedCountry(e.target.value);
-      //             setSelectedOffice("");
-      //           }}
-      //           className="w-full border rounded-xl px-4 py-3 bg-gray-50 focus:ring-2 focus:ring-blue-500"
-      //         >
-      //           <option value="">Choose Country</option>
-      //           {getcountries.map((country) => (
-      //             <option key={country} value={country}>
-      //               {country}
-      //             </option>
-      //           ))}
-      //         </select>
-
-      //         <div className="flex items-center gap-2 mt-3">
-      //           <input
-      //             type="checkbox"
-      //             checked={applyAll}
-      //             onChange={() => setApplyAll(!applyAll)}
-      //             className="w-4 h-4"
-      //           />
-      //           <span className="text-sm text-gray-500">
-      //             Apply to all offices in this country
-      //           </span>
-      //         </div>
-      //       </div>
-
-      //       {!applyAll && (
-      //         <div className="mb-6">
-      //           <label className="block text-sm font-medium mb-2">
-      //             Select Office
-      //           </label>
-      //           <select
-      //             value={selectedOffice}
-      //             onChange={(e) => setSelectedOffice(e.target.value)}
-      //             disabled={!selectedCountry}
-      //             className="w-full border rounded-xl px-4 py-3 bg-gray-50 focus:ring-2 focus:ring-blue-500"
-      //           >
-      //             <option value="">Choose Office</option>
-      //             {selectedCountry &&
-      //               locationData[selectedCountry].map((office) => (
-      //                 <option key={office} value={office}>
-      //                   {office}
-      //                 </option>
-      //               ))}
-      //           </select>
-      //         </div>
-      //       )}
-
-      //       <div className="flex justify-end gap-3">
-      //         <button
-      //           onClick={() => setShowDialog(false)}
-      //           className="px-5 py-2.5 rounded-lg border bg-gray-100 hover:bg-gray-200"
-      //         >
-      //           Cancel
-      //         </button>
-
-      //         <button
-      //           onClick={handleContinue}
-      //           className="px-5 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-      //         >
-      //           Continue
-      //         </button>
-      //       </div>
-
-      //     </div>
-      //   </div>
-      // )
-      <CreateCountryPopup onClose={()=>setShowDialog(false)}/>
+      {showDialog && createPortal(
+      <CreateCountryPopup onClose={()=>setShowDialog(false)} onContinue={handleCreate}/>,document.body)
       }
     </div>
   );

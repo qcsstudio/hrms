@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import createAxios from "../../../../utils/axios.config";
+import { createPortal } from "react-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 const CustomDataList = () => {
   const token = localStorage.getItem("authToken");
@@ -13,6 +15,13 @@ const CustomDataList = () => {
   const [editModal, setEditModal] = useState(false);
   const [editRights, setEditRights] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
+  const navigate = useNavigate()
+
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+    
+     const handleCreate = () => {
+      navigate("/config/hris/Employee-data/custom-create");
+    };
 
   /* ================= FETCH ================= */
   const fetchList = async () => {
@@ -78,11 +87,13 @@ const CustomDataList = () => {
           </p>
         </div>
 
-        <Link to="/config/hris/Employee-data/custom-create">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">
+        {/* <Link to="/config/hris/Employee-data/custom-create"> */}
+          <button 
+          onClick={()=>setShowCountryDialog(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium">
             Create +
           </button>
-        </Link>
+        {/* </Link> */}
       </div>
 
       {/* ================= TABLE HEADER ================= */}
@@ -120,9 +131,8 @@ const CustomDataList = () => {
               onClick={() =>
                 setOpenStatus(openStatus === index ? null : index)
               }
-              className={`font-medium ${
-                item.isActive ? "text-blue-600" : "text-gray-700"
-              }`}
+              className={`font-medium ${item.isActive ? "text-blue-600" : "text-gray-700"
+                }`}
             >
               {item.isActive ? "Active" : "Inactive"} ▾
             </button>
@@ -199,6 +209,9 @@ const CustomDataList = () => {
           </div>
         </div>
       )}
+
+      {showCountryDialog && createPortal(<CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate} />, document.body)}
+
     </div>
   );
 };

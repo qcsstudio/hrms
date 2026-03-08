@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CreateCountryPopup from "../../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 /* -------------------- Mock Data -------------------- */
 const availableNames = ["Vishal", "Pankaj", "Rohit", "Yogesh", "Tanya"];
@@ -77,6 +78,11 @@ const CurrencyConversion = () => {
     setSelectedLocation("");
     setStatusFilter("Active");
   };
+
+  const handleAddCurrency = ()=>{
+    setShowCountryDialog(false)
+    setShowDrawer(true)
+  }
 
   /* -------------------- UI -------------------- */
   return (
@@ -161,13 +167,13 @@ const CurrencyConversion = () => {
       </div>
 
       {/* ---------------- COUNTRY DIALOG (CENTER) ---------------- */}
-      {showCountryDialog &&
-            <CreateCountryPopup onClose={()=>setShowCountryDialog(false)}/>
+      {showCountryDialog && createPortal(
+            <CreateCountryPopup onClose={()=>setShowCountryDialog(false)} onContinue={handleAddCurrency}/>,document.body)
 
       }
 
       {/* ---------------- RIGHT DRAWER (CURRENCY CREATE) ---------------- */}
-      {showDrawer && (
+      {showDrawer && createPortal(
         <div className="fixed inset-0 z-50 flex">
           <div
             className="flex-1 bg-black/40"
@@ -209,7 +215,7 @@ const CurrencyConversion = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,document.body
       )}
     </div>
   );

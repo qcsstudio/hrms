@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const Designation = () => {
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
+
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+
 
   const [data, setData] = useState([
     {
@@ -42,6 +47,10 @@ const Designation = () => {
       .join("");
   };
 
+  const handleCreate = () => {
+    navigate("/config/hris/Company_data/create-designation");
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
 
@@ -55,9 +64,10 @@ const Designation = () => {
         </div>
 
         <button
-          onClick={() =>
-            navigate("/config/hris/Company_data/create-designation")
-          }
+          // onClick={() =>
+          //   navigate("/config/hris/Company_data/create-designation")
+          // }
+          onClick={()=>setShowCountryDialog(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         >
           Create +
@@ -80,7 +90,7 @@ const Designation = () => {
           <tbody>
             {data.map((item) => (
               <tr key={item.id} className="border-t hover:bg-gray-50">
-                
+
                 {/* Name */}
                 <td className="p-4">
                   <div className="font-medium">{item.name}</div>
@@ -201,6 +211,9 @@ const Designation = () => {
           </tbody>
         </table>
       </div>
+
+      {showCountryDialog && createPortal( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate} />,document.body)}
+
     </div>
   );
 };

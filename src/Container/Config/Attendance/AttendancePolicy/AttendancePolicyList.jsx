@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 const policies = [
   {
@@ -25,6 +27,12 @@ export default function AttendancePolicyList() {
   const [openMenu, setOpenMenu] = useState(null);
   const navigate = useNavigate();
 
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+    
+     const handleCreate = () => {
+      navigate("/config/track/Attendance/attendance-policy/create");
+    };
+
   const handleDelete = (id) => {
     alert("Delete policy id: " + id);
     setOpenMenu(null);
@@ -42,7 +50,8 @@ export default function AttendancePolicyList() {
         </div>
 
         <button
-          onClick={() => navigate("/config/track/Attendance/attendance-policy/create")}
+          // onClick={() => navigate("/config/track/Attendance/attendance-policy/create")}
+          onClick={()=>setShowCountryDialog(true)}
           className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700"
         >
           Create +
@@ -209,6 +218,8 @@ export default function AttendancePolicyList() {
           </div>
         ))}
       </div>
+            {showCountryDialog && createPortal ( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
+
     </div>
   );
 }

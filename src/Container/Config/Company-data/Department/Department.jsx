@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const Department = () => {
   const token = localStorage.getItem("authToken");
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
+
+ const [showCountryDialog, setShowCountryDialog] = useState(false)
 
   const axiosInstance = createAxios(token);
 
@@ -61,7 +65,9 @@ const Department = () => {
   //   };
   //   fetchDepartmantData();
   // }, [])
-
+const handleCreate = () => {
+    navigate("/config/hris/Company_data/department/create");
+  };
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
@@ -74,7 +80,8 @@ const Department = () => {
         </div>
 
         <button
-          onClick={() => navigate("/config/hris/Company_data/department/create")}
+          // onClick={() => navigate("/config/hris/Company_data/department/create")}
+          onClick={()=>setShowCountryDialog(true)}
           className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
         >
           Create +
@@ -209,6 +216,9 @@ const Department = () => {
           </tbody>
         </table>
       </div>
+
+            {showCountryDialog && createPortal( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
+
     </div>
   );
 };

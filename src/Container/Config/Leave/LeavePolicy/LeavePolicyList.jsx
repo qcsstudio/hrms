@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 const policies = [
   {
@@ -23,6 +25,12 @@ const LeavePolicyList = () => {
   const [openMenu, setOpenMenu] = useState(null);
   const navigate = useNavigate();
 
+    const [showCountryDialog, setShowCountryDialog] = useState(false);
+    
+     const handleCreate = () => {
+      navigate("/config/track/leave/leave-policy/create");
+    };
+
   const handleDelete = (id) => {
     alert("Delete policy id: " + id);
     setOpenMenu(null);
@@ -43,7 +51,8 @@ const LeavePolicyList = () => {
 
         {/* Create Button */}
         <button
-          onClick={() => navigate("/config/track/leave/leave-policy/create")}
+          // onClick={() => navigate("/config/track/leave/leave-policy/create")}
+          onClick={()=>setShowCountryDialog(true)}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
         >
           Create +
@@ -218,6 +227,8 @@ const LeavePolicyList = () => {
           </tbody>
         </table>
       </div>
+            {showCountryDialog && createPortal ( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
+
     </div>
   );
 };

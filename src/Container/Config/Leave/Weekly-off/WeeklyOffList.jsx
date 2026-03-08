@@ -1,9 +1,17 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 export default function WeeklyOffList() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Active");
+
+    const [showCountryDialog, setShowCountryDialog] = useState(false);
+    
+     const handleCreate = () => {
+      navigate("/config/track/leave/weekly-off/create");
+    };
 
   const policies = [
     {
@@ -36,9 +44,10 @@ export default function WeeklyOffList() {
         </div>
 
         <button
-         onClick={() =>
-            navigate("/config/track/leave/weekly-off/create")
-          }
+        //  onClick={() =>
+        //     navigate("/config/track/leave/weekly-off/create")
+        //   }
+        onClick={()=>setShowCountryDialog(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium"
         >
           Create +
@@ -111,6 +120,8 @@ export default function WeeklyOffList() {
           </div>
         ))}
       </div>
+            {showCountryDialog && createPortal ( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
+
     </div>
   );
 }

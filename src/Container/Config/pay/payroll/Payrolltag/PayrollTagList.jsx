@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import CreateCountryPopup from "../../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const PayrollTagList = () => {
   const dropdownRef = useRef(null);
@@ -86,6 +87,10 @@ const PayrollTagList = () => {
     setNewName("");
     setNewType("Boolean");
   };
+  const handleCreate= ()=> {
+    setShowDialog(false);
+    setShowDrawer(true);
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -139,8 +144,8 @@ const PayrollTagList = () => {
       </div>
 
       {/* ================= COUNTRY DIALOG ================= */}
-      {showDialog &&
-            <CreateCountryPopup onClose={()=>setShowDialog(false)}/>
+      {showDialog && createPortal(
+            <CreateCountryPopup onClose={()=>setShowDialog(false)} onContinue={handleCreate}/>,document.body)
 
       }
 

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const BusinessUnit = () => {
   const token = localStorage.getItem("authToken");
@@ -10,6 +12,14 @@ const BusinessUnit = () => {
   const axiosInstance = createAxios(token);
 
   const [data, setData] = useState([]);
+
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+  
+   const handleCreate = () => {
+    navigate("/config/hris/Company_data/create-buisness-unit");
+  };
+
+
   const handleDelete = async (id) => {
     try {
       await axiosInstance.delete(`/config/delete-buinessUnit/${id}`, { meta: { auth: "ADMIN_AUTH" } });
@@ -31,15 +41,13 @@ const BusinessUnit = () => {
     );
   };
 
-  const handleCreate = () => {
-    navigate("/config/hris/Company_data/create-buisness-unit");
-  };
+ 
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchallbussinessunit = async () => {
       try {
-        const response = await axiosInstance.get("/config/all-buinessUnit",{
-          meta:{auth:"ADMIN_AUTH"}
+        const response = await axiosInstance.get("/config/all-buinessUnit", {
+          meta: { auth: "ADMIN_AUTH" }
         });
         setData(response?.data?.data || []);
       } catch (error) {
@@ -48,7 +56,7 @@ const BusinessUnit = () => {
     };
 
     fetchallbussinessunit();
-  },[])
+  }, [])
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -62,7 +70,7 @@ const BusinessUnit = () => {
         </div>
 
         <button
-          onClick={handleCreate}
+          onClick={()=>setShowCountryDialog(true)}
           className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
         >
           Create +
@@ -85,7 +93,7 @@ const BusinessUnit = () => {
           <div className="text-center text-gray-400 py-10">
             No Business Units Found
           </div>
-        ) : data?.map((unit,idx) => (
+        ) : data?.map((unit, idx) => (
           <div
             key={idx}
             className="grid grid-cols-6 items-center bg-white p-4 rounded-xl border shadow-sm"
@@ -111,7 +119,7 @@ const BusinessUnit = () => {
             <div>
               {unit?.assignedEmployeeList.length > 0 ? (
                 <div className="flex -space-x-2">
-                  {unit?.assignedEmployeeList?.slice(0,3).map((emp, index) => (
+                  {unit?.assignedEmployeeList?.slice(0, 3).map((emp, index) => (
                     <div
                       key={index}
                       className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs border-2 border-white"
@@ -127,7 +135,7 @@ const BusinessUnit = () => {
               )}
             </div>
 
-            <div className="text-sm">{unit?.locationName}</div> 
+            <div className="text-sm">{unit?.locationName}</div>
             <div className="text-sm">{unit?.businessHead || "—"}</div>
 
             <div className="flex justify-end gap-3">
@@ -148,6 +156,8 @@ const BusinessUnit = () => {
           </div>
         ))}
       </div>
+
+      {showCountryDialog && createPortal ( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
     </div>
   );
 };

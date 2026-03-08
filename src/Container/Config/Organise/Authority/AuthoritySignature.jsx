@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const initialSignatories = [
   {
@@ -141,6 +142,11 @@ const AuthoritySignature = () => {
     if (selectedLocation && s.location !== selectedLocation) return false;
     return true;
   });
+  const handleCreate = ()=>{
+    setShowCountryDialog(false)
+        setDrawerMode("add");
+
+  }
 
   return (
     <>
@@ -246,15 +252,15 @@ const AuthoritySignature = () => {
       </div>
 
       {/* Country / Office Modal */}
-      {showCountryDialog &&
-            <CreateCountryPopup onClose={()=>setShowCountryDialog(false)}/>
+      {showCountryDialog && createPortal(
+            <CreateCountryPopup onClose={()=>setShowCountryDialog(false)} onContinue={handleCreate} />,document.body)
 
       }
     </div>
         {/* RIGHT SIDE DRAWER */}
-      {drawerMode && (
-        <>
-          <div className="fixed inset-0 bg-black/40" onClick={closeDrawer} />
+      {drawerMode && createPortal(
+        
+          <div className="fixed inset-0 bg-black/40 z-50" onClick={closeDrawer} >
 
           <div className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col z-50">
             <div className="flex justify-between p-6 border-b">
@@ -314,7 +320,7 @@ const AuthoritySignature = () => {
               </div>
             )}
           </div>
-        </>
+          </div>,document.body
       )}
     </>
   );

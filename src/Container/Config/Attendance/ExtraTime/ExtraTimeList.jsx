@@ -1,10 +1,18 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 export default function ExtraTimeList() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Active");
   const [openMenu, setOpenMenu] = useState(null);
+
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+
+  const handleCreate = () => {
+    navigate("/config/track/Attendance/extra-time/create");
+  };
 
   const policies = [
     {
@@ -44,7 +52,8 @@ export default function ExtraTimeList() {
         </div>
 
         <button
-          onClick={() => navigate("/config/track/Attendance/extra-time/create")}
+          // onClick={() => navigate("/config/track/Attendance/extra-time/create")}
+          onClick={()=>setShowCountryDialog(true)}
           className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
         >
           Create +
@@ -58,11 +67,10 @@ export default function ExtraTimeList() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 text-sm rounded-md ${
-                activeTab === tab
+              className={`px-4 py-1.5 text-sm rounded-md ${activeTab === tab
                   ? "bg-white shadow text-gray-800"
                   : "text-gray-500"
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -110,9 +118,8 @@ export default function ExtraTimeList() {
               {policy.assigned.map((emp, index) => (
                 <div
                   key={index}
-                  className={`h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-white border-2 border-white ${
-                    index !== 0 ? "-ml-2" : ""
-                  }`}
+                  className={`h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-white border-2 border-white ${index !== 0 ? "-ml-2" : ""
+                    }`}
                 >
                   {emp}
                 </div>
@@ -137,7 +144,7 @@ export default function ExtraTimeList() {
 
             {/* ACTION SECTION */}
             <div className="flex items-center justify-end gap-2 relative">
-              
+
               {/* Edit */}
               <button
                 onClick={() =>
@@ -183,7 +190,7 @@ export default function ExtraTimeList() {
               {/* Dropdown */}
               {openMenu === policy.id && (
                 <div className="absolute right-0 top-10 w-36 bg-white border rounded-md shadow-md z-10">
-                  
+
                   {/* View */}
                   <button
                     onClick={() => {
@@ -210,6 +217,8 @@ export default function ExtraTimeList() {
           </div>
         ))}
       </div>
+      {showCountryDialog && createPortal(<CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate} />, document.body)}
+
     </div>
   );
 }

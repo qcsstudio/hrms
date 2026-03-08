@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { createPortal } from "react-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 const workflowData = [
   {
@@ -14,7 +16,13 @@ const ApprovalWorkflowList = () => {
   const [sort, setSort] = useState("");
   const [data, setData] = useState(workflowData);
   const navigate = useNavigate();
-    const [openMenu, setOpenMenu] = useState(false);
+  const [openMenu, setOpenMenu] = useState(false);
+
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+
+  const handleCreate = () => {
+    navigate("/config/hris/Employee-data/approval-workflow/create");
+  };
   const handleClear = () => {
     setSort("");
     setData(workflowData);
@@ -43,8 +51,10 @@ const ApprovalWorkflowList = () => {
           </p>
         </div>
 
-        <Link to="/config/hris/Employee-data/approval-workflow/create">
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow">
+        {/* <Link to="/config/hris/Employee-data/approval-workflow/create"> */}
+          <button 
+          onClick={()=>setShowCountryDialog(true)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow">
             Create
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -58,7 +68,7 @@ const ApprovalWorkflowList = () => {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
           </button>
-        </Link>
+        {/* </Link> */}
       </div>
 
       {/* Sort & Clear */}
@@ -135,45 +145,48 @@ const ApprovalWorkflowList = () => {
           </div>
 
           {/* Actions */}
-      <div className="relative flex justify-end gap-3">
-  {/* Edit Button */}
-  <button
-    onClick={() =>
-      navigate(`/config/hris/Employee-data/approval-workflow/edit/${item.id}`)
-    }
-    className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition"
-    title="Edit"
-  >
-    ✏️
-  </button>
+          <div className="relative flex justify-end gap-3">
+            {/* Edit Button */}
+            <button
+              onClick={() =>
+                navigate(`/config/hris/Employee-data/approval-workflow/edit/${item.id}`)
+              }
+              className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition"
+              title="Edit"
+            >
+              ✏️
+            </button>
 
-  {/* More Button */}
-  <button
-    onClick={() => setOpenMenu((prev) => !prev)}
-    className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition"
-    title="More"
-  >
-    ⋮
-  </button>
+            {/* More Button */}
+            <button
+              onClick={() => setOpenMenu((prev) => !prev)}
+              className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition"
+              title="More"
+            >
+              ⋮
+            </button>
 
-  {/* Dropdown Menu */}
-  {openMenu && (
-    <div className="absolute right-0 top-11 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-      <button
-        onClick={() => {
-          setOpenMenu(false);
-          onDelete(item.id);
-        }}
-        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
-      >
-        🗑 Delete
-      </button>
-    </div>
-  )}
-</div>
+            {/* Dropdown Menu */}
+            {openMenu && (
+              <div className="absolute right-0 top-11 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <button
+                  onClick={() => {
+                    setOpenMenu(false);
+                    onDelete(item.id);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+                >
+                  🗑 Delete
+                </button>
+              </div>
+            )}
+          </div>
 
         </div>
       ))}
+
+            {showCountryDialog && createPortal ( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
+      
     </div>
   );
 };

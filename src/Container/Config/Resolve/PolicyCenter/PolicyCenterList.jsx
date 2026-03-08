@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const avatarUrl =
   "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face";
@@ -43,7 +44,7 @@ const PolicyCenter = () => {
     setSelectedLocation("");
   };
 
-  const handleContinue = () => {
+  const handleCreate = () => {
     setShowCountryDialog(false);
     navigate("/config/resolve/policy-center/create");
   };
@@ -148,8 +149,8 @@ const PolicyCenter = () => {
       </div>
 
       {/* COUNTRY SELECT POPUP */}
-      {showCountryDialog &&
-        <CreateCountryPopup onClose={() => setShowCountryDialog(false)} />
+      {showCountryDialog && createPortal(
+        <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate} />,document.body)
 
       }
     </div>

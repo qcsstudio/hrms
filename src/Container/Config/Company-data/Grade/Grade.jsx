@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from 'react-dom'
+
 
 const Grade = () => {
   const token = localStorage.getItem('authToken')
@@ -11,6 +14,12 @@ const Grade = () => {
 
   const [data, setData] = useState([]);
   const axiosInstance = createAxios(token)
+
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+    
+     const handleCreate = () => {
+      navigate("/config/hris/Company_data/create-grade");
+    };
 
   const handleDelete = async (id) => {
 
@@ -62,9 +71,10 @@ const Grade = () => {
         </div>
 
         <button
-          onClick={() =>
-            navigate("/config/hris/Company_data/create-grade")
-          }
+          // onClick={() =>
+          //   navigate("/config/hris/Company_data/create-grade")
+          // }
+          onClick={()=>setShowCountryDialog(true)}
           className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
         >
           Create +
@@ -196,6 +206,8 @@ const Grade = () => {
           </div>
         ))}
       </div>
+            {showCountryDialog && createPortal( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
+
     </div>
   );
 };
