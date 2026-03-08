@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import CreateCountryPopup from "../../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 /* ---------- Mock Data ---------- */
 const availableNames = [
@@ -118,7 +119,7 @@ export default function Compensator() {
         </div>
 
         <button
-          onClick={() => setShowCountryDialog(true)}
+          onClick={() => setShowDrawer(true)}
           className="bg-blue-600 text-white px-5 py-2 rounded-md"
         >
           Create +
@@ -219,10 +220,7 @@ export default function Compensator() {
       </div>
 
       {/* ---------- COUNTRY DIALOG ---------- */}
-      {showCountryDialog &&
-            <CreateCountryPopup onClose={()=>setShowCountryDialog(false)}/>
-
-      }
+      
 
       {/* ---------- DRAWER OVERLAY ---------- */}
       {showDrawer && (

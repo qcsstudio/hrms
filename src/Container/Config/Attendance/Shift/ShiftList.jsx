@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const ShiftList = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const ShiftList = () => {
   const [statusFilter, setStatusFilter] = useState("Active");
 
   const [showDialog, setShowDialog] = useState(false);
+  
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedOffice, setSelectedOffice] = useState("");
   const [applyAll, setApplyAll] = useState(false);
@@ -121,6 +123,11 @@ const ShiftList = () => {
     );
 
     setShowDialog(false);
+  };
+     const handleCreate = () => {
+    navigate(`/config/track/Attendance/shift/create?country=${encodeURIComponent(
+        selectedCountry
+      )}&office=${applyAll ? "ALL" : encodeURIComponent(selectedOffice)}`);
   };
 
   return (
@@ -263,7 +270,7 @@ const ShiftList = () => {
 
       {/* ================= MODAL ================= */}
       {showDialog && 
-      <CreateCountryPopup onClose={()=>setShowDialog(false)}/>
+      createPortal(<CreateCountryPopup onClose={()=>setShowDialog(false)} onContinue={handleCreate}/>,document.body)
       }
     </div>
   );

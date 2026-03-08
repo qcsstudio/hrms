@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const countries = ["India", "USA"];
 
@@ -96,6 +97,11 @@ const Listsalarystructure = () => {
     setSelectedOffice("");
     setApplyAll(false);
   };
+  const handleCreate = ()=> {
+    navigate(`/config/pay/payroll/salary-Structure/create?country=${encodeURIComponent(
+        selectedCountry
+      )}&office=${applyAll ? "ALL" : encodeURIComponent(selectedOffice)}`)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -204,8 +210,8 @@ const Listsalarystructure = () => {
       </div>
 
       {/* ✅ Dialog Modal */}
-      {showDialog && 
-                  <CreateCountryPopup onClose={()=>setShowDialog(false)}/>
+      {showDialog && createPortal(
+                  <CreateCountryPopup onClose={()=>setShowDialog(false)} onContinue={handleCreate}/>,document.body)
 
       }
     </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { action,  } from '../../../allAssetsImport/allAssets'
 import createAxios from '../../../utils/axios.config'
 import { useSelector } from 'react-redux'
+import { createPortal } from 'react-dom'
 const Integrated = [
     {
         name: "Attandance Policy",
@@ -107,7 +108,7 @@ const DeviceIntegration = () => {
                     </div>
                 </div>
             ))}
-            {modal && (
+            {modal && createPortal(
                 <div className="fixed inset-0 bg-black/60 flex justify-end z-50">
                     <div className="w-[543px] bg-white rounded-2xl shadow-xl p-8 relative overflow-y-auto">
                         {/* Close Button */}
@@ -241,7 +242,7 @@ const DeviceIntegration = () => {
                             </select>
                         </div>
                     </div>
-                </div>
+                </div>,document.body
             )}
         </div>
     )

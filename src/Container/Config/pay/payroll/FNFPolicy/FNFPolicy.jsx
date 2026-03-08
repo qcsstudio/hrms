@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function FNFPolicy() {
   const [view, setView] = useState("list");
@@ -274,7 +275,7 @@ export default function FNFPolicy() {
 
       {/* FORMULA DRAWER */}
 
-      {showFormula && (
+      {showFormula && createPortal (
         <div className="fixed inset-0 z-50">
 
           <div
@@ -317,12 +318,12 @@ export default function FNFPolicy() {
 
           </div>
 
-        </div>
+        </div>,document.body
       )}
 
       {/* LEARN MORE DRAWER */}
 
-      {showLearn && (
+      {showLearn && createPortal (
         <div className="fixed inset-0 z-50">
 
           <div
@@ -359,7 +360,7 @@ export default function FNFPolicy() {
 
           </div>
 
-        </div>
+        </div>,document.body
       )}
 
     </div>

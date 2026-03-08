@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
+import { createPortal } from "react-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 export default function ProbationList() {
   const token = localStorage.getItem("authToken");
@@ -14,6 +16,11 @@ export default function ProbationList() {
 
 
   const axiosInstance = createAxios(token);
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+
+  const handleCreate = () => {
+    navigate("/config/hris/Employee-data/probation-create");
+  };
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -31,7 +38,7 @@ export default function ProbationList() {
   // Edit
   const handleEdit = (item) => {
     if (!item?._id) return;
-    
+
 
     navigate(`/config/hris/Employee-data/probation-edit/${item._id}`, {
       state: { probationData: item },
@@ -94,11 +101,12 @@ export default function ProbationList() {
             </p>
           </div>
 
-          <Link to="/config/hris/Employee-data/probation-create">
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition" >
+          {/* <Link to="/config/hris/Employee-data/probation-create"> */}
+            <button onClick={()=>setShowCountryDialog(true)}
+            className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition" >
               Create <span className="text-lg leading-none">+</span>
             </button>
-          </Link>
+          {/* </Link> */}
         </div>
 
         {/* Tabs */}
@@ -217,6 +225,8 @@ export default function ProbationList() {
           ))}
         </div>
       </div>
+      {showCountryDialog && createPortal(<CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate} />, document.body)}
+
     </div>
   );
 }

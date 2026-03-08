@@ -1,10 +1,17 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 const ExitPolicyList = () => {
   const [openMenu, setOpenMenu] = useState(null);
   const navigate = useNavigate();
 
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+
+  const handleCreate = () => {
+    navigate("/config/hris/Employee-data/exitPolicy/create");
+  };
   const data = [
     {
       id: 1,
@@ -56,9 +63,10 @@ const ExitPolicyList = () => {
         </h2>
 
         <button
-          onClick={() =>
-            navigate("/config/hris/Employee-data/exitPolicy/create")
-          }
+          // onClick={() =>
+          //   navigate("/config/hris/Employee-data/exitPolicy/create")
+          // }
+          onClick={() => setShowCountryDialog(true)}
           className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow hover:bg-blue-700"
         >
           Create +
@@ -133,6 +141,8 @@ const ExitPolicyList = () => {
           </div>
         ))}
       </div>
+      {showCountryDialog && createPortal(<CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate} />, document.body)}
+
     </div>
   );
 };

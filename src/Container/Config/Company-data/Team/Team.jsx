@@ -3,12 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import createAxios from "../../../../utils/axios.config";
 import { toast } from "react-toastify";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const Team = () => {
   // const { token } = useSelector(state => state.user)
   const token = localStorage.getItem('authToken')
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
+
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+  const handleCreate = () => {
+    navigate("/config/hris/Company_data/create-team");
+  };
 
   const [data, setData] = useState([]);
 
@@ -62,9 +69,10 @@ const Team = () => {
         </div>
 
         <button
-          onClick={() =>
-            navigate("/config/hris/Company_data/create-team")
-          }
+          // onClick={() =>
+          //   navigate("/config/hris/Company_data/create-team")
+          // }
+          onClick={()=>setShowCountryDialog(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         >
           Create +
@@ -202,6 +210,9 @@ const Team = () => {
           </tbody>
         </table>
       </div>
+
+      {showCountryDialog && createPortal( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate} />,document.body)}
+
     </div>
   );
 };

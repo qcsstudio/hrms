@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const initialCategories = [
   {
@@ -53,7 +54,7 @@ const AssetsCategory = () => {
     setSelectedLocation("");
   };
 
-  const handleContinue = () => {
+  const handleCreate = () => {
     setShowCountryDialog(false);
     navigate("/config/hrops/assets-category/create", {
       state: {
@@ -169,8 +170,8 @@ const AssetsCategory = () => {
       </div>
 
       {/* Country / Office Modal */}
-      {showCountryDialog && 
-      <CreateCountryPopup onClose={()=>setShowCountryDialog(false)}/>
+      {showCountryDialog && createPortal(
+      <CreateCountryPopup onClose={()=>setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)
  
       }
     </div>

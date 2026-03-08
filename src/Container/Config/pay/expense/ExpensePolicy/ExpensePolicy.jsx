@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../../Components/Popup_Modal/CreateCountryPopup";
+import { createPortal } from "react-dom";
 
 const ExpensePolicy = () => {
   const navigate = useNavigate();
@@ -62,6 +63,9 @@ const ExpensePolicy = () => {
     setShowCountryDialog(false);
     navigate("/config/pay/expensive/create-expense-policy");
   };
+  const handleCreate = ()=>{
+    navigate("/config/pay/expensive/create-expense-policy")
+  }
 
   return (
     <div>
@@ -184,8 +188,8 @@ const ExpensePolicy = () => {
       ))}
 
       {/* Country / Office Modal */}
-      {showCountryDialog &&
-            <CreateCountryPopup onClose={()=>setShowCountryDialog(false)}/>
+      {showCountryDialog && createPortal(
+            <CreateCountryPopup onClose={()=>setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)
 
       }
     </div>

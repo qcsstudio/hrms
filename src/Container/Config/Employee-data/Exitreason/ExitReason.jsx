@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
 import { useSelector } from "react-redux";
+import { createPortal } from "react-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
 const resignationReasons = [
   { id: 1, reason: "Company culture or boss issues", timeUsed: 12, inUse: false },
@@ -19,6 +21,12 @@ const ExitReasonList = () => {
   const [termination, setTermination] = useState(terminationReasons);
 
   const [reasonList, setReasonList] = useState([]);
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+  const navigate = useNavigate()
+
+  const handleCreate = () => {
+    navigate("/config/hris/Employee-data/exit-reason/create");
+  };
 
   const toggleResignation = (id) => {
     setResignation(prev =>
@@ -69,12 +77,13 @@ const ExitReasonList = () => {
             </p>
           </div>
 
-          <Link
-            to="/config/hris/Employee-data/exit-reason/create"
+          <button
+            // to="/config/hris/Employee-data/exit-reason/create"
+            onClick={()=>setShowCountryDialog(true)}
             className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
           >
             Create <span className="text-lg">+</span>
-          </Link>
+          </button>
         </div>
 
         {/* Resignation Section */}
@@ -154,6 +163,8 @@ const ExitReasonList = () => {
         </div>
 
       </div>
+      {showCountryDialog && createPortal(<CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate} />, document.body)}
+
     </div>
   );
 };
