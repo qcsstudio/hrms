@@ -192,6 +192,7 @@ const Login = () => {
       localStorage.setItem("authToken", res.data.token);
       localStorage.setItem('userId',res?.data?.user?.id);
       localStorage.setItem('istemporyPassword',res?.data?.user?.istemporyPassword)
+      localStorage.setItem("role", res.data?.user?.role);
 
 
       const role = res?.data?.user?.role;
