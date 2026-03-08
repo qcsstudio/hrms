@@ -44,6 +44,10 @@ import PolicyCenter from "../Container/Config/Resolve/PolicyCenter/PolicyCenterL
 import AssetsCategory from "../Container/Config/HrOps/AssetsCategory";
 import AssetsCategoryCreate from "../Container/Config/HrOps/AssetsCategoryCreate";
 import FNFPolicy from "../Container/Config/pay/payroll/FNFPolicy/FNFPolicy";
+import Employee from "../Container/DashboardPages/Employee/Employee";
+import AttendanceRequest from "../Container/Config/Attendance/AttendanceRequest/AttendanceRequest";
+import Template from "../Container/Config/Organise/Template/Template";
+import CreateTemplate from "../Container/Config/Organise/Template/CreateTemplate";
 
 /* ================= AUTH / COMMON ================= */
 const Login = lazy(() => import("../Components/Auth/Login"));
@@ -268,7 +272,13 @@ const ExtraTimeList = lazy(() =>
 );
 
 const AppRoutes = () => {
+  const userRole = localStorage.getItem("role");
 
+  const isSuperAdmin = userRole === "SUPER_ADMIN";
+  const isCompanyAdmin = userRole === "COMPANY_ADMIN";
+  const isEMP = userRole === "EMPLOYEE";
+  const isHR = userRole === "HR";
+  const isTL = userRole === "TL";
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
@@ -309,7 +319,10 @@ const AppRoutes = () => {
         >
           <Route path="Companyadmin-dashboard" element={<Admindashboard />} />
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
-          <Route path="employee" element={<EmployeeHrTL />} />
+          <Route path="employee" element={
+            isEMP ? <Employee /> :
+              <EmployeeHrTL />
+          } />
           <Route path="employee/add-Employee" element={<EmployeeHr />} />
           <Route path="attendance" element={<AttendanceEmployee />} />
           <Route path="leave-management" element={<LeavemanagementHr />} />
@@ -406,6 +419,11 @@ const AppRoutes = () => {
           <Route path="Attendance/extra-time/create" element={<ExtraTimeCreate />} />
           <Route path="Attendance/extra-time/list" element={<ExtraTimeList />} />
           <Route path="deviceintegration" element={<DeviceIntegration />} />
+          <Route
+            path="Attendance/attendanceRequest"
+            element={<AttendanceRequest />}
+          />
+
 
           {/* Leave =======================================*/}
           <Route path="leave/Weekly-off/list" element={<WeeklyOffList />} />
@@ -475,8 +493,8 @@ const AppRoutes = () => {
 
           <Route path="authority-signature" element={<AuthoritySignature />} />
 
-          {/* one. route is miisng.  in this. code. will be. disccus. here design with. vishal check. figma */}
-
+          <Route path="template/list" element={<Template />} />
+          <Route path="template/create" element={<CreateTemplate />} />
           <Route path="page-layout" element={<PageLayout />} />
 
         </Route>
