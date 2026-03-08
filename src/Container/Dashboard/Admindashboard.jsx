@@ -9,7 +9,9 @@ import { createPortal } from 'react-dom'
 
 const Admindashboard = () => {
 
-  const istemporyPassword = localStorage.getItem('istemporyPassword') === "true";
+  const [istemporyPassword, setIstemporayPassword] = useState(
+    localStorage.getItem("istemporyPassword") === "true"
+  );
   const userId = localStorage.getItem('userId')
   const [changepassword, setChangepassword] = useState({
     confirmPassword: "",
@@ -82,6 +84,7 @@ const Admindashboard = () => {
       toast.success("Password changed successfully");
       dispatch(setAddLoginData(res.data))
       localStorage.setItem("istemporyPassword", "true");
+      setIstemporayPassword(true);
 
     } catch (error) {
       console.warn("api is not working", error)
@@ -149,7 +152,7 @@ const Admindashboard = () => {
             </button>
 
           </div>
-        </div>,document.body
+        </div>, document.body
       )}
 
       {/* Top Action Buttons */}
