@@ -456,7 +456,11 @@ const Login = () => {
                         onBlur={() => handleBlur('password')}
                         disabled={isLoader}
                       />
-                      <button type='button' onClick={() => setShowPassword(prev => !prev)}>
+                      <button
+                        type='button'
+                        onClick={() => setShowPassword(prev => !prev)}
+                        className="p-0 bg-transparent border-none shadow-none outline-none focus:outline-none focus:ring-0 active:bg-transparent"
+                      >
                       <img src={Password_Show} alt="show" className="cursor-pointer" />
                       </button>
                     </div>
@@ -690,7 +694,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowCode(!showCode)}
-                    className="bg-none border-none cursor-pointer text-[#888] p-0"
+                    className="bg-transparent border-none cursor-pointer text-[#888] p-0 shadow-none outline-none focus:outline-none focus:ring-0 active:bg-transparent"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

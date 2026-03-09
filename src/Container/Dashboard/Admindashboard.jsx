@@ -116,7 +116,7 @@ const Admindashboard = () => {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(prev => !prev)}
-                className="text-gray-500"
+                className="text-gray-500 p-0 bg-transparent border-none shadow-none outline-none focus:outline-none focus:ring-0 active:bg-transparent"
               >
                 👁
               </button>
@@ -137,7 +137,7 @@ const Admindashboard = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(prev => !prev)}
-                className="text-gray-500"
+                className="text-gray-500 p-0 bg-transparent border-none shadow-none outline-none focus:outline-none focus:ring-0 active:bg-transparent"
               >
                 👁
               </button>
