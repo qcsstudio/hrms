@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import createAxios from '../../../utils/axios.config';
 import { createPortal } from 'react-dom'
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";   // 👈 yaha
 
 const leaveBalance = [
   { name: "Annual", value: 10 },
@@ -32,46 +34,49 @@ const LeavemanagementEmployee = () => {
     attachment: null,
   })
   const handleChange = (e) => {
-    const { name, value,files } = e.target
-    setApplyLeaveData(prev => ({ ...prev, [name]:  files ? files[0] : value, }))
+    const { name, value, files } = e.target
+    setApplyLeaveData(prev => ({ ...prev, [name]: files ? files[0] : value, }))
   }
 
   const axiosInatance = createAxios()
 
- const handleApplyleave = async () => {
-  try {
-    const formData = new FormData();
+  const handleApplyleave = async () => {
+    try {
+      const formData = new FormData();
 
-    formData.append("leaveType", applyLeaveData.leaveType);
-    formData.append("fromDate", applyLeaveData.fromDate);
-    formData.append("toDate", applyLeaveData.toDate);
-    formData.append("reason", applyLeaveData.reason);
+      formData.append("leaveType", applyLeaveData.leaveType);
+      formData.append("fromDate", applyLeaveData.fromDate);
+      formData.append("toDate", applyLeaveData.toDate);
+      formData.append("reason", applyLeaveData.reason);
 
-    if (applyLeaveData.attachment) {
-      formData.append("attachment", applyLeaveData.attachment);
-    }
-
-    const res = await axiosInatance.post(
-      "/leave/apply",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        meta: { auth: "ADMIN_AUTH" }
+      if (applyLeaveData.attachment) {
+        formData.append("attachment", applyLeaveData.attachment);
       }
-    );
 
-    console.log(res.data, "apply leave response");
-  } catch (error) {
-    console.log("Error applying leave:", error);
-  }
-};
+      const res = await axiosInatance.post(
+        "/leave/apply",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          meta: { auth: "ADMIN_AUTH" }
+        }
+      );
+
+      console.log(res.data, "apply leave response");
+    } catch (error) {
+      console.log("Error applying leave:", error);
+    }
+  };
 
 
   const handleApplyleavepopup = () => {
     setShowApplyLeavePopup(true);
   }
+  // const currentYear = new Date().getFullYear()
+  const [date, setDate] = useState(null)
+  const currentYear = new Date().getFullYear()
   return (
     <div className='bg-gray-50 p-5 '>
 
@@ -89,10 +94,21 @@ const LeavemanagementEmployee = () => {
 
       {/* Filters */}
       <div className='flex gap-[10px] mt-[20px]'>
-        <select className='border border-[#DEE2E6] h-[40px] w-[230px] rounded'>
-          <option>dd-mm-yyyy</option>
-        </select>
-        <select className='border border-[#DEE2E6] h-[40px] w-[230px] rounded'>
+
+        {/* <input type='month' placeholder='mm-yy' className='border border-[#DEE2E6] h-[40px] w-[230px] rounded p-2'/> */}
+        <div className="relative">
+          <DatePicker
+            selected={date}
+            onChange={(date) => setDate(date)}
+            dateFormat="MM/yyyy"
+            showMonthYearPicker
+             placeholderText="mm-yyyy"
+            className="border border-[#DEE2E6] h-[40px] w-[230px] rounded p-2 pr-8"
+          />
+          {/* <span className="absolute left-2 top-2.5 text-gray-400">mm-yyyy</span> */}
+          <span className="absolute right-2 top-2.5 text-gray-400">📅</span>
+        </div>
+        <select className='border border-[#DEE2E6] h-[40px] w-[230px] rounded p-2'>
           <option>This Month</option>
         </select>
 

@@ -52,6 +52,7 @@ import AttendanceHrTL from "../Container/DashboardPages/Attendance/AttendanceHrT
 import LeaveManagementTLHr from "../Container/DashboardPages/LeaveManagement/LeaveManagementTLHr";
 import LeaveManagementHr1 from "../Container/DashboardPages/LeaveManagement/LeaveManagementHr1";
 import PayrollDashboard from "../Container/Payroll/PayrollDashboard";
+import PayrollOverviewPage from "../Container/Payroll/Run_Payroll/PayrollOverviewPage";
 // import DashboardPayroll1 from "../Container/Payroll/Payroll/DashboardPayroll1";
 // import PayrollDashboard from "../Container/Payroll/Payroll/PayrollDashboard";
 // import DashboardPayroll2 from "../Container/Payroll/Payroll/DashboardPayroll2";
@@ -343,11 +344,13 @@ const AppRoutes = () => {
            isEMP ?  <AttendanceEmployee /> : <AttendanceHrTL/>
             } />
           <Route path="leave-management" element={
-           isEMP ?  <LeavemanagementEmployee /> : <LeaveManagementTLHr/>
-         
+          //  isEMP ?  <LeavemanagementEmployee /> : <LeaveManagementTLHr/>
+          // <LeavemanagementEmployee /> 
+         <LeaveManagementTLHr/>
             } />
           {/* <Route path="payroll" element={<DashboardPayroll1 />} /> */}
           <Route path="payroll" element={<PayrollDashboard />} />
+          <Route path="run-payroll" element={<PayrollOverviewPage />} />
           {/* <Route path="payroll" element={<DashboardPayroll2 />} /> */}
           {/* <Route path="payroll" element={<Dashboardpayroll3 />} /> */}
           {/* <Route path="payroll" element={<Dashboardpayroll4 />} /> */}
