@@ -11,7 +11,7 @@ const KVRow = ({ label, value }) => (
 const PayrollOverviewPage = ({ navigate }) => {
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-6">
-      <div className="max-w-5xl mx-auto">
+      <div className="mx-auto">
 
         {/* Page Title */}
         <div className="mb-6">

@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
 import LeaveManagementHr1 from './LeaveManagementHr1'
+import DatePicker from 'react-datepicker'
+import "react-datepicker/dist/react-datepicker.css";   // 👈 yaha
+
 
 const days = [
   {
@@ -51,9 +54,11 @@ const LeaveManagementTLHr = () => {
   const isHR = userRole === "HR";
   const isTL = userRole === "TL";
   const [activeFilter, setActiveFilter] = useState("All Employee")
+   const [date, setDate] = useState(null)
+    const currentYear = new Date().getFullYear()
   return (
     <>
-      <div className='p-[10px] bg-gray-50'>
+      <div className='p-5 bg-gray-50 '>
 
         {/* heading */}
         <div className='flex justify-between items-center'>
@@ -67,7 +72,7 @@ const LeaveManagementTLHr = () => {
           </div>
         </div>
 
-        <div className="inline-flex w-fit bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2">
+        <div className="inline-flex w-fit bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2 my-4">
             {['All Employee', 'My Team', 'Me'].map((item) => (
               <button
                 key={item}
@@ -83,13 +88,21 @@ const LeaveManagementTLHr = () => {
           </div>
 
         {/* 3333333333333333 */}
-        <div className='mt-[20px]'>
+        <div >
 
           <div className='flex w-[100%] gap-[15px] '>
-            <select className='border border-[#DEE2E6] w-[230px] h-[40px] bg-[#FFFFFF] px-2 rounded-md'>
-              <option>dd-mm-yyyy</option>
-              <option></option>
-            </select>
+             <div className="relative">
+                      <DatePicker
+                        selected={date}
+                        onChange={(date) => setDate(date)}
+                        dateFormat="MM/yyyy"
+                        showMonthYearPicker
+                         placeholderText="mm-yyyy"
+                        className="border border-[#DEE2E6] h-[40px] w-[230px] rounded p-2 pr-8"
+                      />
+                      {/* <span className="absolute left-2 top-2.5 text-gray-400">mm-yyyy</span> */}
+                      <span className="absolute right-2 top-2.5 text-gray-400">📅</span>
+                    </div>
             <select className='border border-[#DEE2E6] w-[230px] h-[40px] bg-[#FFFFFF] px-2 rounded-md'>
               <option>This Month</option>
               <option></option>
@@ -100,14 +113,15 @@ const LeaveManagementTLHr = () => {
             </select>
             <select className='border border-[#DEE2E6] w-[230px] h-[40px] bg-[#FFFFFF] px-2 rounded-md'>
               <option>Status</option>
-              <option></option>
+              <option>Approved</option>
+              <option>Rejected</option>
             </select>
           </div>
 
         </div>
-        <div className='flex mt-[30px] justify-between w-[100%]'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-[30px] justify-evenly gap-4'>
           {days.map((item, index) => (
-            <div key={index} className='w-[300px] h-[110px] rounded-[10px]  bg-[white]'>
+            <div key={index} className=' h-[110px] rounded-lg  bg-[white] p-3'>
               <div className='font-medium  text-[17px]'>
                 {item.name}
               </div>
@@ -122,13 +136,13 @@ const LeaveManagementTLHr = () => {
           ))}
         </div>
 
-        <div>
+        <div className='my-5 bg-white p-5 rounded-lg'>
           <h1 className='font-medium text-[18px]'>Approval Queue</h1>
           <p className='text-gray-300 text-[14px]'>Approve / Reject / Ask for details. Overlap warnings keep staffing safe.</p>
 
           <div className='mt-[20px] bg-[white]'>
             {ApprovalQueue.map((item, index) => (
-              <div key={index} className='mt-[14px] bg-[#F8F9FA] flex justify-between'>
+              <div key={index} className='mt-[14px] bg-[#F8F9FA] flex justify-between p-3 rounded-lg items-center'>
                 <div>
                   <div>
                     {item.name}

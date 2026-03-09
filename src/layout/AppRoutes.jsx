@@ -344,8 +344,9 @@ const AppRoutes = () => {
            isEMP ?  <AttendanceEmployee /> : <AttendanceHrTL/>
             } />
           <Route path="leave-management" element={
-           isEMP ?  <LeavemanagementEmployee /> : <LeaveManagementTLHr/>
-         
+          //  isEMP ?  <LeavemanagementEmployee /> : <LeaveManagementTLHr/>
+          // <LeavemanagementEmployee /> 
+         <LeaveManagementTLHr/>
             } />
           {/* <Route path="payroll" element={<DashboardPayroll1 />} /> */}
           <Route path="payroll" element={<PayrollDashboard />} />
