@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import InviteEmployeeModal from './InviteEmployeeModal'
 import { useLocation } from 'react-router-dom'
 
-const EmployeeHr = () => {
+const AddEmployee = () => {
     const token = localStorage.getItem("authToken")
     console.log("admin token", token)
 
@@ -507,4 +507,4 @@ const EmployeeHr = () => {
     )
 }
 
-export default EmployeeHr
+export default AddEmployee

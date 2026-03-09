@@ -30,7 +30,7 @@ export default function AttendancePolicyCreate() {
   const set = (key, val) => setData(prev => ({ ...prev, [key]: val }));
 
   const iStyle = { width: "100%", padding: "10px 14px", border: "1px solid #e2e8f0", borderRadius: "8px", fontSize: "14px", color: "#374151", background: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "inherit" };
-  const selStyle = { ...iStyle, appearance: "none", WebkitAppearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center", paddingRight: "36px", cursor: "pointer" };
+  const selStyle = { ...iStyle, appearance: "none", WebkitAppearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23B3B3B3' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 18px center", backgroundSize: "14px 14px", paddingRight: "40px", cursor: "pointer" };
   const leaveOpts = ["Casual Leave", "Sick Leave", "Earned Leave", "Unpaid Leave"];
   const numOpts = ["0.5", "1", "1.5", "2"];
 

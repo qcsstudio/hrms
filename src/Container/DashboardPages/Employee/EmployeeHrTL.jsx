@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   discardicon,
   statslogo1,
@@ -13,6 +13,7 @@ import {
 } from '../../../allAssetsImport/allAssets'
 import Statics from '../../Dashboard/Statics'
 import { useNavigate } from 'react-router-dom'
+import { FaAngleDown } from 'react-icons/fa'
 
 /* -------------------- EMPLOYEE DATA -------------------- */
 
@@ -102,6 +103,9 @@ const EmployeeHrTL = () => {
     location: "",
     status: ""
   })
+  const [activeEmployeeTab, setActiveEmployeeTab] = useState("All Employees")
+  const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState(false)
+  const addEmployeeRef = useRef(null)
 
   /* -------- UNIQUE OPTIONS -------- */
   const getUniqueValues = (key) =>
@@ -126,9 +130,7 @@ const EmployeeHrTL = () => {
 
   const navigate = useNavigate()
 
-  const handleAddEmployee = (e) => {
-    const value = e.target.value
-
+  const handleAddEmployee = (value) => {
     if (value === "add") {
       navigate("/dashboard/employee/add-Employee", {
         state: { invite: false }
@@ -140,7 +142,20 @@ const EmployeeHrTL = () => {
         state: { invite: true }
       })
     }
+
+    setIsAddEmployeeOpen(false)
   }
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (addEmployeeRef.current && !addEmployeeRef.current.contains(event.target)) {
+        setIsAddEmployeeOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick)
+    return () => document.removeEventListener("mousedown", handleOutsideClick)
+  }, [])
   return (
     <div className='bg-gray-50 p-5'>
 
@@ -156,31 +171,52 @@ const EmployeeHrTL = () => {
         {/* <button className="bg-[#0575E6] text-white px-4 py-2 rounded w-[198px] h-[40px] font-semibold text-sm" onClick={()=> navigate('/dashboard/employee/add-Employee')}>
           + Add Employee
         </button> */}
-        <select
-          defaultValue=""
-          onChange={handleAddEmployee}
-          className='bg-[#0575E6] text-white px-4 py-2 rounded w-[198px] h-[40px] font-semibold text-sm'
-        >
-          <option value="" disabled className='bg-white text-black'>
-         Add Employee
-          </option>
+        <div ref={addEmployeeRef} className='relative w-[198px]'>
+          <button
+            type='button'
+            onClick={() => setIsAddEmployeeOpen((prev) => !prev)}
+            className='w-full h-[40px] flex items-center justify-center gap-2 bg-[#0575E6] border border-[#E4E9EE] rounded-lg px-6 py-2 text-white shadow-none outline-none focus:outline-none focus:ring-0 active:scale-[0.99]'
+          >
+            <span className='leading-none text-sm'>Add Employee</span>
+            <FaAngleDown className={`text-[14px] transition-transform ${isAddEmployeeOpen ? 'rotate-180' : ''}`} />
+          </button>
 
-          <option value="add" className='bg-white text-black'>
-            Add Employee (Without Link)
-          </option>
-
-          <option value="invite" className='bg-white text-black'>
-            Add Employee Via Invite Link
-          </option>
-        </select>
+          {isAddEmployeeOpen && (
+            <div className='absolute right-0 mt-2 w-[240px] rounded-lg border border-gray-200 bg-white shadow-sm z-20 overflow-hidden'>
+              <button
+                type='button'
+                onClick={() => handleAddEmployee("add")}
+                className='w-full text-left px-4 py-2 text-sm text-[#334155] border-none shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100 transition-colors'
+              >
+                Add Employee (Without Link)
+              </button>
+              <button
+                type='button'
+                onClick={() => handleAddEmployee("invite")}
+                className='w-full text-left px-4 py-2 text-sm text-[#334155] border-none shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100 transition-colors'
+              >
+                Add Employee Via Invite Link
+              </button>
+            </div>
+          )}
+        </div>
 
       </div>
 
       {/* ---------------- TABS ---------------- */}
-      <div className='my-5 border border-[#DEE2E6] w-[290px] flex justify-around rounded-md h-[40px] bg-[#F4F4F5] segmented-no-effects'>
-        <button >All Employees</button>
-        <button >My Team</button>
-        <button >Me</button>
+      <div className='my-5 border border-[#DEE2E6] w-fit flex rounded-[9px] p-1 gap-2 bg-[#F4F4F5] segmented-no-effects'>
+        {["All Employees", "My Team", "Me"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveEmployeeTab(tab)}
+            className={`px-4 py-2 rounded-lg border-none shadow-none outline-none focus:outline-none focus:ring-0 ${activeEmployeeTab === tab
+              ? "bg-white text-[#212529] border border-[#E5E7EB] shadow-sm"
+              : "bg-transparent text-[#6B7280]"
+              }`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       {/* ---------------- FILTER SECTION ---------------- */}

@@ -353,7 +353,7 @@ const SuperAdminDashboard = () => {
                   name="trialDuration"
                   value={formData.trialDuration}
                   onChange={handleChange}
-                  className="w-full mt-1 border rounded-lg px-3 py-2"
+                  className="w-full mt-1 border rounded-lg px-3 pr-10 py-2 appearance-none bg-white"
                 >
                   <option value="">Choose trial</option>
                   <option value="15days">15 Days</option>
@@ -368,7 +368,7 @@ const SuperAdminDashboard = () => {
                   name="linkExpiryHours"
                   value={formData.linkExpiryHours}
                   onChange={handleChange}
-                  className="w-full mt-1 border rounded-lg px-3 py-2"
+                  className="w-full mt-1 border rounded-lg px-3 pr-10 py-2 appearance-none bg-white"
                 >
                   {/* <option value="">Choose expiry</option> */}
                   <option value="24">24 Hours</option>
