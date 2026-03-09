@@ -51,18 +51,20 @@ import CreateTemplate from "../Container/Config/Organise/Template/CreateTemplate
 import AttendanceHrTL from "../Container/DashboardPages/Attendance/AttendanceHrTL";
 import LeaveManagementTLHr from "../Container/DashboardPages/LeaveManagement/LeaveManagementTLHr";
 import LeaveManagementHr1 from "../Container/DashboardPages/LeaveManagement/LeaveManagementHr1";
-import DashboardPayroll1 from "../Container/Payroll/Payroll/DashboardPayroll1";
-import DashboardPayroll2 from "../Container/Payroll/Payroll/DashboardPayroll2";
-import Dashboardpayroll3 from "../Container/Payroll/Payroll/Dashboardpayroll3";
-import Dashboardpayroll4 from "../Container/Payroll/Payroll/Dashboardpayroll4";
-import DashboardPayroll5 from "../Container/Payroll/Payroll/DashboardPayroll5";
-import Dashboardpayroll6 from "../Container/Payroll/Payroll/Dashboardpayroll6";
-import Dashboardpayroll7 from "../Container/Payroll/Payroll/Dashboardpayroll7";
-import Dashboardpayroll8 from "../Container/Payroll/Payroll/Dashboardpayroll8";
-import Dashboardpayroll9 from "../Container/Payroll/Payroll/Dashboardpayroll9";
-import Dashboardpayroll10 from "../Container/Payroll/Payroll/Dashboardpayroll10";
-import Dashboardpayroll11 from "../Container/Payroll/Payroll/Dashboardpayroll11";
-import Dashboardpayroll12 from "../Container/Payroll/Payroll/Dashboardpayroll12";
+import PayrollDashboard from "../Container/Payroll/PayrollDashboard";
+// import DashboardPayroll1 from "../Container/Payroll/Payroll/DashboardPayroll1";
+// import PayrollDashboard from "../Container/Payroll/Payroll/PayrollDashboard";
+// import DashboardPayroll2 from "../Container/Payroll/Payroll/DashboardPayroll2";
+// import Dashboardpayroll3 from "../Container/Payroll/Payroll/Dashboardpayroll3";
+// import Dashboardpayroll4 from "../Container/Payroll/Payroll/Dashboardpayroll4";
+// import DashboardPayroll5 from "../Container/Payroll/Payroll/DashboardPayroll5";
+// import Dashboardpayroll6 from "../Container/Payroll/Payroll/Dashboardpayroll6";
+// import Dashboardpayroll7 from "../Container/Payroll/Payroll/Dashboardpayroll7";
+// import Dashboardpayroll8 from "../Container/Payroll/Payroll/Dashboardpayroll8";
+// import Dashboardpayroll9 from "../Container/Payroll/Payroll/Dashboardpayroll9";
+// import Dashboardpayroll10 from "../Container/Payroll/Payroll/Dashboardpayroll10";
+// import Dashboardpayroll11 from "../Container/Payroll/Payroll/Dashboardpayroll11";
+// import Dashboardpayroll12 from "../Container/Payroll/Payroll/Dashboardpayroll12";
 
 /* ================= AUTH / COMMON ================= */
 const Login = lazy(() => import("../Components/Auth/Login"));
@@ -333,7 +335,8 @@ const AppRoutes = () => {
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
           <Route path="employee" element={
             // isEMP ? <Employee /> :
-             isHR && isTL ? <EmployeeHrTL /> : <Employee />
+            //  isHR && isTL ? <EmployeeHrTL /> : <Employee />
+             <EmployeeHrTL /> 
           } />
           <Route path="employee/add-Employee" element={<AddEmployee />} />
           <Route path="attendance" element={
@@ -344,7 +347,8 @@ const AppRoutes = () => {
          
             } />
           {/* <Route path="payroll" element={<DashboardPayroll1 />} /> */}
-          <Route path="payroll" element={<DashboardPayroll2 />} />
+          <Route path="payroll" element={<PayrollDashboard />} />
+          {/* <Route path="payroll" element={<DashboardPayroll2 />} /> */}
           {/* <Route path="payroll" element={<Dashboardpayroll3 />} /> */}
           {/* <Route path="payroll" element={<Dashboardpayroll4 />} /> */}
           {/* <Route path="payroll" element={<DashboardPayroll5 />} /> */}
