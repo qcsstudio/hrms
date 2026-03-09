@@ -40,6 +40,7 @@ const Accountsetup = ({ onNext, onBack }) => {
   //     role: ""
   //   })
   // }
+  
   const [searchParams] = useSearchParams()
   const inviteToken = searchParams.get("token")
   console.log(inviteToken, "invite token============")

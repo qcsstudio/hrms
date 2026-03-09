@@ -145,14 +145,6 @@ const SideBar = () => {
     }
   }, []);
 
-  const userRole = localStorage.getItem("role");
-  const isSuperAdmin = userRole === "SUPER_ADMIN";
-  const isCompanyAdmin = userRole === "COMPANY_ADMIN";
-  const isEMP = userRole === "EMPLOYEE";
-  const isHR = userRole === "HR";
-  const isTL = userRole === "TL";
-  const isCompanyRoles = isCompanyAdmin || isHR || isTL;
-
   const getCompanySlug = () => {
     const hostname = window.location.hostname;
 
@@ -289,9 +281,9 @@ const SideBar = () => {
       case "extratime":
         navigate("/config/track/Attendance/extra-time/list");
         break;
-      case "attendancereqcycle":
-        navigate("/config/track/Attendance/attendanceRequest");
-        break;
+      // case "attendancereqcycle":
+      //   navigate("/config/track/Attendance/extra-time/list");
+      //   break;
 
       case 'week-off':
         navigate('/config/track/leave/Weekly-off/list')
@@ -366,7 +358,7 @@ const SideBar = () => {
         navigate('/config/organise/page-layout')
         break;
       case 'template':
-        navigate('/config/organise/template/list')
+        navigate('/config/organise/')
         break;
       case 'authorized-signatory':
         navigate('/config/organise/authority-signature')
@@ -490,7 +482,7 @@ const SideBar = () => {
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('attendencepolicy')} >Attendance Policy</h1>
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('extratime')} >Extra Time (Compoff)</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/track/Attendance/attendanceRequest' ?
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('attendancereqcycle')} >Attendance Request Cycle</h1>
 
                   </div>
@@ -562,7 +554,7 @@ const SideBar = () => {
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('benifit-plan')} >Flexible Benifit plan</h1>
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/payroll-tag' ?
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('payroll-tag')} >Payroll Tag</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/fnc-policy' ?
+                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('fnf-policy')} >FNF Policy</h1>
                     <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/overtime_payment-Policy' ?
                       'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('overtime-payment')} >Overtime Payment Policy</h1>
@@ -642,190 +634,178 @@ const SideBar = () => {
 
       </div>
     </nav> :
-      <nav
-        className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between ${openMenu ? "w-[100%]" : "w-[100%]"} h-[90vh] bg-[#fff] overflow-hidden select-none`}
-      >
+      <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
         {/* ===============================Big Sidebar======================== */}
-        <ul className="w-[100%] h-[100%] py-[1.5rem] flex flex-col gap-[.5rem] px-5">
-          {/* ================= Dashboard ================= */}
-          <li
-            className={`transition-all duration-500 w-[100%] 
-${location.pathname==="/dashboard/companyadmin-dashboard" || location.pathname==="/dashboard/superadmin-dashboard" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
-h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-            onClick={() => changeTab("home")}
-          >
-            <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              <img
-                src={dashboard_logo}
-                width={20}
-                height={20}
-                alt="dashboard"
-              />
-            </div>
-            <span>Dashboard</span>
-          </li>
+        <div >
+          {openMenu &&
+            <ul className={`w-[100%] h-[100%]  py-[1.5rem]  flex flex-col gap-[.5rem] px-5`}>
+              <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/superadmin-dashboard' || loacation.pathname === '/dashboard/Companyadmin-dashboard' ?
+                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
+              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
+                onClick={() => changeTab('home')}>
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {loacation.pathname === '/dashboard/superadmin-dashboard' || loacation.pathname === '/dashboard/Companyadmin-dashboard' ? <img src={dashboard_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={dashboard_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+                </div>
+                <span>Dashboard</span>
+              </li>
 
-          {/* ================= Employees ================= */}
-          {!isSuperAdmin && (
-            <li
-              className={`transition-all duration-500 w-[100%]
-            ${location.pathname === "/dashboard/employee" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
-            h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-              onClick={() => changeTab("employee")}
-            >
+              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/employee' ?
+                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
+              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
+                onClick={() => changeTab('employee')}>
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {location.pathname === '/dashboard/employee' ? <img src={employee_logo_blue} width={20} height={20} alt="createPost_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={employee_logo} width={20} height={20} alt="createPost_icon" className="w-[100%] h-[100%]" />}
+                </div>
+                <span>Employees</span>
+              </li>
+              <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/attendance' ?
+                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
+              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
+                onClick={() => changeTab('attendance')}>
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === 'attendance' ? <img src={attendance_logo_blue} width={20} height={20} alt="calendar_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={attendance_logo} width={20} height={20} alt="calender_icon" className="w-[100%] h-[100%]" />}
+                </div>
+                <span>Attendance</span>
+              </li>
+              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/payroll' ?
+                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
+              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
+                onClick={() => changeTab('DashboardPayroll1')}>
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === 'DashboardPayroll1' ? <img src={payroll_logo_blue} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={payroll_logo} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" />}
+                </div>
+                <span>Payroll</span>
+              </li>
+              <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/leave-management' ?
+                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
+              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
+                onClick={() => changeTab('leave-management')}>
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === 'leave-management' ? <img src={leave_logo_blue} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={leave_logo} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" />}
+                </div>
+                <span>Leave Management</span>
+              </li>
+              <hr className="text-[#E2E8F0]" />
+              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/leave-management1' ?
+                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
+              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
+                onClick={() => changeTab('Performance')}>
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === 'Performance' ? <img src={leave_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={leave_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
+                </div>
+                <span>Performance</span>
+              </li>
+              <li className={`transition-all duration-500 w-[100%] ${location.pathname === 'reportsAndExports' ?
+                `bg-[#2597f0] text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
+              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
+                onClick={() => changeTab('reportsAndExports')}>
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === 'reportsAndExports' ? <img src={notification_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={notification_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
+                </div>
+                <span>Announcements</span>
+              </li>
+              <li className={`transition-all duration-500 w-[100%] text-[#64748B]
+              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
+                onClick={() => changeTab('settings')}>
+                 <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === 'settings' ? <img src={settings_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={settings_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
+                </div>
+                <span>Settings</span>
+              </li>
+              <li className={`transition-all duration-500 w-[100%] ${location.pathname === '/dashboard/automation-rules' ?
+                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
+                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
+              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
+                onClick={() => changeTab('automation-rules')}>
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === 'automation-rules' ? <img src={support_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
+                    <img src={support_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
+                </div>
+                <span> Support</span>
+              </li>
+
+            </ul>}
+
+          {/* ========================small settings sidebar============================ */}
+
+          {!openMenu && (<ul className="w-[100%] h-[100%] px-[1.62rem] py-[1.5rem] flex flex-col gap-[.5rem]">
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'home' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('home')}>
               <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                <img
-                  src={employee_logo}
-                  width={20}
-                  height={20}
-                  alt="employee"
-                />
+                {activeUrl === 'home' ? <img src={dashboard_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={dashboard_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
               </div>
-              <span>{isEMP ? "Employee" : "Employees"}</span>
+
             </li>
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'employee' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('employee')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'employee' ? <img src={employee_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={employee_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
+
+            </li>
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'attendance' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('attendance')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'attendance' ? <img src={attendance_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={attendance_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
+
+            </li>
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'leave-management' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('leave-management')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'leave-management' ? <img src={leave_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={leave_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
+
+            </li>
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'DashboardPayroll1' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('DashboardPayroll1')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'DashboardPayroll1' ? <img src={payroll_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={payroll_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
+
+            </li>
+            {/* //add performance here========>=========>=========>=============> */}
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'notification' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('notification')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'notification' ? <img src={notification_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={notification_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
+
+            </li>
+
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'settings' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('settings')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'settings' ? <img src={settings_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={settings_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
+
+            </li>
+            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'support' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('support')}>
+              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                {activeUrl === 'support' ? <img src={support_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
+                  <img src={support_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+              </div>
+
+            </li>
+
+          </ul>
           )}
 
-          {/* ================= Attendance ================= */}
-          {!isSuperAdmin && (
-            <li
-              className={`transition-all duration-500 w-[100%]
-          ${location.pathname === "/dashboard/attendance" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
-          h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-              onClick={() => changeTab("attendance")}
-            >
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                <img
-                  src={attendance_logo}
-                  width={20}
-                  height={20}
-                  alt="attendance"
-                />
-              </div>
-              <span>Attendance</span>
-            </li>
-          )}
-
-          {/* ================= Payroll ================= */}
-          {!isSuperAdmin && (
-            <li
-              className={`transition-all duration-500 w-[100%]
-          ${location.pathname === "/dashboard/payroll" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
-          h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-              onClick={() => changeTab("DashboardPayroll1")}
-            >
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                <img
-                  src={payroll_logo}
-                  width={20}
-                  height={20}
-                  alt="payroll"
-                />
-              </div>
-              <span>Payroll</span>
-            </li>
-          )}
-
-          {/* ================= Leave ================= */}
-          {!isSuperAdmin && (
-            <li
-              className={`transition-all duration-500 w-[100%]
-          ${location.pathname === "/dashboard/leave-management" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
-          h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-              onClick={() => changeTab("leave-management")}
-            >
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                <img src={leave_logo} width={20} height={20} alt="leave" />
-              </div>
-              <span>Leave Management</span>
-            </li>
-          )}
-
-          {/* ================= Performance ================= */}
-          {!isSuperAdmin && (
-            <li
-              className="transition-all duration-500 w-[100%] text-[#64748B]
-h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-              onClick={() => changeTab("Performance")}
-            >
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                <img
-                  src={leave_logo}
-                  width={20}
-                  height={20}
-                  alt="performance"
-                />
-              </div>
-              <span>Performance</span>
-            </li>
-          )}
-
-          {/* ================= Announcements ================= */}
-          {!isSuperAdmin && (
-            <li
-              className="transition-all duration-500 w-[100%] text-[#64748B]
-h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-              onClick={() => changeTab("reportsAndExports")}
-            >
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                <img
-                  src={notification_logo}
-                  width={20}
-                  height={20}
-                  alt="announcement"
-                />
-              </div>
-              <span>Announcements</span>
-            </li>
-          )}
-
-          {/* ================= Billing (ONLY SUPER ADMIN) ================= */}
-          {isSuperAdmin && (
-            <li
-              className="transition-all duration-500 w-[100%] text-[#64748B]
-h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-              onClick={() => changeTab("billing")}
-            >
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                <img
-                  src={payroll_logo}
-                  width={20}
-                  height={20}
-                  alt="billing"
-                />
-              </div>
-              <span>Billing</span>
-            </li>
-          )}
-
-          {/* ================= Settings ================= */}
-          <li
-            className="transition-all duration-500 w-[100%] text-[#64748B]
-h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-            onClick={() => changeTab("settings")}
-          >
-            <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              <img
-                src={settings_logo}
-                width={20}
-                height={20}
-                alt="settings"
-              />
-            </div>
-            <span>Settings</span>
-          </li>
-
-          {/* ================= Support ================= */}
-          <li
-            className="transition-all duration-500 w-[100%] text-[#64748B]
-h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-            onClick={() => changeTab("support")}
-          >
-            <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-              <img src={support_logo} width={20} height={20} alt="support" />
-            </div>
-            <span>Support</span>
-          </li>
-        </ul>
+        </div>
       </nav>
     }
   </>
