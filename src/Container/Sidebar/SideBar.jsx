@@ -396,7 +396,7 @@ const SideBar = () => {
   return <>
     {/* flex flex-col justify-between */}
     {isConfig ? <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between   ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
-      <div>
+      <div className="h-fit  overflow-y-scroll hide-scrollbar">
         {openMenu && <>
           {/* =============================HRIS====================================== */}
           <div>
@@ -636,7 +636,7 @@ const SideBar = () => {
     </nav> :
       <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
         {/* ===============================Big Sidebar======================== */}
-        <div >
+        <div className=" h-fit  overflow-y-scroll hide-scrollbar">
           {openMenu &&
             <ul className={`w-[100%] h-[100%]  py-[1.5rem]  flex flex-col gap-[.5rem] px-5`}>
               <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/superadmin-dashboard' || loacation.pathname === '/dashboard/Companyadmin-dashboard' ?
