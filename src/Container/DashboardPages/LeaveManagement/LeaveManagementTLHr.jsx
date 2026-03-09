@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import LeaveManagementHr1 from './LeaveManagementHr1'
 
 const days = [
@@ -50,6 +50,7 @@ const LeaveManagementTLHr = () => {
   const isEMP = userRole === "EMPLOYEE";
   const isHR = userRole === "HR";
   const isTL = userRole === "TL";
+  const [activeFilter, setActiveFilter] = useState("All Employee")
   return (
     <>
       <div className='p-[10px] bg-gray-50'>
@@ -66,12 +67,20 @@ const LeaveManagementTLHr = () => {
           </div>
         </div>
 
-        {/* 2222222 */}
-        <div className='mt-[20px] border justify-between border-[#DEE2E6] rounded-md bg-[#F3F3F4] flex h-[40px] w-[290px] px-[6px] gap-[6px] segmented-no-effects'>
-          <button >All Employees</button>
-          <button className=' bg-white rounded-md text-[14px] w-[80px]'>My Team</button>
-          <button>Me</button>
-        </div>
+        <div className="inline-flex w-fit bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2">
+            {['All Employee', 'My Team', 'Me'].map((item) => (
+              <button
+                key={item}
+                onClick={() => setActiveFilter(item)}
+                className={`px-4 py-2 rounded-lg transition-colors border-none shadow-none outline-none focus:outline-none focus:ring-0 ${activeFilter === item
+                  ? 'bg-white text-[#212529] border border-[#E5E7EB] shadow-sm'
+                  : 'bg-transparent text-[#6B7280]'
+                  }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
 
         {/* 3333333333333333 */}
         <div className='mt-[20px]'>

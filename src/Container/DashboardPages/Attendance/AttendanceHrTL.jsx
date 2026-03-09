@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { action, action2, group, vector, vector2 } from '../../../allAssetsImport/allAssets'
 
 
@@ -87,6 +87,10 @@ const employyeDetails = [
 
 
 const AttendanceHrTL = () => {
+    const [activeFilter, setActiveFilter] = useState("All Employee");
+    const [activeAttendanceTab, setActiveAttendanceTab] = useState("All Employees");
+    
+
     return (
         <>
 
@@ -101,10 +105,19 @@ const AttendanceHrTL = () => {
                         <button className='border border-[#C4DBFF] bg-[#EAF2FF] h-[40px] w-[94px] box-border rounded-lg text-[#1677FF] font-bold'>Policy</button>
                     </div>
                 </div>
-                <div className='border border-[#DEE2E6] bg-[#F4F4F5] w-[283px] justify-evenly flex mt-[20px] h-[40px] rounded-md text-[#212529] segmented-no-effects'>
-                    <button>All Employees</button>
-                    <button>My Team</button>
-                    <button>Me</button>
+                <div className="flex bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2 mt-[20px] w-fit">
+                    {['All Employee', 'My Team', 'Me'].map((item) => (
+                        <button
+                            key={item}
+                            onClick={() => setActiveFilter(item)}
+                            className={`px-4 py-2 rounded-lg transition-colors border-none shadow-none outline-none focus:outline-none focus:ring-0 ${activeFilter === item
+                                    ? 'bg-white text-[#212529] border border-[#E5E7EB] shadow-sm'
+                                    : 'bg-transparent text-[#6B7280]'
+                                }`}
+                        >
+                            {item}
+                        </button>
+                    ))}
                 </div>
                 <div className='grid grid-cols-4 gap-3 justify-evenly mt-[10px] w-[77%] mt-[20px]  '>
                     <select className='border border-[#DEE2E6]  h-[40px] rounded-md text-[#344054] font-semibold text-[#344054] '>
@@ -150,12 +163,19 @@ const AttendanceHrTL = () => {
                 {/* ................................. */}
 
                 <div className='mt-[20px]'>
-                    <div className='w-[495px] flex justify-around border border-[#DEE2E6] h-[40px] rounded-[5px] font-medium text-[#212529] segmented-no-effects'>
-                        <button>All Employees</button>
-                        <button>Present</button>
-                        <button>Late</button>
-                        <button>On Leave</button>
-                        <button>Not Marked</button>
+                    <div className="inline-flex w-fit bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2 segmented-no-effects">
+                        {['All Employees', 'Present', 'Late', 'On Leave', 'Not Marked'].map((item) => (
+                            <button
+                                key={item}
+                                onClick={() => setActiveAttendanceTab(item)}
+                                className={`px-4 py-2 rounded-lg transition-colors border-none shadow-none outline-none focus:outline-none focus:ring-0 ${activeAttendanceTab === item
+                                        ? 'bg-white text-[#212529] border border-[#E5E7EB] shadow-sm'
+                                        : 'bg-transparent text-[#6B7280]'
+                                    }`}
+                            >
+                                {item}
+                            </button>
+                        ))}
                     </div>
                     <div className="mt-6">
                         <table className="w-full border-separate border-spacing-y-4">
