@@ -250,7 +250,7 @@ const LeavemanagementEmployee = () => {
       {/* =======================================apply leave popup===================================== */}
 
       {showApplyLeavePopup && createPortal(
-        <div className="fixed inset-0 bg-black/60  flex  justify-end z-50">
+        <div className="fixed inset-0 bg-black/60  flex  justify-end z-1000">
           <div className="w-[543px] bg-white rounded-xl shadow-lg p-6 relative">
 
             {/* Header */}

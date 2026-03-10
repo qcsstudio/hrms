@@ -92,6 +92,66 @@ const statsData = [
   }
 ]
 
+const FilterDropdown = ({ label, value, options, onSelect }) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef(null)
+  const selectedLabel = value || label
+  const menuItems = [label, ...options.filter((opt) => opt !== value)]
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick)
+    return () => document.removeEventListener("mousedown", handleOutsideClick)
+  }, [])
+
+  return (
+    <div ref={dropdownRef} className='relative w-[210px]'>
+      <button
+        type='button'
+        onClick={() => setIsOpen((prev) => !prev)}
+        className='w-full h-[40px] border border-[#DEE2E6] rounded-lg bg-white px-3 text-[14px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0 flex items-center justify-between'
+      >
+        <span>{value || label}</span>
+        <FaAngleDown className={`text-[12px] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className='absolute left-0 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-none z-20 overflow-hidden'>
+          <div className='w-full text-left px-4 py-2 text-sm text-[#111827] font-medium bg-blue-50'>
+            {selectedLabel}
+          </div>
+
+          {menuItems.map((item, idx) => (
+            <div
+              key={idx}
+              role='button'
+              tabIndex={0}
+              onClick={() => {
+                onSelect(item === label ? "" : item)
+                setIsOpen(false)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  onSelect(item === label ? "" : item)
+                  setIsOpen(false)
+                }
+              }}
+              className='w-full text-left px-4 py-2 text-sm text-[#111827] font-normal border-none shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100 transition-colors cursor-pointer'
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* -------------------- MAIN COMPONENT -------------------- */
 
 const EmployeeHrTL = () => {
@@ -115,11 +175,6 @@ const EmployeeHrTL = () => {
   const roleOptions = getUniqueValues("Role")
   const statusOptions = getUniqueValues("Status")
   const locationOptions = ["India", "USA"] // dummy (future ready)
-
-  /* -------- FILTER CHANGE -------- */
-  const handleFilterChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value })
-  }
 
   /* -------- FILTERED EMPLOYEES -------- */
   const filteredEmployees = employee.filter(item =>
@@ -204,12 +259,12 @@ const EmployeeHrTL = () => {
       </div>
 
       {/* ---------------- TABS ---------------- */}
-      <div className='my-5 border border-[#DEE2E6] w-fit flex rounded-[9px] p-1 gap-2 bg-[#F4F4F5] segmented-no-effects'>
+      <div className='my-5 border border-[#DEE2E6] w-fit flex rounded-[9px] p-1 gap-2 bg-[#F4F4F5]'>
         {["All Employees", "My Team", "Me"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveEmployeeTab(tab)}
-            className={`px-4 py-2 rounded-lg border-none shadow-none outline-none focus:outline-none focus:ring-0 ${activeEmployeeTab === tab
+            className={`px-4 py-2 rounded-lg border-none shadow-none outline-none transition-transform duration-200 focus:outline-none focus:ring-0 hover:-translate-y-[1px] hover:shadow-none active:scale-[0.99] ${activeEmployeeTab === tab
               ? "bg-white text-[#212529] border border-[#E5E7EB] shadow-sm"
               : "bg-transparent text-[#6B7280]"
               }`}
@@ -223,53 +278,33 @@ const EmployeeHrTL = () => {
       <div className='flex justify-between my-4'>
         <div className='flex gap-3'>
 
-          <select
-            name="department"
+          <FilterDropdown
+            label="Department"
             value={filters.department}
-            onChange={handleFilterChange}
-            className='border border-[#DEE2E6] rounded-md w-[210px] h-[40px] bg-white px-3 text-sm'
-          >
-            <option value="">Department</option>
-            {departmentOptions.map((d, i) => (
-              <option key={i} value={d}>{d}</option>
-            ))}
-          </select>
+            options={departmentOptions}
+            onSelect={(val) => setFilters({ ...filters, department: val })}
+          />
 
-          <select
-            name="role"
+          <FilterDropdown
+            label="Role"
             value={filters.role}
-            onChange={handleFilterChange}
-            className='border border-[#DEE2E6] rounded-md w-[210px] h-[40px] bg-white px-3 text-sm'
-          >
-            <option value="">Role</option>
-            {roleOptions.map((r, i) => (
-              <option key={i} value={r}>{r}</option>
-            ))}
-          </select>
+            options={roleOptions}
+            onSelect={(val) => setFilters({ ...filters, role: val })}
+          />
 
-          <select
-            name="location"
+          <FilterDropdown
+            label="Location"
             value={filters.location}
-            onChange={handleFilterChange}
-            className='border border-[#DEE2E6] rounded-md w-[210px] h-[40px] bg-white px-3 text-sm'
-          >
-            <option value="">Location</option>
-            {locationOptions.map((l, i) => (
-              <option key={i} value={l}>{l}</option>
-            ))}
-          </select>
+            options={locationOptions}
+            onSelect={(val) => setFilters({ ...filters, location: val })}
+          />
 
-          <select
-            name="status"
+          <FilterDropdown
+            label="Status"
             value={filters.status}
-            onChange={handleFilterChange}
-            className='border border-[#DEE2E6] rounded-md w-[210px] h-[40px] bg-white px-3 text-sm'
-          >
-            <option value="">Status</option>
-            {statusOptions.map((s, i) => (
-              <option key={i} value={s}>{s}</option>
-            ))}
-          </select>
+            options={statusOptions}
+            onSelect={(val) => setFilters({ ...filters, status: val })}
+          />
 
         </div>
 
@@ -296,34 +331,37 @@ const EmployeeHrTL = () => {
       </ul>
 
       {/* ---------------- EMPLOYEE ROWS ---------------- */}
-      {filteredEmployees.map((item, index) => (
-        <div
-          key={index}
-          className='flex justify-between border border-[#0000001A] m-[15px] p-5 items-center rounded-md bg-white'
-        >
-          <div>
-            <div>{item.name}</div>
-            <div className='text-gray-300 w-[270px]'>{item.email}</div>
+      <div className='list-stagger'>
+        {filteredEmployees.map((item, index) => (
+          <div
+            key={index}
+            className='flex justify-between border border-[#E5E7EB] my-4 px-3 h-[64px] items-center rounded-[6px] bg-white/90 shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]'
+            style={{ "--stagger": index }}
+          >
+            <div>
+              <div>{item.name}</div>
+              <div className='text-gray-300 text-[12px] w-[270px]'>{item.email}</div>
+            </div>
+
+            <div className='w-[120px]'>{item.department}</div>
+            <div>{item.Role}</div>
+
+            <div className='border border-[#C5F5D5] bg-[#E9FFEF] text-[#10B981] px-2 rounded-md'>
+              {item.Status}
+            </div>
+
+            <div className='text-[#52525B]'>{item.joining}</div>
+
+            <div className='flex gap-2 table-action-icons'>
+              {item.actionicon && <img src={item.actionicon} />}
+              {item.actionicon1 && <img src={item.actionicon1} />}
+              {item.actionicon2 && <img src={item.actionicon2} />}
+              {item.actionicon3 && <img src={item.actionicon3} />}
+              {item.actionicon4 && <img src={item.actionicon4} />}
+            </div>
           </div>
-
-          <div className='w-[120px]'>{item.department}</div>
-          <div>{item.Role}</div>
-
-          <div className='border border-[#C5F5D5] bg-[#E9FFEF] text-[#10B981] px-2 rounded-md'>
-            {item.Status}
-          </div>
-
-          <div className='text-[#52525B]'>{item.joining}</div>
-
-          <div className='flex gap-2 table-action-icons'>
-            {item.actionicon && <img src={item.actionicon} />}
-            {item.actionicon1 && <img src={item.actionicon1} />}
-            {item.actionicon2 && <img src={item.actionicon2} />}
-            {item.actionicon3 && <img src={item.actionicon3} />}
-            {item.actionicon4 && <img src={item.actionicon4} />}
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
     </div>
   )

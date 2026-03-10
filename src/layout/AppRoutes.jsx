@@ -53,6 +53,7 @@ import LeaveManagementTLHr from "../Container/DashboardPages/LeaveManagement/Lea
 import LeaveManagementHr1 from "../Container/DashboardPages/LeaveManagement/LeaveManagementHr1";
 import PayrollDashboard from "../Container/Payroll/PayrollDashboard";
 import PayrollOverviewPage from "../Container/Payroll/Run_Payroll/PayrollOverviewPage";
+import PerformanceDashboard from "../Container/DashboardPages/Performance/PerformanceDashboard";
 // import DashboardPayroll1 from "../Container/Payroll/Payroll/DashboardPayroll1";
 // import PayrollDashboard from "../Container/Payroll/Payroll/PayrollDashboard";
 // import DashboardPayroll2 from "../Container/Payroll/Payroll/DashboardPayroll2";
@@ -332,6 +333,7 @@ const AppRoutes = () => {
             </PrivateRoute>
           }
         >
+          <Route path="performance" element={<PerformanceDashboard/>}/>
           <Route path="Companyadmin-dashboard" element={<Admindashboard />} />
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
           <Route path="employee" element={
