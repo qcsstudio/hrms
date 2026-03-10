@@ -233,7 +233,7 @@ const SuperAdminDashboard = () => {
           <div className="relative">
             <button
               onClick={() => setIsSortOpen((prev) => !prev)}
-              className="border flex items-center gap-2 border-gray-300 rounded-lg px-4 py-2 bg-white w-[110px] h-[40px] text-[#334155]"
+              className="border flex items-center gap-2 border-gray-300 rounded-lg px-4 py-2 bg-white w-[110px] h-[40px] text-[#334155] shadow-none outline-none focus:outline-none focus:ring-0 transition-transform duration-200 hover:-translate-y-[1px] hover:shadow-none active:scale-[0.99]"
             >
               Sort <FaAngleDown className={`${isSortOpen ? "rotate-180" : ""} transition-transform`} />
             </button>
@@ -289,7 +289,7 @@ const SuperAdminDashboard = () => {
           {sortedCompanies?.map((row, idx) => (
             <div
               key={idx}
-              className="flex justify-between items-center rounded-2xl p-3 my-4 bg-white/80 surface-card"
+              className="flex justify-between items-center rounded-[6px] p-3 my-4 bg-white/90 border border-[#E5E7EB] shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]"
               style={{ "--stagger": idx }}
             >
             <div className="w-1/5">

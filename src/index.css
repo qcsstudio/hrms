@@ -255,6 +255,26 @@
       0 2px 6px rgba(15, 23, 42, 0.07),
       0 18px 36px rgba(15, 23, 42, 0.10);
   }
+
+  /* Attendance date-range clear icon: remove circle bg/shadow */
+  .attendance-date-range .react-datepicker__close-icon,
+  .attendance-date-range .react-datepicker__close-icon:hover,
+  .attendance-date-range .react-datepicker__close-icon:focus,
+  .attendance-date-range .react-datepicker__close-icon:active {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    transform: none !important;
+  }
+
+  .attendance-date-range .react-datepicker__close-icon::after,
+  .attendance-date-range .react-datepicker__close-icon:hover::after,
+  .attendance-date-range .react-datepicker__close-icon:focus::after,
+  .attendance-date-range .react-datepicker__close-icon:active::after {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #9ca3af !important;
+  }
 }
 
 .font-plein {

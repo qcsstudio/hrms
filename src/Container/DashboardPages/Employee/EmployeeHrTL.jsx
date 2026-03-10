@@ -259,12 +259,12 @@ const EmployeeHrTL = () => {
       </div>
 
       {/* ---------------- TABS ---------------- */}
-      <div className='my-5 border border-[#DEE2E6] w-fit flex rounded-[9px] p-1 gap-2 bg-[#F4F4F5] segmented-no-effects'>
+      <div className='my-5 border border-[#DEE2E6] w-fit flex rounded-[9px] p-1 gap-2 bg-[#F4F4F5]'>
         {["All Employees", "My Team", "Me"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveEmployeeTab(tab)}
-            className={`px-4 py-2 rounded-lg border-none shadow-none outline-none focus:outline-none focus:ring-0 ${activeEmployeeTab === tab
+            className={`px-4 py-2 rounded-lg border-none shadow-none outline-none transition-transform duration-200 focus:outline-none focus:ring-0 hover:-translate-y-[1px] hover:shadow-none active:scale-[0.99] ${activeEmployeeTab === tab
               ? "bg-white text-[#212529] border border-[#E5E7EB] shadow-sm"
               : "bg-transparent text-[#6B7280]"
               }`}
@@ -331,34 +331,37 @@ const EmployeeHrTL = () => {
       </ul>
 
       {/* ---------------- EMPLOYEE ROWS ---------------- */}
-      {filteredEmployees.map((item, index) => (
-        <div
-          key={index}
-          className='flex justify-between border border-[#0000001A] m-[15px] p-5 items-center rounded-md bg-white'
-        >
-          <div>
-            <div>{item.name}</div>
-            <div className='text-gray-300 w-[270px]'>{item.email}</div>
+      <div className='list-stagger'>
+        {filteredEmployees.map((item, index) => (
+          <div
+            key={index}
+            className='flex justify-between border border-[#E5E7EB] my-4 px-3 h-[64px] items-center rounded-[6px] bg-white/90 shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]'
+            style={{ "--stagger": index }}
+          >
+            <div>
+              <div>{item.name}</div>
+              <div className='text-gray-300 text-[12px] w-[270px]'>{item.email}</div>
+            </div>
+
+            <div className='w-[120px]'>{item.department}</div>
+            <div>{item.Role}</div>
+
+            <div className='border border-[#C5F5D5] bg-[#E9FFEF] text-[#10B981] px-2 rounded-md'>
+              {item.Status}
+            </div>
+
+            <div className='text-[#52525B]'>{item.joining}</div>
+
+            <div className='flex gap-2 table-action-icons'>
+              {item.actionicon && <img src={item.actionicon} />}
+              {item.actionicon1 && <img src={item.actionicon1} />}
+              {item.actionicon2 && <img src={item.actionicon2} />}
+              {item.actionicon3 && <img src={item.actionicon3} />}
+              {item.actionicon4 && <img src={item.actionicon4} />}
+            </div>
           </div>
-
-          <div className='w-[120px]'>{item.department}</div>
-          <div>{item.Role}</div>
-
-          <div className='border border-[#C5F5D5] bg-[#E9FFEF] text-[#10B981] px-2 rounded-md'>
-            {item.Status}
-          </div>
-
-          <div className='text-[#52525B]'>{item.joining}</div>
-
-          <div className='flex gap-2 table-action-icons'>
-            {item.actionicon && <img src={item.actionicon} />}
-            {item.actionicon1 && <img src={item.actionicon1} />}
-            {item.actionicon2 && <img src={item.actionicon2} />}
-            {item.actionicon3 && <img src={item.actionicon3} />}
-            {item.actionicon4 && <img src={item.actionicon4} />}
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
     </div>
   )
