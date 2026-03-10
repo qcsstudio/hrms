@@ -1,16 +1,33 @@
-
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SlArrowLeft } from "react-icons/sl";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect, useRef } from "react";
 import { setActiveUrl, setOpenMenu } from "../../Redux/sidebarSlice";
 import { toast } from "react-toastify";
 import { MdArrowDropDown } from "react-icons/md";
-import { attendance_logo, attendance_logo_blue, dashboard_logo, dashboard_logo_blue, employee_logo, employee_logo_blue, leave_logo, leave_logo_blue, notification_logo, notification_logo_blue, payroll_logo, payroll_logo_blue, settings_logo, settings_logo_blue, support_logo, support_logo_blue } from "../../allAssetsImport/allAssets";
+import {
+  attendance_logo,
+  attendance_logo_blue,
+  dashboard_logo,
+  dashboard_logo_blue,
+  employee_logo,
+  employee_logo_blue,
+  leave_logo,
+  leave_logo_blue,
+  notification_logo,
+  notification_logo_blue,
+  payroll_logo,
+  payroll_logo_blue,
+  settings_logo,
+  settings_logo_blue,
+  support_logo,
+  support_logo_blue,
+} from "../../allAssetsImport/allAssets";
 
 const SideBar = () => {
-
-  const { openMenu, activeUrl, isConfig } = useSelector((state) => state.sidebar)
+  const { openMenu, activeUrl, isConfig } = useSelector(
+    (state) => state.sidebar,
+  );
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -21,120 +38,117 @@ const SideBar = () => {
     organise: false,
     resolve: false,
     hrops: false,
-  })
+  });
 
   const handleConfigDropdown = (menu) => {
-    setConfigdropdown(prev => ({
+    setConfigdropdown((prev) => ({
       ...prev,
-      [menu]: !prev[menu]
+      [menu]: !prev[menu],
     }));
-  }
+  };
 
   const [innerconfigdropdownhris, setInnerConfigdropdownhris] = useState({
     accountManagement: false,
     companyData: false,
     employeeData: false,
-  }
-  )
+  });
 
   const [innerconfigdropdowntrack, setInnerConfigdropdowntrack] = useState({
     attendance: false,
     leave: false,
-    deviceintegration: false
-  })
+    deviceintegration: false,
+  });
 
   const [innerconfigdropdownpay, setInnerConfigdropdownpay] = useState({
     expensive: false,
     payroll: false,
-  })
+  });
 
-  const [innerconfigdropdownorganise, setInnerConfigdropdownorganise] = useState({
-    letter: false,
-
-  })
+  const [innerconfigdropdownorganise, setInnerConfigdropdownorganise] =
+    useState({
+      letter: false,
+    });
   const [innerconfigdropdownresolve, setInnerConfigdropdownresolve] = useState({
     checklist: false,
-    policycenter: false
-  })
+    policycenter: false,
+  });
 
   const [innerconfigdropdownhrops, setInnerConfigdropdownhrops] = useState({
     asset: false,
-  })
+  });
 
   const handleInnerConfigDropdown = (menu, dropdownType) => {
-    if (dropdownType === 'hris') {
-      setInnerConfigdropdownhris(prev => ({
+    if (dropdownType === "hris") {
+      setInnerConfigdropdownhris((prev) => ({
         ...prev,
-        [menu]: !prev[menu]
+        [menu]: !prev[menu],
       }));
-    } else if (dropdownType === 'track') {
-      setInnerConfigdropdowntrack(prev => ({
+    } else if (dropdownType === "track") {
+      setInnerConfigdropdowntrack((prev) => ({
         ...prev,
-        [menu]: !prev[menu]
+        [menu]: !prev[menu],
       }));
-    }
-    else if (dropdownType === 'pay') {
-      setInnerConfigdropdownpay(prev => ({
+    } else if (dropdownType === "pay") {
+      setInnerConfigdropdownpay((prev) => ({
         ...prev,
-        [menu]: !prev[menu]
+        [menu]: !prev[menu],
       }));
-    }
-    else if (dropdownType === 'organise') {
-      setInnerConfigdropdownorganise(prev => ({
+    } else if (dropdownType === "organise") {
+      setInnerConfigdropdownorganise((prev) => ({
         ...prev,
-        [menu]: !prev[menu]
+        [menu]: !prev[menu],
       }));
-    }
-    else if (dropdownType === 'resolve') {
-      setInnerConfigdropdownresolve(prev => ({
+    } else if (dropdownType === "resolve") {
+      setInnerConfigdropdownresolve((prev) => ({
         ...prev,
-        [menu]: !prev[menu]
+        [menu]: !prev[menu],
       }));
-    }
-    else if (dropdownType === 'hrops') {
-      setInnerConfigdropdownhrops(prev => ({
+    } else if (dropdownType === "hrops") {
+      setInnerConfigdropdownhrops((prev) => ({
         ...prev,
-        [menu]: !prev[menu]
+        [menu]: !prev[menu],
       }));
     }
-  }
-
+  };
 
   const onActivate = async (id) => {
     try {
-      dispatch(setLoading(true))
-      const response = await axiosInstance.post(`/api/add-active-user/${id}`)
+      dispatch(setLoading(true));
+      const response = await axiosInstance.post(`/api/add-active-user/${id}`);
       if (response.status == 200) {
-        const msg = response.data.message
-        dispatch(getActiveuser())
-        dispatch(setSelectedAccount(response?.data?.data))
-        toast.success(msg)
+        const msg = response.data.message;
+        dispatch(getActiveuser());
+        dispatch(setSelectedAccount(response?.data?.data));
+        toast.success(msg);
         setTimeout(() => {
-          dispatch(setLoading(false))
-        }, 1000)
+          dispatch(setLoading(false));
+        }, 1000);
       }
     } catch (error) {
-      console.log(error, "==>")
+      console.log(error, "==>");
     }
-  }
+  };
 
   // for mobile and tabview--------------
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    // Check screen size on mount and resize
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    // Set initial value
     handleResize();
-    // Add event listener
-    window.addEventListener('resize', handleResize);
-    // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   //-------------------
 
+  const userRole = localStorage.getItem("role");
+
+  const isSuperAdmin = userRole === "SUPER_ADMIN";
+  const isCompanyAdmin = userRole === "COMPANY_ADMIN";
+  const isEMP = userRole === "EMPLOYEE";
+  const isHR = userRole === "HR";
+  const isTL = userRole === "TL";
 
   useEffect(() => {
     const storageVal = localStorage.getItem("openMenu");
@@ -148,7 +162,6 @@ const SideBar = () => {
   const getCompanySlug = () => {
     const hostname = window.location.hostname;
 
-    // main domains (NO SLUG)
     if (
       hostname === "qcsstudios.com" ||
       hostname === "www.qcsstudios.com" ||
@@ -157,23 +170,17 @@ const SideBar = () => {
       return null;
     }
 
-    // company subdomain
-    // example: abc.qcsstudios.com OR www.abc.qcsstudios.com
     const parts = hostname.split(".");
 
     if (parts.length === 3) {
-      // abc.qcsstudios.com
       return parts[0];
     }
 
     if (parts.length === 4 && parts[0] === "www") {
-      // www.abc.qcsstudios.com
       return parts[1];
     }
     return null;
   };
-
-
 
   // Change Tab
   const changeTab = (tabName) => {
@@ -182,10 +189,8 @@ const SideBar = () => {
     switch (tabName) {
       case "home":
         if (slug) {
-          // ✅ company admin
           navigate("/dashboard/companyadmin-dashboard");
         } else {
-          // ✅ super admin
           navigate("/dashboard/superadmin-dashboard");
         }
         break;
@@ -284,534 +289,1290 @@ const SideBar = () => {
       case "extratime":
         navigate("/config/track/Attendance/extra-time/list");
         break;
-      // case "attendancereqcycle":
-      //   navigate("/config/track/Attendance/extra-time/list");
-      //   break;
 
-      case 'week-off':
-        navigate('/config/track/leave/Weekly-off/list')
+      case "week-off":
+        navigate("/config/track/leave/Weekly-off/list");
         break;
-      case 'leave-type':
-        navigate('/config/track/leave/leave-type')
+      case "leave-type":
+        navigate("/config/track/leave/leave-type");
         break;
-      case 'leave-policy':
-        navigate('/config/track/leave/leave-policy/list')
+      case "leave-policy":
+        navigate("/config/track/leave/leave-policy/list");
         break;
-      case 'holiday-plan':
-        navigate('/config/track/leave/holiday-plan/list')
+      case "holiday-plan":
+        navigate("/config/track/leave/holiday-plan/list");
         break;
-      case 'leave-cycle':
-        navigate('/config/track/leave/leave-cycle')
+      case "leave-cycle":
+        navigate("/config/track/leave/leave-cycle");
         break;
 
       // Pay=======================================================================
       // expensive======================
-      case 'expensive-cycle':
-        navigate('/config/pay/expensive/expense-cycle')
+      case "expensive-cycle":
+        navigate("/config/pay/expensive/expense-cycle");
         break;
-      case 'currency-conversion':
-        navigate('/config/pay/expensive/currency-conversion')
+      case "currency-conversion":
+        navigate("/config/pay/expensive/currency-conversion");
         break;
-      case 'fuel-distance':
-        navigate('/config/pay/expensive/fuel-configuration')
+      case "fuel-distance":
+        navigate("/config/pay/expensive/fuel-configuration");
         break;
-      case 'compensator':
-        navigate('/config/pay/expensive/compensator')
+      case "compensator":
+        navigate("/config/pay/expensive/compensator");
         break;
-      case 'expensive-policy':
-        navigate('/config/pay/expensive/expense-policy/list')
+      case "expensive-policy":
+        navigate("/config/pay/expensive/expense-policy/list");
         break;
 
       //payroll================================
 
-      case 'payroll-methods':
-        navigate('/config/pay/payroll/payroll-method')
+      case "payroll-methods":
+        navigate("/config/pay/payroll/payroll-method");
         break;
-      case 'salary-cycle':
-        navigate('/config/pay/payroll/salary-cycle')
+      case "salary-cycle":
+        navigate("/config/pay/payroll/salary-cycle");
         break;
-      case 'payroll-signatory':
-        navigate('/config/pay/payroll/payroll-signature')
+      case "payroll-signatory":
+        navigate("/config/pay/payroll/payroll-signature");
         break;
-      case 'misc':
-        navigate('/config/pay/payroll/payroll-misc')
+      case "misc":
+        navigate("/config/pay/payroll/payroll-misc");
         break;
-      case 'component':
-        navigate('/config/pay/payroll/payroll-component')
+      case "component":
+        navigate("/config/pay/payroll/payroll-component");
         break;
-      case 'salary-structure':
-        navigate('/config/pay/payroll/salary-Structure/list')
+      case "salary-structure":
+        navigate("/config/pay/payroll/salary-Structure/list");
         break;
-      case 'benifit-plan':
-        navigate('/config/pay/')
+      case "benifit-plan":
+        navigate("/config/pay/");
         break;
-      case 'payroll-tag':
-        navigate('/config/pay/payroll/payroll-tag')
+      case "payroll-tag":
+        navigate("/config/pay/payroll/payroll-tag");
         break;
-      case 'fnf-policy':
-        navigate('/config/pay/payroll/fnc-policy')
+      case "fnf-policy":
+        navigate("/config/pay/payroll/fnc-policy");
         break;
-      case 'overtime-payment':
-        navigate('/config/pay/payroll/overtime_payment-Policy')
+      case "overtime-payment":
+        navigate("/config/pay/payroll/overtime_payment-Policy");
         break;
 
       // organise===============
 
-      case 'page-layout':
-        navigate('/config/organise/page-layout')
+      case "page-layout":
+        navigate("/config/organise/page-layout");
         break;
-      case 'template':
-        navigate('/config/organise/')
+      case "template":
+        navigate("/config/organise/");
         break;
-      case 'authorized-signatory':
-        navigate('/config/organise/authority-signature')
+      case "authorized-signatory":
+        navigate("/config/organise/authority-signature");
         break;
 
       // resolve================
 
-      case 'checklist':
-        navigate('/config/resolve/checklist/list')
+      case "checklist":
+        navigate("/config/resolve/checklist/list");
         break;
-      case 'company-policy':
-        navigate('/config/resolve/policy-center/list')
+      case "company-policy":
+        navigate("/config/resolve/policy-center/list");
         break;
 
       // Hr Opps===================
-      case 'asset-category':
-        navigate('/config/hrops/hrops-assests/list')
+      case "asset-category":
+        navigate("/config/hrops/hrops-assests/list");
         break;
       // ========================
-      case 'deviceintegration':
-        navigate('/config/track/deviceintegration');
+      case "deviceintegration":
+        navigate("/config/track/deviceintegration");
         break;
       default:
         if (slug) {
-          // ✅ company admin
           navigate("/dashboard/companyadmin-dashboard");
         } else {
-          // ✅ super admin
           navigate("/dashboard/superadmin-dashboard");
         }
         break;
     }
   };
-  const loacation = useLocation()
-  return <>
-    {/* flex flex-col justify-between */}
-    {isConfig ? <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between   ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
-      <div className="h-fit  overflow-y-scroll hide-scrollbar">
-        {openMenu && <>
-          {/* =============================HRIS====================================== */}
+
+  const loacation = useLocation();
+
+  return (
+    <>
+      {isConfig ? (
+        <nav
+          className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between ${openMenu ? "w-[100%]" : "w-[100%]"} h-[90vh] bg-[#fff] overflow-hidden select-none`}
+        >
           <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('hris')}>HRIS</h1>
-            {
-              configdropdown.hris && <div className="px-4">
-                {/* Account Management==================================== */}
+            {openMenu && (
+              <>
+                {/* =============================HRIS====================================== */}
+                <div>
+                  <h1
+                    className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]"
+                    onClick={() => handleConfigDropdown("hris")}
+                  >
+                    HRIS
+                  </h1>
+                  {configdropdown.hris && (
+                    <div className="px-4">
+                      {/* Account Management==================================== */}
+                      <h1
+                        className={`px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center  `}
+                        onClick={() =>
+                          handleInnerConfigDropdown("accountManagement", "hris")
+                        }
+                      >
+                        Account Management
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdownhris.accountManagement ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdownhris.accountManagement && (
+                        <div className="pl-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Global-defaults"
+                              ? "bg-[#EEF2FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("global-default")}
+                          >
+                            Global Default
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Branding-setup"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("branding-setup")}
+                          >
+                            Branding Setup
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Company-office"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("company-offices")}
+                          >
+                            Company Offices
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Incorporation-details"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("incorporation-details")}
+                          >
+                            Incorporation details
+                          </h1>
+                        </div>
+                      )}
+                      {/* Company Data================================================== */}
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("companyData", "hris")
+                        }
+                      >
+                        Company Data{" "}
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdownhris.companyData ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdownhris.companyData && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Company_data/buisness-unit-list"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("bussinessunit")}
+                          >
+                            Bussiness Unit
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Company_data/department"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("department")}
+                          >
+                            Department
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Company_data/designation"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("designation")}
+                          >
+                            Designation
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Company_data/team"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("team")}
+                          >
+                            Team
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Company_data/grade"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("grade")}
+                          >
+                            Grade
+                          </h1>
+                        </div>
+                      )}
+                      {/* Employee Data======================================= */}
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("employeeData", "hris")
+                        }
+                      >
+                        Employee Data{" "}
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdownhris.employeeData ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdownhris.employeeData && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Employee-data/employeeId"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("employeeId")}
+                          >
+                            Employee Id
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Employee-data/probation-list" ||
+                              location.pathname ===
+                              "/config/hris/Employee-data/probation-create"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("probation")}
+                          >
+                            Probation
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Employee-data/Approval-workflow" ||
+                              location.pathname ===
+                              "/config/hris/Employee-data/approval-workflow/create" ||
+                              location.pathname.includes(
+                                "Employee-data/approval-workflow/edit",
+                              )
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("approvalWorkflow")}
+                          >
+                            Approval Workflow
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Employee-data/default-privacy-policy"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("defaultPrivacyPolicy")}
+                          >
+                            Default Profile Privacy
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Employee-data/default-permission"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("defaultPermission")}
+                          >
+                            Default Permission
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Global-defaults"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("permissionPolicy")}
+                          >
+                            Permission Policy
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Employee-data/exitPolicy-list" ||
+                              location.pathname ===
+                              "/config/hris/Employee-data/exitPolicy/create" ||
+                              location.pathname.includes("/exitPolicy-edit")
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("exitPolicy")}
+                          >
+                            Exit Policy
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Employee-data/Exit-reason" ||
+                              location.pathname ===
+                              "/config/hris/Employee-data/exit-reason/create"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("exitReason")}
+                          >
+                            Exit Reason
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Employee-data/custom-list" ||
+                              location.pathname ===
+                              "/config/hris/Employee-data/custom-create"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("customData")}
+                          >
+                            Custom Data
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Employee-data/Common-access"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("commonAccess")}
+                          >
+                            Common Access
+                          </h1>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-                <h1 className={`px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center  `} onClick={() => handleInnerConfigDropdown('accountManagement', 'hris')}>Account Management<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.accountManagement ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdownhris.accountManagement && <div className="pl-4">
-                    <h1 className={`px-4 py-2    font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('global-default')} >Global Default</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Branding-setup' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('branding-setup')} >Branding Setup</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Company-office' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('company-offices')}>Company Offices</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Incorporation-details' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('incorporation-details')}>Incorporation details</h1>
-                  </div>
-                }
-                {/* Company Data================================================== */}
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('companyData', 'hris')}>Company Data <span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.companyData ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdownhris.companyData && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Company_data/buisness-unit-list' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('bussinessunit')} >Bussiness Unit</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Company_data/department' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('department')} >Department</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Company_data/designation' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('designation')}>Designation</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Company_data/team' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('team')}>Team</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Company_data/grade' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('grade')}>Grade</h1>
-                  </div>
-                }
-                {/* Employee Data======================================= */}
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('employeeData', 'hris')}>Employee Data <span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhris.employeeData ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdownhris.employeeData && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/employeeId' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('employeeId')}>Employee Id</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/probation-list' || location.pathname === '/config/hris/Employee-data/probation-create' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('probation')}>Probation</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/Approval-workflow' || location.pathname === '/config/hris/Employee-data/approval-workflow/create' || location.pathname.includes('Employee-data/approval-workflow/edit') ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('approvalWorkflow')}>Approval Workflow</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/default-privacy-policy' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('defaultPrivacyPolicy')}>Default Profile Privacy</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/default-permission' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('defaultPermission')}>Default Permission</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('permissionPolicy')}> Permission Policy</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/exitPolicy-list' || location.pathname === '/config/hris/Employee-data/exitPolicy/create' || location.pathname.includes('/exitPolicy-edit') ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('exitPolicy')}> Exit Policy</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/Exit-reason' || location.pathname === '/config/hris/Employee-data/exit-reason/create' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('exitReason')}> Exit Reason</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/custom-list' || location.pathname === '/config/hris/Employee-data/custom-create' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('customData')}> Custom Data</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Employee-data/Common-access' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('commonAccess')}> Common Access</h1>
-                  </div>
-                }
-              </div>
-            }
+                {/* =================Track============================================== */}
+                <div>
+                  <h1
+                    className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]"
+                    onClick={() => handleConfigDropdown("track")}
+                  >
+                    Track
+                  </h1>
+                  {configdropdown.track && (
+                    <div className="px-4">
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("attendance", "track")
+                        }
+                      >
+                        Attendance
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdowntrack.attendance ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdowntrack.attendance && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Global-defaults"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("shift")}
+                          >
+                            Shift
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Global-defaults"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("clock-in-method")}
+                          >
+                            Clock-in-Method
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Global-defaults"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("attendencepolicy")}
+                          >
+                            Attendance Policy
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Global-defaults"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("extratime")}
+                          >
+                            Extra Time (Compoff)
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Global-defaults"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("attendancereqcycle")}
+                          >
+                            Attendance Request Cycle
+                          </h1>
+                        </div>
+                      )}
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("leave", "track")
+                        }
+                      >
+                        Leave
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdowntrack.leave ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdowntrack.leave && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/track/leave/Weekly-off/list"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("week-off")}
+                          >
+                            Week-off
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/track/leave/leave-type"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("leave-type")}
+                          >
+                            Leave type
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/track/leave/leave-policy/list" ||
+                              loacation.pathname ===
+                              "/config/track/leave/leave-policy/create"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("leave-policy")}
+                          >
+                            Leave Policy
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/track/leave/holiday-plan/list" ||
+                              loacation.pathname ===
+                              "/config/track/leave/holiday-plan/create"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("holiday-plan")}
+                          >
+                            Holiday Plan
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/track/leave/leave-cycle"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("leave-cycle")}
+                          >
+                            Leave Cycle Transition
+                          </h1>
+                        </div>
+                      )}
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("deviceintegration", "track")
+                        }
+                      >
+                        Device Integration
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdowntrack.deviceintegration ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdowntrack.deviceintegration && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/track/deviveintegration"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("deviceintegration")}
+                          >
+                            Device-Integration
+                          </h1>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ===================Pay========================== */}
+                <div>
+                  <h1
+                    className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]"
+                    onClick={() => handleConfigDropdown("pay")}
+                  >
+                    Pay
+                  </h1>
+                  {configdropdown.pay && (
+                    <div className="px-4">
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("expensive", "pay")
+                        }
+                      >
+                        Expensive
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdownpay.expensive ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdownpay.expensive && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/expensive/expense-cycle"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("expensive-cycle")}
+                          >
+                            Expensive Cycle
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/expensive/currency-conversion"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("currency-conversion")}
+                          >
+                            Currency Conversion
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/expensive/fuel-configuration"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("fuel-distance")}
+                          >
+                            Fuel & Distance Unit
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/expensive/compensator"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("compensator")}
+                          >
+                            Compensator
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/expensive/expense-policy/list" ||
+                              loacation.pathname ===
+                              "/config/pay/expensive/create-expense-policy"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("expensive-policy")}
+                          >
+                            Expensive Policy
+                          </h1>
+                        </div>
+                      )}
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("payroll", "pay")
+                        }
+                      >
+                        Payroll
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdownpay.payroll ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdownpay.payroll && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/payroll/payroll-method"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("payroll-methods")}
+                          >
+                            Payroll Method
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/payroll/salary-cycle"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("salary-cycle")}
+                          >
+                            Salary Cycle
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/payroll/payroll-signature"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("payroll-signatory")}
+                          >
+                            Payroll Signatory
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/payroll/payroll-misc"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("misc")}
+                          >
+                            Misc
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/payroll/payroll-component"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("component")}
+                          >
+                            Component
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname.includes(
+                              "/config/pay/payroll/salary-Structure",
+                            )
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("salary-structure")}
+                          >
+                            Salary Structure
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/payroll/payroll-taghh"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("benifit-plan")}
+                          >
+                            Flexible Benifit plan
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/payroll/payroll-tag"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("payroll-tag")}
+                          >
+                            Payroll Tag
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/payroll/fnc-policy"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("fnf-policy")}
+                          >
+                            FNF Policy
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/pay/payroll/overtime_payment-Policy"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("overtime-payment")}
+                          >
+                            Overtime Payment Policy
+                          </h1>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ======================Organise============================================= */}
+                <div>
+                  <h1
+                    className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]"
+                    onClick={() => handleConfigDropdown("organise")}
+                  >
+                    Organise
+                  </h1>
+                  {configdropdown.organise && (
+                    <div className="px-4">
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("letter", "organise")
+                        }
+                      >
+                        Letter
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdownorganise.expensive ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdownorganise.letter && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/organise/page-layout"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("page-layout")}
+                          >
+                            Page Layout
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/hris/Account-management/Global-defaults"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("template")}
+                          >
+                            Template
+                          </h1>
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
+                              "/config/organise/authority-signature"
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("authorized-signatory")}
+                          >
+                            Authorized Signatory
+                          </h1>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ===================================Resolve=========================================== */}
+                <div>
+                  <h1
+                    className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]"
+                    onClick={() => handleConfigDropdown("resolve")}
+                  >
+                    Resolve
+                  </h1>
+                  {configdropdown.resolve && (
+                    <div className="px-4">
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("checklist", "resolve")
+                        }
+                      >
+                        Checklist
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdownresolve.checklist ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdownresolve.checklist && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname.includes(
+                              "/config/resolve/checklist",
+                            )
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("checklist")}
+                          >
+                            Checklist
+                          </h1>
+                        </div>
+                      )}
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("policycenter", "resolve")
+                        }
+                      >
+                        Policy Center
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdownresolve.policycenter ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdownresolve.policycenter && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname.includes(
+                              "/config/resolve/policy-center",
+                            )
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("company-policy")}
+                          >
+                            Company Policy
+                          </h1>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ===================================HR Ops===================================================== */}
+                <div>
+                  <h1
+                    className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]"
+                    onClick={() => handleConfigDropdown("hrops")}
+                  >
+                    HR Ops
+                  </h1>
+                  {configdropdown.hrops && (
+                    <div className="px-4">
+                      <h1
+                        className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center "
+                        onClick={() =>
+                          handleInnerConfigDropdown("asset", "hrops")
+                        }
+                      >
+                        Asset
+                        <span>
+                          <MdArrowDropDown
+                            className={`text-[20px] ${innerconfigdropdownhrops.asset ? "rotate-180" : ""}`}
+                          />
+                        </span>
+                      </h1>
+                      {innerconfigdropdownhrops.asset && (
+                        <div className="px-4">
+                          <h1
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname.includes("/config/hrops")
+                              ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
+                              : "text-[#64748B]"
+                              }`}
+                            onClick={() => changeTab("asset-category")}
+                          >
+                            Asset Category
+                          </h1>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
-
-
-          {/* =================Track============================================== */}
-
-          <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('track')}>Track</h1>
-            {
-              configdropdown.track && <div className="px-4">
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('attendance', 'track')}>Attendance<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.attendance ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdowntrack.attendance && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('shift')} >Shift</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('clock-in-method')} >Clock-in-Method</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('attendencepolicy')} >Attendance Policy</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('extratime')} >Extra Time (Compoff)</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('attendancereqcycle')} >Attendance Request Cycle</h1>
-
-                  </div>
-                }
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('leave', 'track')}>Leave<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.leave ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdowntrack.leave && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/track/leave/Weekly-off/list' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('week-off')}  >Week-off</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/track/leave/leave-type' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('leave-type')} >Leave type</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/track/leave/leave-policy/list' || loacation.pathname === '/config/track/leave/leave-policy/create' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('leave-policy')} >Leave Policy</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/track/leave/holiday-plan/list' || loacation.pathname === '/config/track/leave/holiday-plan/create' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('holiday-plan')} >Holiday Plan</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/track/leave/leave-cycle' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('leave-cycle')} >Leave Cycle Transition</h1>
-                  </div>
-                }
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('deviceintegration', 'track')} >Device Integration<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdowntrack.deviceintegration ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdowntrack.deviceintegration && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/track/deviveintegration' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('deviceintegration')} >Device-Integration</h1>
-                  </div>
-                }
-
-              </div>
-            }
-          </div>
-
-          {/* ===================Pay========================== */}
-          <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('pay')}>Pay</h1>
-            {
-              configdropdown.pay && <div className="px-4">
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('expensive', 'pay')}>Expensive<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownpay.expensive ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdownpay.expensive && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/expensive/expense-cycle' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('expensive-cycle')}  >Expensive Cycle</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/expensive/currency-conversion' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('currency-conversion')} >Currency Conversion</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/expensive/fuel-configuration' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('fuel-distance')} >Fuel & Distance Unit</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/expensive/compensator' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('compensator')} >Compensator</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/expensive/expense-policy/list' || loacation.pathname === '/config/pay/expensive/create-expense-policy' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('expensive-policy')} >Expensive Policy</h1>
-
-                  </div>
-                }
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('payroll', 'pay')}>Payroll<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownpay.payroll ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdownpay.payroll && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/payroll-method' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('payroll-methods')} >Payroll Method</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/salary-cycle' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('salary-cycle')} >Salary Cycle</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/payroll-signature' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('payroll-signatory')} >Payroll Signatory</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/payroll-misc' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('misc')} >Misc</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/payroll-component' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('component')} >Component</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname.includes('/config/pay/payroll/salary-Structure') ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('salary-structure')} >Salary Structure</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/payroll-taghh' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('benifit-plan')} >Flexible Benifit plan</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/payroll-tag' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('payroll-tag')} >Payroll Tag</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('fnf-policy')} >FNF Policy</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/pay/payroll/overtime_payment-Policy' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'} `} onClick={() => changeTab('overtime-payment')} >Overtime Payment Policy</h1>
-
-                  </div>
-                }
-              </div>
-            }
-
-          </div>
-          {/* ======================Organise============================================= */}
-          <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('organise')} >Organise</h1>
-            {
-              configdropdown.organise && <div className="px-4">
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('letter', 'organise')}>Letter<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownorganise.expensive ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdownorganise.letter && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/organise/page-layout' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('page-layout')}  >Page Layout</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/hris/Account-management/Global-defaults' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('template')}  >Template</h1>
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname === '/config/organise/authority-signature' ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('authorized-signatory')}  >Authorized Signatory</h1>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-          {/* ===================================Resolve=========================================== */}
-          <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('resolve')} >Resolve</h1>
-            {
-              configdropdown.resolve && <div className="px-4">
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('checklist', 'resolve')}>Checklist<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownresolve.checklist ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdownresolve.checklist && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname.includes('/config/resolve/checklist') ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('checklist')} >Checklist</h1>
-
-                  </div>
-                }
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('policycenter', 'resolve')}>Policy Center<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownresolve.policycenter ? 'rotate-180' : ''}`} /></span></h1>
-                {
-                  innerconfigdropdownresolve.policycenter && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname.includes('/config/resolve/policy-center') ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('company-policy')} >Company Policy</h1>
-
-                  </div>
-                }
-              </div>
-            }
-          </div>
-          {/* ===================================HR Ops===================================================== */}
-          <div>
-            <h1 className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]" onClick={() => handleConfigDropdown('hrops')}>HR Ops</h1>
-            {
-              configdropdown.hrops && <div className="px-4">
-
-                <h1 className="px-4 py-[1px] text-[#64748B]  mt-3 font-medium text-[14px] flex justify-between items-center " onClick={() => handleInnerConfigDropdown('asset', 'hrops')}>Asset<span><MdArrowDropDown className={`text-[20px] ${innerconfigdropdownhrops.asset ? 'rotate-180' : ''}`} /></span></h1>
-
-                {
-                  innerconfigdropdownhrops.asset && <div className="px-4">
-                    <h1 className={`px-4 py-2  font-medium text-[14px] ${loacation.pathname.includes('/config/hrops') ?
-                      'bg-[#E9F4FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}`} onClick={() => changeTab('asset-category')} >Asset Category</h1>
-                  </div>
-                }
-              </div>
-            }
-
-          </div>
-
-
-
-        </>
-        }
-
-      </div>
-    </nav> :
-      <nav className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between ${openMenu ? 'w-[100%]' : 'w-[100%]'} h-[90vh] bg-[#fff] overflow-hidden select-none`}>
-        {/* ===============================Big Sidebar======================== */}
-        <div className=" h-fit  overflow-y-scroll hide-scrollbar">
-          {openMenu &&
-            <ul className={`w-[100%] h-[100%]  py-[1.5rem]  flex flex-col gap-[.5rem] px-5`}>
-              <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/superadmin-dashboard' || loacation.pathname === '/dashboard/Companyadmin-dashboard' ?
-                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('home')}>
+        </nav>
+      ) : (
+        <nav
+          className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between ${openMenu ? "w-[100%]" : "w-[100%]"} h-[90vh] bg-[#fff] overflow-hidden select-none`}
+        >
+          {/* ===============================Open Sidebar (full labels)======================== */}
+          {openMenu && (
+            <ul className="w-[100%] h-[100%] py-[1.5rem] flex flex-col gap-[.5rem] px-5">
+              {/* ================= Dashboard ================= */}
+              <li
+                className={`transition-all duration-500 w-[100%] 
+  ${location.pathname.includes("dashboard") ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
+                onClick={() => changeTab("home")}
+              >
                 <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  {loacation.pathname === '/dashboard/superadmin-dashboard' || loacation.pathname === '/dashboard/Companyadmin-dashboard' ? <img src={dashboard_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                    <img src={dashboard_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
+                  <img
+                    src={dashboard_logo}
+                    width={20}
+                    height={20}
+                    alt="dashboard"
+                  />
                 </div>
                 <span>Dashboard</span>
               </li>
 
-              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/employee' ?
-                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('employee')}>
+              {/* ================= Employees ================= */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[100%]
+  ${location.pathname === "/dashboard/employee" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
+                  onClick={() => changeTab("employee")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    <img
+                      src={employee_logo}
+                      width={20}
+                      height={20}
+                      alt="employee"
+                    />
+                  </div>
+                  <span>{isEMP ? "Employee" : "Employees"}</span>
+                </li>
+              )}
+
+              {/* ================= Attendance ================= */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[100%]
+  ${location.pathname === "/dashboard/attendance" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
+                  onClick={() => changeTab("attendance")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    <img
+                      src={attendance_logo}
+                      width={20}
+                      height={20}
+                      alt="attendance"
+                    />
+                  </div>
+                  <span>Attendance</span>
+                </li>
+              )}
+
+              {/* ================= Payroll ================= */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[100%]
+  ${location.pathname === "/dashboard/payroll" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
+                  onClick={() => changeTab("DashboardPayroll1")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    <img
+                      src={payroll_logo}
+                      width={20}
+                      height={20}
+                      alt="payroll"
+                    />
+                  </div>
+                  <span>Payroll</span>
+                </li>
+              )}
+
+              {/* ================= Leave ================= */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[100%]
+  ${location.pathname === "/dashboard/leave-management" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
+                  onClick={() => changeTab("leave-management")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    <img src={leave_logo} width={20} height={20} alt="leave" />
+                  </div>
+                  <span>Leave Management</span>
+                </li>
+              )}
+
+              {/* ================= Performance ================= */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[100%]
+  ${location.pathname.includes('performance') ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
+                  onClick={() => changeTab("Performance")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    <img
+                      src={leave_logo}
+                      width={20}
+                      height={20}
+                      alt="performance"
+                    />
+                  </div>
+                  <span>Performance</span>
+                </li>
+              )}
+
+              {/* ================= Announcements ================= */}
+              {!isSuperAdmin && (
+                <li
+                  className="transition-all duration-500 w-[100%] text-[#64748B]
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
+                  onClick={() => changeTab("reportsAndExports")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    <img
+                      src={notification_logo}
+                      width={20}
+                      height={20}
+                      alt="announcement"
+                    />
+                  </div>
+                  <span>Announcements</span>
+                </li>
+              )}
+
+              {/* ================= Billing (ONLY SUPER ADMIN) ================= */}
+              {isSuperAdmin && (
+                <li
+                  className="transition-all duration-500 w-[100%] text-[#64748B]
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
+                  onClick={() => changeTab("billing")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    <img
+                      src={payroll_logo}
+                      width={20}
+                      height={20}
+                      alt="billing"
+                    />
+                  </div>
+                  <span>Billing</span>
+                </li>
+              )}
+
+              {/* ================= Settings ================= */}
+              <li
+                className="transition-all duration-500 w-[100%] text-[#64748B]
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
+                onClick={() => changeTab("settings")}
+              >
                 <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  {location.pathname === '/dashboard/employee' ? <img src={employee_logo_blue} width={20} height={20} alt="createPost_icon" className="w-[100%] h-[100%]" /> :
-                    <img src={employee_logo} width={20} height={20} alt="createPost_icon" className="w-[100%] h-[100%]" />}
-                </div>
-                <span>Employees</span>
-              </li>
-              <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/attendance' ?
-                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('attendance')}>
-                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  {activeUrl === 'attendance' ? <img src={attendance_logo_blue} width={20} height={20} alt="calendar_icon" className="w-[100%] h-[100%]" /> :
-                    <img src={attendance_logo} width={20} height={20} alt="calender_icon" className="w-[100%] h-[100%]" />}
-                </div>
-                <span>Attendance</span>
-              </li>
-              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/payroll' ?
-                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('DashboardPayroll1')}>
-                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  {activeUrl === 'DashboardPayroll1' ? <img src={payroll_logo_blue} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" /> :
-                    <img src={payroll_logo} width={20} height={20} alt="contentLibrary_icon" className="w-[100%] h-[100%]" />}
-                </div>
-                <span>Payroll</span>
-              </li>
-              <li className={`transition-all duration-500 w-[100%]  ${loacation.pathname === '/dashboard/leave-management' ?
-                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('leave-management')}>
-                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  {activeUrl === 'leave-management' ? <img src={leave_logo_blue} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" /> :
-                    <img src={leave_logo} width={20} height={20} alt="analytics_icon" className="w-[100%] h-[100%]" />}
-                </div>
-                <span>Leave Management</span>
-              </li>
-              <hr className="text-[#E2E8F0]" />
-              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname.includes('performance') ?
-                'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('Performance')}>
-                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  {activeUrl === 'Performance' ? <img src={leave_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
-                    <img src={leave_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
-                </div>
-                <span>Performance</span>
-              </li>
-              <li className={`transition-all duration-500 w-[100%] ${location.pathname === 'reportsAndExports' ?
-                `bg-[#2597f0] text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('reportsAndExports')}>
-                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  {activeUrl === 'reportsAndExports' ? <img src={notification_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
-                    <img src={notification_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
-                </div>
-                <span>Announcements</span>
-              </li>
-              <li className={`transition-all duration-500 w-[100%] text-[#64748B]
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('settings')}>
-                 <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  {activeUrl === 'settings' ? <img src={settings_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
-                    <img src={settings_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
+                  <img
+                    src={settings_logo}
+                    width={20}
+                    height={20}
+                    alt="settings"
+                  />
                 </div>
                 <span>Settings</span>
               </li>
-              <li className={`transition-all duration-500 w-[100%] ${location.pathname === '/dashboard/automation-rules' ?
-                `bg-[#2597f0] ${isMobile ? 'active-mobile rounded-e-[3rem] ' :
-                  'active rounded-s-[3rem] '} text-[#fff]` : 'text-[#64748B] bg-[#ffffff]'}
-              h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
-                onClick={() => changeTab('automation-rules')}>
+
+              {/* ================= Support ================= */}
+              <li
+                className="transition-all duration-500 w-[100%] text-[#64748B]
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
+                onClick={() => changeTab("support")}
+              >
                 <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  {activeUrl === 'automation-rules' ? <img src={support_logo_blue} width={20} height={20} alt="Inbox_icon" className="w-[100%] h-[100%]" /> :
-                    <img src={support_logo} width={20} height={20} alt="inbox_icon" className="w-[100%] h-[100%]" />}
+                  <img
+                    src={support_logo}
+                    width={20}
+                    height={20}
+                    alt="support"
+                  />
                 </div>
-                <span> Support</span>
+                <span>Support</span>
               </li>
-
-            </ul>}
-
-          {/* ========================small settings sidebar============================ */}
-
-          {!openMenu && (<ul className="w-[100%] h-[100%] px-[1.62rem] py-[1.5rem] flex flex-col gap-[.5rem]">
-
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'home' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('home')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'home' ? <img src={dashboard_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={dashboard_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div>
-
-            </li>
-
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'employee' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('employee')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'employee' ? <img src={employee_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={employee_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div>
-
-            </li>
-
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'attendance' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('attendance')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'attendance' ? <img src={attendance_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={attendance_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div>
-
-            </li>
-
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'leave-management' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('leave-management')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'leave-management' ? <img src={leave_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={leave_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div>
-
-            </li>
-
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'DashboardPayroll1' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('DashboardPayroll1')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'DashboardPayroll1' ? <img src={payroll_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={payroll_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div>
-
-            </li>
-            {/* //add performance here========>=========>=========>=============> */}
-
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'notification' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('notification')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'notification' ? <img src={notification_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={notification_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div>
-
-            </li>
-
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'settings' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('settings')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'settings' ? <img src={settings_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={settings_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div>
-
-            </li>
-            <li className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === 'support' ? 'bg-[#EEF2FF]   text-[#fff]' : 'text-[#64748B] bg-[#ffffff]'}  cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`} onClick={() => changeTab('support')}>
-              <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                {activeUrl === 'support' ? <img src={support_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" /> :
-                  <img src={support_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />}
-              </div>
-
-            </li>
-
-          </ul>
+            </ul>
           )}
 
-        </div>
-      </nav>
-    }
-  </>
+          {/* ===============================Closed Sidebar (icons only)======================== */}
+          {!openMenu && (
+            <ul className="w-[100%] h-[100%] px-[1.62rem] py-[1.5rem] flex flex-col gap-[.5rem]">
+              {/* Dashboard */}
+              <li
+                className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === "home" ? "bg-[#EEF2FF] text-[#fff]" : "text-[#64748B] bg-[#ffffff]"} cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`}
+                onClick={() => changeTab("home")}
+              >
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === "home" ? (
+                    <img src={dashboard_logo_blue} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />
+                  ) : (
+                    <img src={dashboard_logo} width={20} height={20} alt="home_icon" className="w-[100%] h-[100%]" />
+                  )}
+                </div>
+              </li>
+
+              {/* Employee */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === "employee" ? "bg-[#EEF2FF] text-[#fff]" : "text-[#64748B] bg-[#ffffff]"} cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`}
+                  onClick={() => changeTab("employee")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    {activeUrl === "employee" ? (
+                      <img src={employee_logo_blue} width={20} height={20} alt="employee_icon" className="w-[100%] h-[100%]" />
+                    ) : (
+                      <img src={employee_logo} width={20} height={20} alt="employee_icon" className="w-[100%] h-[100%]" />
+                    )}
+                  </div>
+                </li>
+              )}
+
+              {/* Attendance */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === "attendance" ? "bg-[#EEF2FF] text-[#fff]" : "text-[#64748B] bg-[#ffffff]"} cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`}
+                  onClick={() => changeTab("attendance")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    {activeUrl === "attendance" ? (
+                      <img src={attendance_logo_blue} width={20} height={20} alt="attendance_icon" className="w-[100%] h-[100%]" />
+                    ) : (
+                      <img src={attendance_logo} width={20} height={20} alt="attendance_icon" className="w-[100%] h-[100%]" />
+                    )}
+                  </div>
+                </li>
+              )}
+
+              {/* Leave Management */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === "leave-management" ? "bg-[#EEF2FF] text-[#fff]" : "text-[#64748B] bg-[#ffffff]"} cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`}
+                  onClick={() => changeTab("leave-management")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    {activeUrl === "leave-management" ? (
+                      <img src={leave_logo_blue} width={20} height={20} alt="leave_icon" className="w-[100%] h-[100%]" />
+                    ) : (
+                      <img src={leave_logo} width={20} height={20} alt="leave_icon" className="w-[100%] h-[100%]" />
+                    )}
+                  </div>
+                </li>
+              )}
+
+              {/* Payroll */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === "DashboardPayroll1" ? "bg-[#EEF2FF] text-[#fff]" : "text-[#64748B] bg-[#ffffff]"} cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`}
+                  onClick={() => changeTab("DashboardPayroll1")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    {activeUrl === "DashboardPayroll1" ? (
+                      <img src={payroll_logo_blue} width={20} height={20} alt="payroll_icon" className="w-[100%] h-[100%]" />
+                    ) : (
+                      <img src={payroll_logo} width={20} height={20} alt="payroll_icon" className="w-[100%] h-[100%]" />
+                    )}
+                  </div>
+                </li>
+              )}
+
+              {/* Announcements / Notification */}
+              {!isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === "notification" ? "bg-[#EEF2FF] text-[#fff]" : "text-[#64748B] bg-[#ffffff]"} cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`}
+                  onClick={() => changeTab("notification")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    {activeUrl === "notification" ? (
+                      <img src={notification_logo_blue} width={20} height={20} alt="notification_icon" className="w-[100%] h-[100%]" />
+                    ) : (
+                      <img src={notification_logo} width={20} height={20} alt="notification_icon" className="w-[100%] h-[100%]" />
+                    )}
+                  </div>
+                </li>
+              )}
+
+              {/* Billing (Super Admin only) */}
+              {isSuperAdmin && (
+                <li
+                  className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === "billing" ? "bg-[#EEF2FF] text-[#fff]" : "text-[#64748B] bg-[#ffffff]"} cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`}
+                  onClick={() => changeTab("billing")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    {activeUrl === "billing" ? (
+                      <img src={payroll_logo_blue} width={20} height={20} alt="billing_icon" className="w-[100%] h-[100%]" />
+                    ) : (
+                      <img src={payroll_logo} width={20} height={20} alt="billing_icon" className="w-[100%] h-[100%]" />
+                    )}
+                  </div>
+                </li>
+              )}
+
+              {/* Settings */}
+              <li
+                className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === "settings" ? "bg-[#EEF2FF] text-[#fff]" : "text-[#64748B] bg-[#ffffff]"} cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`}
+                onClick={() => changeTab("settings")}
+              >
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === "settings" ? (
+                    <img src={settings_logo_blue} width={20} height={20} alt="settings_icon" className="w-[100%] h-[100%]" />
+                  ) : (
+                    <img src={settings_logo} width={20} height={20} alt="settings_icon" className="w-[100%] h-[100%]" />
+                  )}
+                </div>
+              </li>
+
+              {/* Support */}
+              <li
+                className={`transition-all duration-500 w-[2.5rem] h-[2.76rem] flex justify-center items-center ${activeUrl === "support" ? "bg-[#EEF2FF] text-[#fff]" : "text-[#64748B] bg-[#ffffff]"} cursor-pointer gap-[0.75rem] rounded-[.5rem] py-[0.75rem]`}
+                onClick={() => changeTab("support")}
+              >
+                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                  {activeUrl === "support" ? (
+                    <img src={support_logo_blue} width={20} height={20} alt="support_icon" className="w-[100%] h-[100%]" />
+                  ) : (
+                    <img src={support_logo} width={20} height={20} alt="support_icon" className="w-[100%] h-[100%]" />
+                  )}
+                </div>
+              </li>
+            </ul>
+          )}
+        </nav>
+      )}
+    </>
+  );
 };
 
 export default SideBar;

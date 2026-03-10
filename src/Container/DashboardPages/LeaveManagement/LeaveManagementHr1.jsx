@@ -77,15 +77,15 @@ const LeaveManagementHr1 = ({ holidayData }) => {
         name:"",
         date:"",
         type:"",
-        description:""
+        description:"",
+        isNotification:false
     })
-    const handleChange = (e)=>{
-        const {name,value} = e.target
-        setFormHoliday({
-      ...formHoliday,
-      [name]: value
-    })
-
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setFormHoliday((prev) => ({
+            ...prev,
+            [name]: value
+        }))
     }
     const handleHolidaysubmit = async()=>{
         try {
@@ -314,13 +314,24 @@ const LeaveManagementHr1 = ({ holidayData }) => {
                         <div>
                             <h2>Type: </h2>
                             <div className='my-2 border p-2 rounded-lg border-[#868E96]'>
-                                <input 
+                                {/* <input 
                                 type='text'
                                 onChange={handleChange}
                                 name='type'
                                 value={formHoliday.type}
                                  placeholder='Enter holiday type'
-                                  className='w-full focus:outline-none focus:outline-none focus:border-none focus:ring-0' />
+                                  className='w-full focus:outline-none focus:outline-none focus:border-none focus:ring-0' /> */}
+                                  <select
+                                    name='type'
+                                    value={formHoliday.type}
+                                    onChange={handleChange}
+                                    className='w-full focus:outline-none focus:outline-none focus:border-none focus:ring-0'
+                                  >
+                                    <option value="FIXED">Fixed</option>
+                                    <option value="REGIONAL">Regional</option>
+                                    <option value="COMPANY_HOLIDAY">Company Holiday</option>
+                                    <option value="SPECIAL_HOLIDAY">Special Holiday</option>
+                                  </select>
                             </div>
                         </div>
                         {/* description=========== */}
@@ -333,12 +344,28 @@ const LeaveManagementHr1 = ({ holidayData }) => {
                                 name='description'
                                 value={formHoliday.description}
                                  placeholder='Enter holiday Description' 
-                                 lassName='w-full focus:outline-none focus:outline-none focus:border-none focus:ring-0' />
+                                 className='w-full focus:outline-none focus:outline-none focus:border-none focus:ring-0' />
                             </div>
                         </div>
+
+                        {/* toggle button=========== */}
+                        <div className='flex justify-between my-5'>
+                            <h2>Push Notification</h2>
+                            <button
+                                    type="button"
+                                    onClick={() => setFormHoliday((prev) => ({ ...prev, isNotification: !prev.isNotification }))}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${formHoliday.isNotification ? "bg-blue-500" : "bg-gray-300"
+                                        }`}
+                                >
+                                    <span
+                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${formHoliday.isNotification ? "translate-x-5" : "translate-x-1"
+                                            }`}
+                                    />
+                                </button>
+                        </div>
                         {/* =================button============ */}
-                        <div className='flex justify-end mt-5'>
-                            <button className='bg-[#0575E6] px-4 py-2 text-white rounded-md' onClick={handleHolidaysubmit}>Save</button>
+                        <div className='flex justify-end fixed bottom-10 float-end'>
+                            <button className='bg-[#0575E6] px-4 py-2 text-white rounded-md ' onClick={handleHolidaysubmit}>Save</button>
                         </div>
                     </div>
                 </div>, document.body
