@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import LeaveManagementHr1 from './LeaveManagementHr1'
 import DatePicker from 'react-datepicker'
 import { FaAngleDown, FaRegCalendarAlt } from 'react-icons/fa'
+import { toast } from 'react-toastify'
+import createAxios from '../../../utils/axios.config'
 import "react-datepicker/dist/react-datepicker.css";
 
 const days = [
@@ -81,11 +83,10 @@ const DivDropdown = ({ value, options, onSelect, widthClass = "w-[230px]" }) => 
                 onSelect(option)
                 setIsOpen(false)
               }}
-              className={`w-full text-left px-4 py-2 text-sm border-none shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${
-                value === option
-                  ? 'bg-blue-50 text-[#111827] font-medium'
-                  : 'text-[#334155] hover:bg-blue-50 active:bg-blue-100'
-              }`}
+              className={`w-full text-left px-4 py-2 text-sm border-none shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${value === option
+                ? 'bg-blue-50 text-[#111827] font-medium'
+                : 'text-[#334155] hover:bg-blue-50 active:bg-blue-100'
+                }`}
             >
               {option}
             </button>
@@ -97,13 +98,136 @@ const DivDropdown = ({ value, options, onSelect, widthClass = "w-[230px]" }) => 
 }
 
 const LeaveManagementTLHr = () => {
+  const token = localStorage.getItem('authToken')
+  const axiosInstance = createAxios(token)
   const userRole = localStorage.getItem("role")
   const isHR = userRole === "HR"
   const [activeFilter, setActiveFilter] = useState("All Employee")
-  const [date, setDate] = useState(null)
-  const [monthFilter, setMonthFilter] = useState("This Month")
+
+ 
   const [locationFilter, setLocationFilter] = useState("Location")
   const [statusFilter, setStatusFilter] = useState("Status")
+
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
+  const [rangePreset, setRangePreset] = useState("This Month");
+  const [cardsData, setCardsData] = useState(days)
+  const [approvalQueueData, setApprovalQueueData] = useState(ApprovalQueue)
+  const [holidayData, setHolidayData] = useState([])
+
+  const formatDate = (date) => {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return ""
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+  }
+
+  const buildQueryParams = () => {
+    if (rangePreset === "This Month") return {}
+
+    if (rangePreset === "Today") {
+      const today = new Date()
+      return { date: formatDate(today) }
+    }
+
+    if (rangePreset === "Last 7 Days") {
+      const today = new Date()
+      const start = new Date(today)
+      start.setDate(today.getDate() - 6)
+      return { startDate: formatDate(start), endDate: formatDate(today) }
+    }
+
+    if (rangePreset === "Last Month") {
+      const today = new Date()
+      const firstDayCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+      const lastDayPreviousMonth = new Date(firstDayCurrentMonth)
+      lastDayPreviousMonth.setDate(0)
+      const firstDayPreviousMonth = new Date(
+        lastDayPreviousMonth.getFullYear(),
+        lastDayPreviousMonth.getMonth(),
+        1
+      )
+
+      return {
+        startDate: formatDate(firstDayPreviousMonth),
+        endDate: formatDate(lastDayPreviousMonth)
+      }
+    }
+
+    if (startDate && endDate) {
+      return { startDate: formatDate(startDate), endDate: formatDate(endDate) }
+    }
+
+    if (startDate) {
+      return { date: formatDate(startDate) }
+    }
+
+    return {}
+  }
+
+  const fetchHrDashboard = async () => {
+    try {
+      const params = buildQueryParams()
+      const hasParams = Object.keys(params).length > 0
+
+      const res = await axiosInstance.get('/leave/hr-dashboard', {
+        ...(hasParams ? { params } : {}),
+        meta: { auth: "ADMIN_AUTH" }
+      })
+
+      const apiData = res?.data?.data || res?.data || {}
+      setCardsData(apiData?.cards || apiData?.stats || days)
+      setApprovalQueueData(apiData?.approvalQueue || ApprovalQueue)
+      setHolidayData(apiData?.holidays || [])
+    } catch (error) {
+      console.log(error, "hr dashboard api error")
+      toast.error(error?.response?.data?.message || "Failed to fetch leave dashboard")
+    }
+  }
+
+  useEffect(() => {
+    fetchHrDashboard()
+  }, [rangePreset, startDate, endDate])
+
+  const handleRangePresetChange = (preset) => {
+    setRangePreset(preset);
+
+    const today = new Date();
+    const end = new Date(today);
+    const start = new Date(today);
+
+    if (preset === "Today") {
+      setDateRange([start, end]);
+      return;
+    }
+
+    if (preset === "Last 7 Days") {
+      start.setDate(today.getDate() - 6);
+      setDateRange([start, end]);
+      return;
+    }
+
+    if (preset === "This Month") {
+      setDateRange([null, null]);
+      return;
+    }
+
+    if (preset === "Last Month") {
+      const firstDayCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDayPreviousMonth = new Date(firstDayCurrentMonth);
+      lastDayPreviousMonth.setDate(0);
+      const firstDayPreviousMonth = new Date(
+        lastDayPreviousMonth.getFullYear(),
+        lastDayPreviousMonth.getMonth(),
+        1
+      );
+      setDateRange([firstDayPreviousMonth, lastDayPreviousMonth]);
+      return;
+    }
+
+    setDateRange([null, null]);
+  };
 
   return (
     <>
@@ -141,42 +265,46 @@ const LeaveManagementTLHr = () => {
         </div>
 
         {/* filters */}
-        <div>
-          <div className='flex w-[100%] gap-[15px] flex-wrap card-animate'>
-            <div className="relative w-[230px]">
-              <DatePicker
-                selected={date}
-                onChange={(pickedDate) => setDate(pickedDate)}
-                dateFormat="MM/yyyy"
-                showMonthYearPicker
-                placeholderText="mm-yyyy"
-                className="border border-[#DEE2E6] h-[40px] w-[230px] rounded-lg px-3 pr-8 text-[14px] font-medium text-[#344054] bg-white outline-none focus:outline-none focus:ring-0 shadow-none"
-              />
-              <span className="absolute right-2 top-2.5 text-gray-400"><FaRegCalendarAlt /></span>
-            </div>
-
-            <DivDropdown
-              value={monthFilter}
-              options={["This Month", "Last Month", "This Quarter", "This Year"]}
-              onSelect={setMonthFilter}
+        <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mt-[20px] w-full max-w-[980px]'>
+          <div className="relative">
+            <DatePicker
+              selected={startDate}
+              onChange={(update) => {
+                setDateRange(update);
+                setRangePreset("Custom");
+              }}
+              startDate={startDate}
+              endDate={endDate}
+              selectsRange
+              isClearable
+              placeholderText="Select date range"
+              dateFormat="dd MMM yyyy"
+              className='border border-[#DEE2E6] h-[40px] w-full rounded-lg pl-9 pr-10 text-[14px] font-medium text-[#344054] bg-white shadow-none outline-none focus:outline-none focus:ring-0'
+              wrapperClassName="w-full attendance-date-range"
             />
-
-            <DivDropdown
-              value={locationFilter}
-              options={["Location", "All Locations", "Delhi", "Mumbai", "Remote"]}
-              onSelect={setLocationFilter}
-            />
-
-            <DivDropdown
-              value={statusFilter}
-              options={["Status", "Approved", "Rejected", "Pending"]}
-              onSelect={setStatusFilter}
-            />
+            <span className="pointer-events-none absolute left-3 top-2.5 text-gray-400">
+              <FaRegCalendarAlt />
+            </span>
           </div>
+          <DivDropdown
+            value={rangePreset}
+            options={["Custom", "Today", "Last 7 Days", "This Month", "Last Month"]}
+            onSelect={handleRangePresetChange}
+          />
+          <DivDropdown
+            value={locationFilter}
+            options={["Location", "All Locations", "Delhi", "Mumbai", "Remote"]}
+            onSelect={setLocationFilter}
+          />
+          <DivDropdown
+            value={statusFilter}
+            options={["Status", "All", "Present", "Late", "On Leave", "Inactive"]}
+            onSelect={setStatusFilter}
+          />
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-[30px] justify-evenly gap-4 list-stagger'>
-          {days.map((item, index) => (
+          {cardsData.map((item, index) => (
             <div key={index} className='h-[110px] rounded-lg bg-white p-3 border border-[#E5E7EB] surface-card' style={{ "--stagger": index }}>
               <div className='font-medium text-[17px]'>
                 {item.name}
@@ -196,7 +324,7 @@ const LeaveManagementTLHr = () => {
           <p className='text-gray-300 text-[14px]'>Approve / Reject / Ask for details. Overlap warnings keep staffing safe.</p>
 
           <div className='mt-[20px] bg-[white] list-stagger'>
-            {ApprovalQueue.map((item, index) => (
+            {approvalQueueData.map((item, index) => (
               <div key={index} className='mt-[14px] bg-[#F8F9FA] flex justify-between p-3 rounded-lg items-center card-animate' style={{ "--stagger": index }}>
                 <div>
                   <div>
@@ -208,13 +336,12 @@ const LeaveManagementTLHr = () => {
                 </div>
 
                 <div className='flex gap-[10px]'>
-                  {item.status.map((status, i) => (
-                    <button key={i} className={`h-[32px] min-w-[90px] px-3 rounded-md text-center text-[13px] font-medium leading-none shadow-none outline-none focus:outline-none focus:ring-0 ${
-                      status === "Approve"
-                        ? "text-white bg-[#0575E6] border border-[#E4E9EE]"
-                        : status === "Reject"
-                          ? "text-[#B91C1C] bg-[#FDECEC] border border-[#FAC2C2]"
-                          : "text-[#344054] border border-[#D1D5DB] bg-[#EEF2F6]"
+                  {(Array.isArray(item.status) ? item.status : ["Ask Info"]).map((status, i) => (
+                    <button key={i} className={`h-[32px] min-w-[90px] px-3 rounded-md text-center text-[13px] font-medium leading-none shadow-none outline-none focus:outline-none focus:ring-0 ${status === "Approve"
+                      ? "text-white bg-[#0575E6] border border-[#E4E9EE]"
+                      : status === "Reject"
+                        ? "text-[#B91C1C] bg-[#FDECEC] border border-[#FAC2C2]"
+                        : "text-[#344054] border border-[#D1D5DB] bg-[#EEF2F6]"
                       }`}>
                       {status}
                     </button>
@@ -229,10 +356,7 @@ const LeaveManagementTLHr = () => {
 
 
         {/* ================this part is shown only hr========================== */}
-        {/* {
-          isHR && <LeaveManagementHr1 />
-        } */}
-<LeaveManagementHr1 />
+        {isHR && <LeaveManagementHr1 holidayData={holidayData} />}
       </div>
     </>
   )
