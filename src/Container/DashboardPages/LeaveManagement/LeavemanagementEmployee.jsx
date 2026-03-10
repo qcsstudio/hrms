@@ -1,15 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import createAxios from '../../../utils/axios.config';
 import { createPortal } from 'react-dom'
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";   // 👈 yaha
 
-const leaveBalance = [
-  { name: "Annual", value: 10 },
-  { name: "Sick", value: 7 },
-  { name: "Casual", value: 4 },
-  { name: "Comp-Off", value: 1 },
-];
+
 
 const leaveBalance2 = [
   { name: "Casual Leave • Pending", value: "Apr 23 → Apr 24 • 2 days • Reason: Family function", status: "Pending", status2: "Open" },
@@ -24,6 +19,12 @@ const LeaveHistory = [
 ];
 
 const LeavemanagementEmployee = () => {
+  const token = localStorage.getItem('authToken')
+  const axiosInstance = createAxios(token)
+
+  const [leaveBalanceData, setLeaveBalanceData] = useState({});
+  const [recentRequests, setRecentRequests] = useState([]);
+  const [leaveHistoryData, setLeaveHistoryData] = useState([]);
   const [showApplyLeavePopup, setShowApplyLeavePopup] = useState(false);
 
   const [applyLeaveData, setApplyLeaveData] = useState({
@@ -38,7 +39,6 @@ const LeavemanagementEmployee = () => {
     setApplyLeaveData(prev => ({ ...prev, [name]: files ? files[0] : value, }))
   }
 
-  const axiosInatance = createAxios()
 
   const handleApplyleave = async () => {
     try {
@@ -53,7 +53,7 @@ const LeavemanagementEmployee = () => {
         formData.append("attachment", applyLeaveData.attachment);
       }
 
-      const res = await axiosInatance.post(
+      const res = await axiosInstance.post(
         "/leave/apply",
         formData,
         {
@@ -74,9 +74,54 @@ const LeavemanagementEmployee = () => {
   const handleApplyleavepopup = () => {
     setShowApplyLeavePopup(true);
   }
-  // const currentYear = new Date().getFullYear()
-  const [date, setDate] = useState(null)
+  const [date, setDate] = useState(new Date())
   const currentYear = new Date().getFullYear()
+
+  const getLeaveDashboard = async (selectedDate) => {
+    try {
+      const month = selectedDate.getMonth() + 1; // 0 based hota hai
+      const year = selectedDate.getFullYear();
+
+      const res = await axiosInstance.get(
+        `/leave/dashboard?month=${month}&year=${year}`,
+        {
+          meta: { auth: "ADMIN_AUTH" }
+        }
+      );
+
+      const data = res.data;
+
+      setLeaveBalanceData(data.leaveBalance);
+      setRecentRequests(data.recentRequests);
+      setLeaveHistoryData(data.leaveHistory);
+      console.log(res.data, "leave dashboard data");
+    } catch (error) {
+      console.log("Dashboard API error", error);
+    }
+  };
+  useEffect(() => {
+    getLeaveDashboard(date);
+  }, [date]);
+
+  const leaveBalance = [
+    { name: "Annual", value: leaveBalanceData?.annual || 0 },
+    { name: "Sick", value: leaveBalanceData?.sick || 0 },
+    { name: "Casual", value: leaveBalanceData?.casual || 0 },
+    { name: "Comp-Off", value: leaveBalanceData?.compOff || 0 },
+  ];
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-600";
+      case "APPROVED":
+        return "bg-green-100 text-green-600";
+      case "REJECTED":
+        return "bg-red-100 text-red-600";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
   return (
     <div className='bg-gray-50 p-5 '>
 
@@ -99,18 +144,18 @@ const LeavemanagementEmployee = () => {
         <div className="relative">
           <DatePicker
             selected={date}
-            onChange={(date) => setDate(date)}
+            onChange={(newDate) => setDate(newDate)}
             dateFormat="MM/yyyy"
             showMonthYearPicker
-             placeholderText="mm-yyyy"
+            placeholderText="mm-yyyy"
             className="border border-[#DEE2E6] h-[40px] w-[230px] rounded p-2 pr-8"
           />
           {/* <span className="absolute left-2 top-2.5 text-gray-400">mm-yyyy</span> */}
           <span className="absolute right-2 top-2.5 text-gray-400">📅</span>
         </div>
-        <select className='border border-[#DEE2E6] h-[40px] w-[230px] rounded p-2'>
+        {/* <select className='border border-[#DEE2E6] h-[40px] w-[230px] rounded p-2'>
           <option>This Month</option>
-        </select>
+        </select> */}
 
       </div>
 
@@ -136,32 +181,25 @@ const LeavemanagementEmployee = () => {
           <h1 className='font-medium'>My Leave Requests</h1>
           <p className='text-gray-300 text-[14px]'>Quick glance only (details in requests).</p>
           <div className='mt-[10px]'>
-            {leaveBalance2.map((item, index) => (
-              <div key={index} className='bg-[#F8F9FA] w-full h-auto flex justify-between items-center p-3 rounded mb-2'>
+            {recentRequests.map((item, index) => (
+              <div key={index} className='bg-[#F8F9FA] w-full flex justify-between items-center p-3 rounded mb-2'>
+
                 <div>
-                  <div className='font-medium'>{item.name}</div>
-                  <div className='text-gray-600 text-sm'>{item.value}</div>
+                  <div className='font-medium'>
+                    {item.leaveType} • {item.status}
+                  </div>
+
+                  <div className='text-gray-600 text-sm'>
+                    {new Date(item.fromDate).toLocaleDateString()} →
+                    {new Date(item.toDate).toLocaleDateString()} •
+                    {item.days} days • Reason: {item.reason}
+                  </div>
                 </div>
-                <div className='flex gap-2 justify-end text-right'>
-                  {Object.keys(item)
-                    .filter(key => key.startsWith("status"))
-                    .map((key, i) => {
-                      const status = item[key];
-                      if (!status) return null;
-                      return (
-                        <div key={i} className={`px-3 h-[32px] flex items-center justify-center text-xs rounded border font-medium ${status === "Pending"
-                          ? "text-[#F59E0B] border-[#FDE2AD] bg-[#FFF3D6]"
-                          : status === "Open"
-                            ? "text-[#344054] border-[#868E961A] bg-[#E4E9EE4D]"
-                            : status === "Rejected"
-                              ? "text-[#B91C1C] border-[#FAC2C2] bg-[#FDECEC]"
-                              : status === "Reapply"
-                                ? "text-white border-[#0575E6] bg-[#0575E6]"
-                                : "text-[#2B8A3E] border-[#D3F9D8] bg-[#ECFDF3]"
-                          }`}>{status}</div>
-                      );
-                    })}
+
+                <div className="px-3 h-[32px] flex items-center justify-center text-xs rounded border font-medium bg-yellow-100 text-yellow-600">
+                  {item.status}
                 </div>
+
               </div>
             ))}
           </div>
@@ -183,26 +221,28 @@ const LeavemanagementEmployee = () => {
         </ul>
 
         {/* Table Rows */}
-        {LeaveHistory.map((item, index) => (
-          <div key={index} className='flex border-2 border-[#0000001A] mt-[14px]  rounded-md items-center bg-white h-[64px] w-full'>
-            <div className='flex-1 text-left ml-2'>{item.leavetype}</div>
-            <div className='flex-1 text-left'>{item.date}</div>
-            <div className='flex-1 text-left'>{item.days}</div>
-            <div className='flex-1 text-left'>{item.reason}</div>
-            <div className='flex-1 flex gap-2 justify-end text-right mr-[10px]'>
-              {item.statuses.map((status, i) => (
-                <div key={i} className={`px-3 h-[26px] flex items-center justify-center text-xs rounded border font-medium ${status === "Pending"
-                  ? "text-[#F59E0B] border-[#FDE2AD] bg-[#FFF3D6]"
-                  : status === "Open"
-                    ? "text-[#344054] border-[#868E961A] bg-[#E4E9EE4D]"
-                    : status === "Rejected"
-                      ? "text-[#B91C1C] border-[#FAC2C2] bg-[#FDECEC]"
-                      : status === "Reapply"
-                        ? "text-white border-[#0575E6] bg-[#0575E6]"
-                        : "text-[#2B8A3E] border-[#D3F9D8] bg-[#ECFDF3]"
-                  }`}>{status}</div>
-              ))}
+        {leaveHistoryData.map((item, index) => (
+          <div key={index} className='flex border-2 border-[#0000001A] mt-[14px] rounded-md items-center bg-white h-[64px] w-full'>
+
+            <div className='flex-1 text-left ml-2'>{item.leaveType}</div>
+
+            <div className='flex-1 text-left'>
+              {new Date(item.fromDate).toLocaleDateString()} -
+              {new Date(item.toDate).toLocaleDateString()}
             </div>
+
+            <div className='flex-1 text-left'>{item.days}</div>
+
+            <div className='flex-1 text-left'>{item.reason}</div>
+
+            <div className='flex-1 flex gap-2 justify-end mr-[10px]'>
+
+              <div className={`px-3 h-[26px] flex items-center justify-center text-xs rounded border font-medium ${getStatusStyle(item.status)}`}>
+                {item.status}
+              </div>
+
+            </div>
+
           </div>
         ))}
       </div>
