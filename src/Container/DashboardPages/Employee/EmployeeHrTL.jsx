@@ -92,6 +92,66 @@ const statsData = [
   }
 ]
 
+const FilterDropdown = ({ label, value, options, onSelect }) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef(null)
+  const selectedLabel = value || label
+  const menuItems = [label, ...options.filter((opt) => opt !== value)]
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick)
+    return () => document.removeEventListener("mousedown", handleOutsideClick)
+  }, [])
+
+  return (
+    <div ref={dropdownRef} className='relative w-[210px]'>
+      <button
+        type='button'
+        onClick={() => setIsOpen((prev) => !prev)}
+        className='w-full h-[40px] border border-[#DEE2E6] rounded-lg bg-white px-3 text-[14px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0 flex items-center justify-between'
+      >
+        <span>{value || label}</span>
+        <FaAngleDown className={`text-[12px] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className='absolute left-0 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-none z-20 overflow-hidden'>
+          <div className='w-full text-left px-4 py-2 text-sm text-[#111827] font-medium bg-blue-50'>
+            {selectedLabel}
+          </div>
+
+          {menuItems.map((item, idx) => (
+            <div
+              key={idx}
+              role='button'
+              tabIndex={0}
+              onClick={() => {
+                onSelect(item === label ? "" : item)
+                setIsOpen(false)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  onSelect(item === label ? "" : item)
+                  setIsOpen(false)
+                }
+              }}
+              className='w-full text-left px-4 py-2 text-sm text-[#111827] font-normal border-none shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100 transition-colors cursor-pointer'
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* -------------------- MAIN COMPONENT -------------------- */
 
 const EmployeeHrTL = () => {
@@ -115,11 +175,6 @@ const EmployeeHrTL = () => {
   const roleOptions = getUniqueValues("Role")
   const statusOptions = getUniqueValues("Status")
   const locationOptions = ["India", "USA"] // dummy (future ready)
-
-  /* -------- FILTER CHANGE -------- */
-  const handleFilterChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value })
-  }
 
   /* -------- FILTERED EMPLOYEES -------- */
   const filteredEmployees = employee.filter(item =>
@@ -223,53 +278,33 @@ const EmployeeHrTL = () => {
       <div className='flex justify-between my-4'>
         <div className='flex gap-3'>
 
-          <select
-            name="department"
+          <FilterDropdown
+            label="Department"
             value={filters.department}
-            onChange={handleFilterChange}
-            className='border border-[#DEE2E6] rounded-md w-[210px] h-[40px] bg-white px-3 text-sm'
-          >
-            <option value="">Department</option>
-            {departmentOptions.map((d, i) => (
-              <option key={i} value={d}>{d}</option>
-            ))}
-          </select>
+            options={departmentOptions}
+            onSelect={(val) => setFilters({ ...filters, department: val })}
+          />
 
-          <select
-            name="role"
+          <FilterDropdown
+            label="Role"
             value={filters.role}
-            onChange={handleFilterChange}
-            className='border border-[#DEE2E6] rounded-md w-[210px] h-[40px] bg-white px-3 text-sm'
-          >
-            <option value="">Role</option>
-            {roleOptions.map((r, i) => (
-              <option key={i} value={r}>{r}</option>
-            ))}
-          </select>
+            options={roleOptions}
+            onSelect={(val) => setFilters({ ...filters, role: val })}
+          />
 
-          <select
-            name="location"
+          <FilterDropdown
+            label="Location"
             value={filters.location}
-            onChange={handleFilterChange}
-            className='border border-[#DEE2E6] rounded-md w-[210px] h-[40px] bg-white px-3 text-sm'
-          >
-            <option value="">Location</option>
-            {locationOptions.map((l, i) => (
-              <option key={i} value={l}>{l}</option>
-            ))}
-          </select>
+            options={locationOptions}
+            onSelect={(val) => setFilters({ ...filters, location: val })}
+          />
 
-          <select
-            name="status"
+          <FilterDropdown
+            label="Status"
             value={filters.status}
-            onChange={handleFilterChange}
-            className='border border-[#DEE2E6] rounded-md w-[210px] h-[40px] bg-white px-3 text-sm'
-          >
-            <option value="">Status</option>
-            {statusOptions.map((s, i) => (
-              <option key={i} value={s}>{s}</option>
-            ))}
-          </select>
+            options={statusOptions}
+            onSelect={(val) => setFilters({ ...filters, status: val })}
+          />
 
         </div>
 

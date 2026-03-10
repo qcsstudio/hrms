@@ -89,23 +89,30 @@ const employyeDetails = [
 const AttendanceHrTL = () => {
     const [activeFilter, setActiveFilter] = useState("All Employee");
     const [activeAttendanceTab, setActiveAttendanceTab] = useState("All Employees");
-    
+
+    const filteredAttendanceEmployees = employyeDetails.filter((item) => {
+        if (activeAttendanceTab === "All Employees") return true
+        if (activeAttendanceTab === "Not Marked") {
+            return item.status === "Inactive" || item.role === "Not Marked"
+        }
+        return item.status === activeAttendanceTab
+    })
 
     return (
         <>
 
-            <div className='p-[15px] bg-[#F8F9FA] '>
-                <div className='flex justify-between'>
+            <div className='p-[15px] bg-[#F8F9FA] card-animate'>
+                <div className='flex justify-between items-center gap-4 flex-wrap'>
                     <div>
                         <h1 className='font-bold text-[20px] text-[#212529]'>Attendance</h1>
                         <p className='text-[12px] text-[#000000]/35'>Track attendance, review exceptions, and manage regularization approvals.</p>
                     </div>
                     <div className='flex gap-2'>
-                        <button className='border border-[#868E961A] text-[#344054]  bg-[#E4E9EE4D] box-border w-[200px] h-[40px] rounded-lg '>+ Download Report</button>
-                        <button className='border border-[#C4DBFF] bg-[#EAF2FF] h-[40px] w-[94px] box-border rounded-lg text-[#1677FF] font-bold'>Policy</button>
+                        <button className='h-[40px] border border-[#D1D5DB] bg-white rounded-lg px-5 py-2 text-sm font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-gray-50'>+ Download Report</button>
+                        <button className='h-[40px] border border-[#C4DBFF] bg-[#EAF2FF] rounded-lg px-5 py-2 text-sm font-medium text-[#1677FF] shadow-none outline-none focus:outline-none focus:ring-0'>Policy</button>
                     </div>
                 </div>
-                <div className="flex bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2 mt-[20px] w-fit">
+                <div className="flex bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2 mt-[20px] w-fit segmented-no-effects">
                     {['All Employee', 'My Team', 'Me'].map((item) => (
                         <button
                             key={item}
@@ -119,28 +126,28 @@ const AttendanceHrTL = () => {
                         </button>
                     ))}
                 </div>
-                <div className='grid grid-cols-4 gap-3 justify-evenly mt-[10px] w-[77%] mt-[20px]  '>
-                    <select className='border border-[#DEE2E6]  h-[40px] rounded-md text-[#344054] font-semibold text-[#344054] '>
+                <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mt-[20px] w-full max-w-[980px]'>
+                    <select className='border border-[#DEE2E6] h-[40px] rounded-lg px-3 text-[14px] font-medium text-[#344054] bg-white shadow-none outline-none focus:outline-none focus:ring-0'>
                         <option>dd-mm-yyyy</option>
                         <option>..</option>
                     </select>
-                    <select className='border border-[#DEE2E6]  h-[40px] rounded-md text-[#344054] font-semibold'>
+                    <select className='border border-[#DEE2E6] h-[40px] rounded-lg px-3 text-[14px] font-medium text-[#344054] bg-white shadow-none outline-none focus:outline-none focus:ring-0'>
                         <option>This Month</option>
                         <option>...</option>
                     </select>
-                    <select className='border border-[#DEE2E6]  h-[40px] rounded-md text-[#344054] font-semibold'>
+                    <select className='border border-[#DEE2E6] h-[40px] rounded-lg px-3 text-[14px] font-medium text-[#344054] bg-white shadow-none outline-none focus:outline-none focus:ring-0'>
                         <option>Location</option>
                         <option>...</option>
                     </select>
-                    <select className='border border-[#DEE2E6]  h-[40px] rounded-md text-[#344054] font-semibold'>
+                    <select className='border border-[#DEE2E6] h-[40px] rounded-lg px-3 text-[14px] font-medium text-[#344054] bg-white shadow-none outline-none focus:outline-none focus:ring-0'>
                         <option>Status</option>
                         <option>..</option>
                     </select>
                 </div>
                 {/* ........................................... */}
-                <div className='mt-[20px] grid grid-cols-5 justify-evenly gap-3'>
+                <div className='mt-[20px] grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 list-stagger'>
                     {attandance.map((item, index) => (
-                        <div key={index} className=' bg-[white]  px-4 py-5 font-medium rounded-lg space-y-2'>
+                        <div key={index} className='bg-white border border-[#E5E7EB] px-4 py-5 font-medium rounded-lg space-y-2 surface-card' style={{ "--stagger": index }}>
 
                             <div className='font-medium'>
                                 {item.name}
@@ -148,7 +155,7 @@ const AttendanceHrTL = () => {
                                     {item.value}
                                 </div>
                             </div>
-                            <div className={` rounded-[4px] w-[77px] h-[26px] text-[15px] flex items-center justify-evenly ${item.status === "On Track" ? "text-[#10B981] border border-[#C5F5D5] bg-[#E9FFEF]" : item.status === "Action" ? "text-[#B91C1C] border border-[#FAC2C2] bg-[#FDECEC]" :
+                            <div className={`rounded-md min-w-[92px] h-[26px] px-2 text-[12px] leading-none font-medium flex items-center justify-center ${item.status === "On Track" ? "text-[#10B981] border border-[#C5F5D5] bg-[#E9FFEF]" : item.status === "Action" ? "text-[#B91C1C] border border-[#FAC2C2] bg-[#FDECEC]" :
                                 item.status === "watch" ? "text-[#F59E0B] border border-[#FDE2AD] bg-[#FFF3D6]" :
                                     item.status === "Approved" ? "text-[#334155] border border-[#D2D8E0] bg-[#F2F4F6]" : "text-[#F59E0B] bg-[#FFF3D6] border border-[#FDE2AD]"} `}>
                                 {item.status}
@@ -194,11 +201,8 @@ const AttendanceHrTL = () => {
 
                             {/* BODY */}
                             <tbody>
-                                {employyeDetails.map((item, index) => (
-                                    <tr
-                                        key={index}
-                                        className="bg-white border border-[#E5E7EB] rounded-xl"
-                                    >
+                                {filteredAttendanceEmployees.map((item, index) => (
+                                    <tr key={index} className="bg-white border border-[#E5E7EB] rounded-xl">
                                         {/* Employee */}
                                         <td className="pl-6 py-4">
                                             <div className="flex items-center gap-4">
@@ -226,15 +230,15 @@ const AttendanceHrTL = () => {
 
                                         {/* Status */}
                                         <td className="py-4">
-                                            <span
-                                                className={`inline-flex items-center justify-center px-3 h-7 rounded-md text-xs 
-                                                            ${item.status === "Active"
+                                            <span className={`inline-flex items-center justify-center px-3 h-7 rounded-md text-xs font-medium
+                                                            ${item.status === "Present"
                                                         ? "bg-[#ECFDF3] text-[#2B8A3E] border border-[#D3F9D8]"
-                                                        : item.status === "Pending Invite"
+                                                        : item.status === "On Leave"
                                                             ? "bg-[#F2F4F6] text-[#334155] border border-[#D2D8E0]"
-                                                            : "bg-[#FDECEC] text-[#B91C1C] border border-[#FAC2C2]"
-                                                    }`}
-                                            >
+                                                            : item.status === "Late"
+                                                                ? "bg-[#FFF3D6] text-[#F59E0B] border border-[#FDE2AD]"
+                                                                : "bg-[#FDECEC] text-[#B91C1C] border border-[#FAC2C2]"
+                                                    }`}>
                                                 {item.status}
                                             </span>
                                         </td>
@@ -250,6 +254,8 @@ const AttendanceHrTL = () => {
                                                 {item.actionicon && <img src={item.actionicon} />}
                                                 {item.actionicon1 && <img src={item.actionicon1} />}
                                                 {item.actionicon2 && <img src={item.actionicon2} />}
+                                                {item.actionicon3 && <img src={item.actionicon3} />}
+                                                {item.actionicon4 && <img src={item.actionicon4} />}
                                             </div>
                                         </td>
                                     </tr>

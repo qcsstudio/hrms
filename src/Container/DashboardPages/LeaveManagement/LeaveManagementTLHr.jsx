@@ -47,32 +47,30 @@ const ApprovalQueue = [
 
 const LeaveManagementTLHr = () => {
   const userRole = localStorage.getItem("role");
-
-  const isSuperAdmin = userRole === "SUPER_ADMIN";
-  const isCompanyAdmin = userRole === "COMPANY_ADMIN";
-  const isEMP = userRole === "EMPLOYEE";
   const isHR = userRole === "HR";
-  const isTL = userRole === "TL";
   const [activeFilter, setActiveFilter] = useState("All Employee")
-   const [date, setDate] = useState(null)
-    const currentYear = new Date().getFullYear()
+  const [date, setDate] = useState(null)
   return (
     <>
-      <div className='p-5 bg-gray-50 '>
+      <div className='p-5 bg-gray-50 card-animate'>
 
         {/* heading */}
-        <div className='flex justify-between items-center'>
+        <div className='flex justify-between items-center gap-4 flex-wrap card-animate'>
           <div>
             <h1 className='font-bold text-[22px]'>Leave Management</h1>
-            <p className='text-[14px] text-gray-300'>Apply leaves, manage approvals, configure policies & balances.</p>
+            <p className='text-[14px] text-gray-500'>Apply leaves, manage approvals, configure policies & balances.</p>
           </div>
-          <div className='flex gap-[10px]'>
-            <button className='text-[#1677FF] border border-[#C4DBFF] font-medium bg-[#EAF2FF] rounded h-[40px] w-[93px]'>Policy</button>
-            <button className='bg-[#0575E6] font-medium text-[#E4E9EE] rounded h-[40px] w-[110px]'>Apply Leave</button>
+          <div className='flex gap-3'>
+            <button className='flex items-center gap-2 bg-gray-200 border border-gray-300 rounded-lg px-6 py-2 text-[#1677FF] text-[16px] font-medium leading-none shadow-none outline-none focus:outline-none focus:ring-0'>
+              Policy
+            </button>
+            <button className='flex items-center gap-2 bg-[#0575E6] border border-[#E4E9EE] rounded-lg px-6 py-2 text-[#E4E9EE] text-[16px] font-medium leading-none shadow-none outline-none focus:outline-none focus:ring-0'>
+              Apply Leave
+            </button>
           </div>
         </div>
 
-        <div className="inline-flex w-fit bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2 my-4">
+        <div className="inline-flex w-fit bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2 my-4 card-animate">
             {['All Employee', 'My Team', 'Me'].map((item) => (
               <button
                 key={item}
@@ -90,7 +88,7 @@ const LeaveManagementTLHr = () => {
         {/* 3333333333333333 */}
         <div >
 
-          <div className='flex w-[100%] gap-[15px] '>
+          <div className='flex w-[100%] gap-[15px] flex-wrap card-animate'>
              <div className="relative">
                       <DatePicker
                         selected={date}
@@ -98,20 +96,20 @@ const LeaveManagementTLHr = () => {
                         dateFormat="MM/yyyy"
                         showMonthYearPicker
                          placeholderText="mm-yyyy"
-                        className="border border-[#DEE2E6] h-[40px] w-[230px] rounded p-2 pr-8"
+                        className="border border-[#DEE2E6] h-[40px] w-[230px] rounded-lg px-3 pr-8 text-[14px] font-medium text-[#344054] bg-white outline-none focus:outline-none focus:ring-0 shadow-none"
                       />
                       {/* <span className="absolute left-2 top-2.5 text-gray-400">mm-yyyy</span> */}
                       <span className="absolute right-2 top-2.5 text-gray-400">📅</span>
                     </div>
-            <select className='border border-[#DEE2E6] w-[230px] h-[40px] bg-[#FFFFFF] px-2 rounded-md'>
+            <select className='border border-[#DEE2E6] w-[230px] h-[40px] bg-[#FFFFFF] px-3 rounded-lg text-[14px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0'>
               <option>This Month</option>
               <option></option>
             </select>
-            <select className='border border-[#DEE2E6] w-[230px] h-[40px] bg-[#FFFFFF] px-2 rounded-md'>
+            <select className='border border-[#DEE2E6] w-[230px] h-[40px] bg-[#FFFFFF] px-3 rounded-lg text-[14px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0'>
               <option>Location</option>
               <option></option>
             </select>
-            <select className='border border-[#DEE2E6] w-[230px] h-[40px] bg-[#FFFFFF] px-2 rounded-md'>
+            <select className='border border-[#DEE2E6] w-[230px] h-[40px] bg-[#FFFFFF] px-3 rounded-lg text-[14px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0'>
               <option>Status</option>
               <option>Approved</option>
               <option>Rejected</option>
@@ -119,9 +117,9 @@ const LeaveManagementTLHr = () => {
           </div>
 
         </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-[30px] justify-evenly gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-[30px] justify-evenly gap-4 list-stagger'>
           {days.map((item, index) => (
-            <div key={index} className=' h-[110px] rounded-lg  bg-[white] p-3'>
+            <div key={index} className='h-[110px] rounded-lg bg-white p-3 border border-[#E5E7EB] surface-card' style={{ "--stagger": index }}>
               <div className='font-medium  text-[17px]'>
                 {item.name}
               </div>
@@ -136,13 +134,13 @@ const LeaveManagementTLHr = () => {
           ))}
         </div>
 
-        <div className='my-5 bg-white p-5 rounded-lg'>
+        <div className='my-5 bg-white p-5 rounded-lg surface-card card-animate'>
           <h1 className='font-medium text-[18px]'>Approval Queue</h1>
           <p className='text-gray-300 text-[14px]'>Approve / Reject / Ask for details. Overlap warnings keep staffing safe.</p>
 
-          <div className='mt-[20px] bg-[white]'>
+          <div className='mt-[20px] bg-[white] list-stagger'>
             {ApprovalQueue.map((item, index) => (
-              <div key={index} className='mt-[14px] bg-[#F8F9FA] flex justify-between p-3 rounded-lg items-center'>
+              <div key={index} className='mt-[14px] bg-[#F8F9FA] flex justify-between p-3 rounded-lg items-center card-animate' style={{ "--stagger": index }}>
                 <div>
                   <div>
                     {item.name}
@@ -154,12 +152,15 @@ const LeaveManagementTLHr = () => {
 
                 <div className='flex gap-[10px]'>
                   {item.status.map((status, i) => (
-                    <div key={i} className={`  rounded-md h-[32px] w-[90px] text-center  ${status === "Approve" ? "text-[white] bg-[#0575E6] " :
-                      status === "Reject" ? "text-[#B91C1C] bg-[#FDECEC] border border-[#FAC2C2]" :
-                        "text-[#344054] border border-[#868E961A] bg-[#E4E9EE4D]"}`}>
+                    <button key={i} className={`h-[32px] min-w-[90px] px-3 rounded-md text-center text-[13px] font-medium leading-none shadow-none outline-none focus:outline-none focus:ring-0 ${
+                      status === "Approve"
+                        ? "text-white bg-[#0575E6] border border-[#E4E9EE]"
+                        : status === "Reject"
+                          ? "text-[#B91C1C] bg-[#FDECEC] border border-[#FAC2C2]"
+                          : "text-[#344054] border border-[#D1D5DB] bg-[#EEF2F6]"
+                    }`}>
                       {status}
-
-                    </div>
+                    </button>
                   ))}
                 </div>
 
