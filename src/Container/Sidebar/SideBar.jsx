@@ -201,6 +201,9 @@ const SideBar = () => {
       case "DashboardPayroll1":
         navigate("/dashboard/payroll");
         break;
+      case "Performance":
+        navigate("/dashboard/performance");
+        break;
 
       // config=============================================================
       //Account Management============================
@@ -691,7 +694,7 @@ const SideBar = () => {
                 <span>Leave Management</span>
               </li>
               <hr className="text-[#E2E8F0]" />
-              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname === '/dashboard/leave-management1' ?
+              <li className={`transition-all duration-500 w-[100%] ${loacation.pathname.includes('performance') ?
                 'bg-[#EEF2FF] rounded-md text-[#0575E6]' : 'text-[#64748B]'}
               h-[2.76rem] py-[0.75rem] pl-[1.8rem]  text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem] `}
                 onClick={() => changeTab('Performance')}>

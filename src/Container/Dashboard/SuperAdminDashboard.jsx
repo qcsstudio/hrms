@@ -181,6 +181,19 @@ const SuperAdminDashboard = () => {
     }
   }, [dashboarddata?.companies, sortBy])
 
+   const getStatusStyle = (status) => {
+    switch (status) {
+      case "ACTIVE":
+        return "bg-[#ECFDF3] text-[#2B8A3E] border-[#D3F9D8]";
+      case "PAUSED":
+        return "bg-[#FFF4C8] text-[#AB653B] border-[#FFEEAB]";
+      case "DRAFT":
+        return "bg-[#EFF6FF] text-[#31D4ED8] border-[#D6E8FF]";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
   return (
     <div className="w-full p-5 bg-gray-50 card-animate">
       <Statics data={statsData} />
@@ -216,7 +229,7 @@ const SuperAdminDashboard = () => {
         {/* Filters */}
         <div className="flex justify-between mt-5 px-3">
           <div className="flex bg-[#F4F4F5] border border-[#DEE2E6] rounded-[9px] px-1 py-1 gap-2">
-            {['All', 'Active', 'Paused', 'Completed', 'Draft'].map((item) => (
+            {['All', 'Active', 'Paused', 'Draft'].map((item) => (
               <button
                 key={item}
                 onClick={() => setActiveFilter(item)}
@@ -233,7 +246,7 @@ const SuperAdminDashboard = () => {
           <div className="relative">
             <button
               onClick={() => setIsSortOpen((prev) => !prev)}
-              className="border flex items-center gap-2 border-gray-300 rounded-lg px-4 py-2 bg-white w-[110px] h-[40px] text-[#334155]"
+              className="border flex items-center gap-2 border-gray-300 rounded-lg px-4 py-2 bg-white w-[110px] h-[40px] text-[#334155] shadow-none outline-none focus:outline-none focus:ring-0 transition-transform duration-200 hover:-translate-y-[1px] hover:shadow-none active:scale-[0.99]"
             >
               Sort <FaAngleDown className={`${isSortOpen ? "rotate-180" : ""} transition-transform`} />
             </button>
@@ -289,7 +302,7 @@ const SuperAdminDashboard = () => {
           {sortedCompanies?.map((row, idx) => (
             <div
               key={idx}
-              className="flex justify-between items-center rounded-2xl p-3 my-4 bg-white/80 surface-card"
+              className="flex justify-between items-center rounded-[6px] p-3 my-4 bg-white/90 border border-[#E5E7EB] shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]"
               style={{ "--stagger": idx }}
             >
             <div className="w-1/5">
@@ -304,7 +317,7 @@ const SuperAdminDashboard = () => {
 
             <div className="w-1/5">
               <button
-                className={`px-3 py-1 rounded-lg border ${row.statusStyle}`}
+                className={`px-4 py-1 rounded-md border text-[14px]  ${getStatusStyle(row.status)}`}
               >
                 {row.status}
               </button>
