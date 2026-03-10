@@ -229,10 +229,10 @@ const LeaveManagementTLHr = () => {
 
 
         {/* ================this part is shown only hr========================== */}
-        {
+        {/* {
           isHR && <LeaveManagementHr1 />
-        }
-
+        } */}
+<LeaveManagementHr1 />
       </div>
     </>
   )
