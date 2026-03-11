@@ -45,11 +45,25 @@ const CommonAccess = () => {
   useEffect(() => {
     const fetchCommonAccess = async () => {
       try {
-        const res = await axiosInstance.get("/config/common-access/69903c5acffcbde5d7326ecc", {
+        const res = await axiosInstance.get("/config/common-access-get", {
           meta: { auth: "ADMIN_AUTH" },
         });
         console.log("Common Access GET response:", res.data);
-        setCommonAccessData(res.data);
+        const data = res?.data?.data;
+        setCommonAccessData(data);
+
+        if (data) {
+          setChecked({
+            "whos-dept": !!data.department?.enabled,
+            "whos-org": !!data.organization?.enabled,
+            "cal-dept": !!data.calendarDataLevel?.department,
+            "cal-org": !!data.calendarDataLevel?.organization,
+          });
+          setToggles({
+            "whos-dept": !!data.department?.showClockInTime,
+            "whos-org": !!data.organization?.showClockInTime,
+          });
+        }
       } catch (error) {
         console.log("Error fetching common access:", error);
       }
