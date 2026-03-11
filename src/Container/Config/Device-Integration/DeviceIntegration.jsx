@@ -23,7 +23,8 @@ const Integrated = [
 ]
 
 const DeviceIntegration = () => {
-    const { token } = useSelector(state => state.user)
+    // const { token } = useSelector(state => state.user)
+    const token = localStorage.getItem('authToken')
     const [data, setData] = useState([])
     const [modal, setModal] = useState(false);
     const [changingFields, setchangingFields] = useState(true)
@@ -144,10 +145,11 @@ const DeviceIntegration = () => {
                                 name='deviceType'
                                 value={formdata.deviceType}
                                 onChange={handlechange}>
-                                <option value='Biometric Scanner' >Biometric Scanner</option>
-                                <option value="Facial Recognition">Facial Recognition</option>
-                                <option value="RFID Card Reader">RFID Card Reader</option>
-                                <option value="Smart Lock">Smart Lock</option>
+                                <option value='' disabled  >select devicetype</option>
+                                <option value='Biometric_Scanner' >Biometric Scanner</option>
+                                <option value="Facial_Recognition">Facial Recognition</option>
+                                <option value="RFID_Card_Reader">RFID Card Reader</option>
+                                <option value="Smart_Lock">Smart Lock</option>
                             </select>
                         </div>
                         {/* Connection Mode */}
@@ -166,6 +168,7 @@ const DeviceIntegration = () => {
                                     setFormdata({ ...formdata, connectionMode: value });
                                 }}
                             >
+                                <option value='' disabled  >select connection Mode</option>
                                 <option value="LAN/IP">LAN/IP</option>
                                 <option value="Cloud API">Cloud API</option>
                             </select>
@@ -237,8 +240,8 @@ const DeviceIntegration = () => {
                                 Location / Office
                             </label>
                             <select className="w-full border border-gray-300 h-10 rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-blue-400" name='locationId' value={formdata.locationId} onChange={handlechange}>
-                                <option value="69941bd1b603693ecf22d8e5">69941bd1b603693ecf22d8e5</option>
                                 <option>2</option>
+                                <option value="69941bd1b603693ecf22d8e5">69941bd1b603693ecf22d8e5</option>
                             </select>
                         </div>
                     </div>
