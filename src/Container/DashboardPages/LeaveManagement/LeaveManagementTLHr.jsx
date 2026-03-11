@@ -31,6 +31,39 @@ const days = [
   },
 ]
 
+const mapStatsToCards = (stats) => {
+  if (Array.isArray(stats)) {
+    return stats
+  }
+
+  if (!stats || typeof stats !== 'object') {
+    return days
+  }
+
+  return [
+    {
+      name: 'On Leave Today',
+      value: stats?.onLeaveToday ?? 0,
+      title: 'In your team'
+    },
+    {
+      name: 'Upcoming (7 days)',
+      value: stats?.upcoming7Days ?? 0,
+      title: 'Plan Coverage'
+    },
+    {
+      name: 'Pending approvals',
+      value: stats?.pendingApprovals ?? 0,
+      title: 'Need action'
+    },
+    {
+      name: 'Avg Approval Time',
+      value: stats?.avgApprovalHours ?? '0h',
+      title: 'SLA indicator'
+    }
+  ]
+}
+
 const ApprovalQueue = [
   {
     name: "Neha Mehta - Casual Leave",
@@ -179,6 +212,7 @@ const LeaveManagementTLHr = () => {
   const [dateRange, setDateRange] = useState([null, null])
   const [startDate, endDate] = dateRange
   const [rangePreset, setRangePreset] = useState("This Month")
+  
   const [cardsData, setCardsData] = useState(days)
   const [approvalQueueData, setApprovalQueueData] = useState(ApprovalQueue)
   const [holidayData, setHolidayData] = useState([])
@@ -245,8 +279,8 @@ const LeaveManagementTLHr = () => {
       })
 
       const apiData = res?.data?.data || res?.data || {}
-      setCardsData(apiData?.cards || apiData?.stats || days)
-      setApprovalQueueData(apiData?.approvalQueue || ApprovalQueue)
+      setCardsData(mapStatsToCards(apiData?.cards || apiData?.stats))
+      setApprovalQueueData(Array.isArray(apiData?.approvalQueue) ? apiData.approvalQueue : ApprovalQueue)
       setHolidayData(apiData?.holidays || [])
     } catch (error) {
       console.log(error, "hr dashboard api error")
@@ -414,7 +448,7 @@ const LeaveManagementTLHr = () => {
                 </div>
 
                 <div className='flex gap-[10px]'>
-                  {item?.status.map((status, i) => (
+                  {(Array.isArray(item?.status) ? item.status : []).map((status, i) => (
                     <button
                       key={i}
                       type='button'
