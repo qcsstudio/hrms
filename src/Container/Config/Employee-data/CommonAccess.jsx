@@ -54,14 +54,14 @@ const CommonAccess = () => {
 
         if (data) {
           setChecked({
-            "whos-dept": !!data.department?.enabled,
-            "whos-org": !!data.organization?.enabled,
+            "whos-dept": !!data.whosInToday?.department?.enabled,
+            "whos-org": !!data.whosInToday?.organization?.enabled,
             "cal-dept": !!data.calendarDataLevel?.department,
             "cal-org": !!data.calendarDataLevel?.organization,
           });
           setToggles({
-            "whos-dept": !!data.department?.showClockInTime,
-            "whos-org": !!data.organization?.showClockInTime,
+            "whos-dept": !!data.whosInToday?.department?.showClockInTime,
+            "whos-org": !!data.whosInToday?.organization?.showClockInTime,
           });
         }
       } catch (error) {
@@ -83,13 +83,15 @@ const CommonAccess = () => {
     try {
       setLoading(true);
       const payload = {
-        department: {
-          enabled: !!checked["whos-dept"],
-          showClockInTime: !!toggles["whos-dept"],
-        },
-        organization: {
-          enabled: !!checked["whos-org"],
-          showClockInTime: !!toggles["whos-org"],
+        whosInToday: {
+          department: {
+            enabled: !!checked["whos-dept"],
+            showClockInTime: !!toggles["whos-dept"],
+          },
+          organization: {
+            enabled: !!checked["whos-org"],
+            showClockInTime: !!toggles["whos-org"],
+          },
         },
         calendarDataLevel: {
           department: !!checked["cal-dept"],
