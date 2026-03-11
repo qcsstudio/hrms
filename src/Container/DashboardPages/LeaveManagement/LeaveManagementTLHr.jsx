@@ -299,6 +299,127 @@ const LeaveManagementTLHr = () => {
     setDateRange([null, null]);
   };
 
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
+  const [rangePreset, setRangePreset] = useState("This Month");
+  const [cardsData, setCardsData] = useState(days)
+  const [approvalQueueData, setApprovalQueueData] = useState(ApprovalQueue)
+  const [holidayData, setHolidayData] = useState([])
+
+  const formatDate = (date) => {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return ""
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+  }
+
+  const buildQueryParams = () => {
+    if (rangePreset === "This Month") return {}
+
+    if (rangePreset === "Today") {
+      const today = new Date()
+      return { date: formatDate(today) }
+    }
+
+    if (rangePreset === "Last 7 Days") {
+      const today = new Date()
+      const start = new Date(today)
+      start.setDate(today.getDate() - 6)
+      return { startDate: formatDate(start), endDate: formatDate(today) }
+    }
+
+    if (rangePreset === "Last Month") {
+      const today = new Date()
+      const firstDayCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+      const lastDayPreviousMonth = new Date(firstDayCurrentMonth)
+      lastDayPreviousMonth.setDate(0)
+      const firstDayPreviousMonth = new Date(
+        lastDayPreviousMonth.getFullYear(),
+        lastDayPreviousMonth.getMonth(),
+        1
+      )
+
+      return {
+        startDate: formatDate(firstDayPreviousMonth),
+        endDate: formatDate(lastDayPreviousMonth)
+      }
+    }
+
+    if (startDate && endDate) {
+      return { startDate: formatDate(startDate), endDate: formatDate(endDate) }
+    }
+
+    if (startDate) {
+      return { date: formatDate(startDate) }
+    }
+
+    return {}
+  }
+
+  const fetchHrDashboard = async () => {
+    try {
+      const params = buildQueryParams()
+      const hasParams = Object.keys(params).length > 0
+
+      const res = await axiosInstance.get('/leave/hr-dashboard', {
+        ...(hasParams ? { params } : {}),
+        meta: { auth: "ADMIN_AUTH" }
+      })
+
+      const apiData = res?.data?.data || res?.data || {}
+      setCardsData(apiData?.cards || apiData?.stats || days)
+      setApprovalQueueData(apiData?.approvalQueue || ApprovalQueue)
+      setHolidayData(apiData?.holidays || [])
+    } catch (error) {
+      console.log(error, "hr dashboard api error")
+      toast.error(error?.response?.data?.message || "Failed to fetch leave dashboard")
+    }
+  }
+
+  useEffect(() => {
+    fetchHrDashboard()
+  }, [rangePreset, startDate, endDate])
+
+  const handleRangePresetChange = (preset) => {
+    setRangePreset(preset);
+
+    const today = new Date();
+    const end = new Date(today);
+    const start = new Date(today);
+
+    if (preset === "Today") {
+      setDateRange([start, end]);
+      return;
+    }
+
+    if (preset === "Last 7 Days") {
+      start.setDate(today.getDate() - 6);
+      setDateRange([start, end]);
+      return;
+    }
+
+    if (preset === "This Month") {
+      setDateRange([null, null]);
+      return;
+    }
+
+    if (preset === "Last Month") {
+      const firstDayCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDayPreviousMonth = new Date(firstDayCurrentMonth);
+      lastDayPreviousMonth.setDate(0);
+      const firstDayPreviousMonth = new Date(
+        lastDayPreviousMonth.getFullYear(),
+        lastDayPreviousMonth.getMonth(),
+        1
+      );
+      setDateRange([firstDayPreviousMonth, lastDayPreviousMonth]);
+      return;
+    }
+
+    setDateRange([null, null]);
+  };
+
   return (
     <>
       <div className='p-5 bg-gray-50 card-animate'>
