@@ -190,82 +190,82 @@ const Navbar = () => {
     };
   }, []);
 
-  useEffect(() => {
-    let isMounted = true;
+  // useEffect(() => {
+  //   let isMounted = true;
 
-    const fetchSearchRecords = async () => {
-      setIsSearchLoading(true);
+  //   const fetchSearchRecords = async () => {
+  //     setIsSearchLoading(true);
 
-      try {
-        const axiosInstance = createAxios(token);
-        const res = await axiosInstance.get("/employees/all", {
-          meta: { auth: "ADMIN_AUTH" }
-        });
+  //     try {
+  //       const axiosInstance = createAxios(token);
+  //       const res = await axiosInstance.get("/employees/all", {
+  //         meta: { auth: "ADMIN_AUTH" }
+  //       });
 
-        const records = Array.isArray(res?.data)
-          ? res.data
-            .map((item, index) => normalizeEmployeeRecord(item, index))
-            .filter(Boolean)
-          : [];
+  //       const records = Array.isArray(res?.data)
+  //         ? res.data
+  //           .map((item, index) => normalizeEmployeeRecord(item, index))
+  //           .filter(Boolean)
+  //         : [];
 
-        if (isMounted) {
-          setSearchRecords(records.length > 0 ? records : fallbackSearchRecords);
-        }
-      } catch (error) {
-        console.log("navbar search fetch failed", error);
-        if (isMounted) {
-          setSearchRecords(fallbackSearchRecords);
-        }
-      } finally {
-        if (isMounted) {
-          setIsSearchLoading(false);
-        }
-      }
-    };
+  //       if (isMounted) {
+  //         setSearchRecords(records.length > 0 ? records : fallbackSearchRecords);
+  //       }
+  //     } catch (error) {
+  //       console.log("navbar search fetch failed", error);
+  //       if (isMounted) {
+  //         setSearchRecords(fallbackSearchRecords);
+  //       }
+  //     } finally {
+  //       if (isMounted) {
+  //         setIsSearchLoading(false);
+  //       }
+  //     }
+  //   };
 
-    fetchSearchRecords();
+  //   fetchSearchRecords();
 
-    return () => {
-      isMounted = false;
-    };
-  }, [token]);
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, [token]);
 
-  useEffect(() => {
-    const keyword = searchKeyword.trim().toLowerCase();
+  // useEffect(() => {
+  //   const keyword = searchKeyword.trim().toLowerCase();
 
-    if (!keyword) {
-      setSearchResults([]);
-      return;
-    }
+  //   if (!keyword) {
+  //     setSearchResults([]);
+  //     return;
+  //   }
 
-    const filteredResults = searchRecords
-      .filter((item) => item.searchableText.includes(keyword))
-      .slice(0, 8);
+  //   const filteredResults = searchRecords
+  //     .filter((item) => item.searchableText.includes(keyword))
+  //     .slice(0, 8);
 
-    setSearchResults(filteredResults);
-  }, [searchKeyword, searchRecords]);
+  //   setSearchResults(filteredResults);
+  // }, [searchKeyword, searchRecords]);
 
-  useEffect(() => {
-    if (!isNotificationDrawerOpen) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!isNotificationDrawerOpen) {
+  //     return;
+  //   }
 
-    const previousBodyOverflow = document.body.style.overflow;
+  //   const previousBodyOverflow = document.body.style.overflow;
 
-    const handleEsc = (event) => {
-      if (event.key === "Escape") {
-        setIsNotificationDrawerOpen(false);
-      }
-    };
+  //   const handleEsc = (event) => {
+  //     if (event.key === "Escape") {
+  //       setIsNotificationDrawerOpen(false);
+  //     }
+  //   };
 
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", handleEsc);
+  //   document.body.style.overflow = "hidden";
+  //   document.addEventListener("keydown", handleEsc);
 
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.removeEventListener("keydown", handleEsc);
-    };
-  }, [isNotificationDrawerOpen]);
+  //   return () => {
+  //     document.body.style.overflow = previousBodyOverflow;
+  //     document.removeEventListener("keydown", handleEsc);
+  //   };
+  // }, [isNotificationDrawerOpen]);
 
 
   return (

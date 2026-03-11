@@ -444,7 +444,8 @@ const LeaveManagementTLHr = () => {
 
 
         {/* ================this part is shown only hr========================== */}
-        {isHR && <LeaveManagementHr1 holidayData={holidayData} />}
+        {/* {isHR && <LeaveManagementHr1 holidayData={holidayData} />} */}
+        <LeaveManagementHr1 holidayData={holidayData} />
       </div>
 
       {showAskInfoDrawer &&
