@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../utils/axios.config";
+import { toast } from "react-toastify";
 
 const sections = [
   {
@@ -12,7 +14,12 @@ const sections = [
         hasToggle: true,
         toggleLabel: "Show clock-in time for members in the department",
       },
-      { id: "whos-org", label: "Organization" },
+      {
+        id: "whos-org",
+        label: "Organization",
+        hasToggle: true,
+        toggleLabel: "Show clock-in time for members in the organization",
+      },
     ],
   },
   {
@@ -27,8 +34,42 @@ const sections = [
 
 const CommonAccess = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
+
   const [checked, setChecked] = useState({});
   const [toggles, setToggles] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [commonAccessData, setCommonAccessData] = useState(null);
+
+  useEffect(() => {
+    const fetchCommonAccess = async () => {
+      try {
+        const res = await axiosInstance.get("/config/common-access-get", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        console.log("Common Access GET response:", res.data);
+        const data = res?.data?.data;
+        setCommonAccessData(data);
+
+        if (data) {
+          setChecked({
+            "whos-dept": !!data.department?.enabled,
+            "whos-org": !!data.organization?.enabled,
+            "cal-dept": !!data.calendarDataLevel?.department,
+            "cal-org": !!data.calendarDataLevel?.organization,
+          });
+          setToggles({
+            "whos-dept": !!data.department?.showClockInTime,
+            "whos-org": !!data.organization?.showClockInTime,
+          });
+        }
+      } catch (error) {
+        console.log("Error fetching common access:", error);
+      }
+    };
+    fetchCommonAccess();
+  }, []);
 
   const toggle = (id) => {
     setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -36,6 +77,37 @@ const CommonAccess = () => {
 
   const toggleSwitch = (id) => {
     setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const payload = {
+        department: {
+          enabled: !!checked["whos-dept"],
+          showClockInTime: !!toggles["whos-dept"],
+        },
+        organization: {
+          enabled: !!checked["whos-org"],
+          showClockInTime: !!toggles["whos-org"],
+        },
+        calendarDataLevel: {
+          department: !!checked["cal-dept"],
+          organization: !!checked["cal-org"],
+        },
+      };
+
+      const res = await axiosInstance.post("/config/common-access", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      console.log("Common Access saved:", res.data);
+      toast.success(res?.data?.message || "Common Access saved successfully");
+    } catch (error) {
+      console.log("Error saving common access:", error);
+      toast.error(error?.response?.data?.message || "Failed to save");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -78,7 +150,7 @@ const CommonAccess = () => {
                     </div>
 
                     {/* Toggle Switch */}
-                    {opt.hasToggle && (
+                    {opt.hasToggle && checked[opt.id] && (
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-500 max-w-[75%]">
                           {opt.toggleLabel}
@@ -118,8 +190,12 @@ const CommonAccess = () => {
             Cancel
           </button>
 
-          <button className="px-5 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
-            Save
+          <button
+            className="px-5 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? "Saving..." : "Save"}
           </button>
         </div>
 
