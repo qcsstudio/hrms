@@ -382,16 +382,16 @@ const LeaveManagementTLHr = () => {
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-[30px] justify-evenly gap-4 list-stagger'>
-          {cardsData.map((item, index) => (
+          {cardsData?.map((item, index) => (
             <div key={index} className='h-[110px] rounded-lg bg-white p-3 border border-[#E5E7EB] surface-card' style={{ "--stagger": index }}>
               <div className='font-medium text-[17px]'>
-                {item.name}
+                {item?.name}
               </div>
               <div className='font-bold text-[23px]'>
-                {item.value}
+                {item?.value}
               </div>
               <div className='text-gray-300 text-[14px]'>
-                {item.title}
+                {item?.title}
               </div>
             </div>
           ))}
@@ -402,19 +402,19 @@ const LeaveManagementTLHr = () => {
           <p className='text-gray-300 text-[14px]'>Approve / Reject / Ask for details. Overlap warnings keep staffing safe.</p>
 
           <div className='mt-[20px] bg-[white] list-stagger'>
-            {approvalQueueData.map((item, index) => (
+            {approvalQueueData?.map((item, index) => (
               <div key={index} className='mt-[14px] bg-[#F8F9FA] flex justify-between p-3 rounded-lg items-center card-animate' style={{ "--stagger": index }}>
                 <div>
                   <div>
-                    {item.name}
+                    {item?.name}
                   </div>
                   <div className='text-gray-300 text-[14px] '>
-                    {item.title}
+                    {item?.title}
                   </div>
                 </div>
 
                 <div className='flex gap-[10px]'>
-                  {item.status.map((status, i) => (
+                  {item?.status.map((status, i) => (
                     <button
                       key={i}
                       type='button'
