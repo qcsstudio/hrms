@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import LeaveManagementHr1 from './LeaveManagementHr1'
+import { createPortal } from 'react-dom'
 import DatePicker from 'react-datepicker'
 import { FaAngleDown, FaRegCalendarAlt } from 'react-icons/fa'
+import { RxCross2 } from 'react-icons/rx'
 import { toast } from 'react-toastify'
 import createAxios from '../../../utils/axios.config'
 import "react-datepicker/dist/react-datepicker.css";
@@ -47,7 +49,27 @@ const ApprovalQueue = [
   },
 ]
 
-const DivDropdown = ({ value, options, onSelect, widthClass = "w-[230px]" }) => {
+const quickTemplates = ['Upload DOC', 'Clarify Reason', 'Full/Half-Day', 'Handover Plan', 'Change Dates']
+const responseDueOptions = ['4 Hours', '24 Hours', '48 Hours', '3 Days']
+
+const getApprovalSummary = (item, index) => {
+  const [employeeName = '', leaveType = ''] = (item?.name || '').split(' - ')
+  const titleParts = (item?.title || '').split(' - ')
+  const reasonPart = titleParts.find((part) => part.toLowerCase().startsWith('reason:'))
+  const hasAttachmentRequirement = (item?.title || '').toLowerCase().includes('attachment required')
+
+  return {
+    requestId: `REQ-${1024 + index}`,
+    employee: employeeName || '-',
+    leaveType: leaveType || '-',
+    dates: titleParts[0] || '-',
+    duration: titleParts[1] || '-',
+    reason: reasonPart ? reasonPart.replace(/reason:/i, '').trim() : '-',
+    attachment: hasAttachmentRequirement ? 'Required' : 'Not Required'
+  }
+}
+
+const DivDropdown = ({ value, options, onSelect, widthClass = "w-[230px]", direction = "down" }) => {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
 
@@ -74,7 +96,7 @@ const DivDropdown = ({ value, options, onSelect, widthClass = "w-[230px]" }) => 
       </button>
 
       {isOpen && (
-        <div className='absolute left-0 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-none z-20 overflow-hidden'>
+        <div className={`${direction === "up" ? "absolute left-0 bottom-full mb-2" : "absolute left-0 mt-2"} w-full rounded-lg border border-gray-200 bg-white shadow-none z-20 overflow-hidden`}>
           {options.map((option) => (
             <button
               key={option}
@@ -107,6 +129,54 @@ const LeaveManagementTLHr = () => {
  
   const [locationFilter, setLocationFilter] = useState("Location")
   const [statusFilter, setStatusFilter] = useState("Status")
+  const [showAskInfoDrawer, setShowAskInfoDrawer] = useState(false)
+  const [selectedApprovalSummary, setSelectedApprovalSummary] = useState(null)
+  const [askInfoForm, setAskInfoForm] = useState({
+    details: '',
+    responseDue: '24 Hours'
+  })
+
+  const handleOpenAskInfo = (requestItem, index) => {
+    setSelectedApprovalSummary(getApprovalSummary(requestItem, index))
+    setAskInfoForm({
+      details: '',
+      responseDue: '24 Hours'
+    })
+    setShowAskInfoDrawer(true)
+  }
+
+  const handleTemplateClick = (template) => {
+    setAskInfoForm((prev) => ({
+      ...prev,
+      details: prev.details ? `${prev.details}\n${template}` : template
+    }))
+  }
+
+  const handleAskInfoSubmit = () => {
+    setShowAskInfoDrawer(false)
+  }
+
+  useEffect(() => {
+    if (!showAskInfoDrawer) {
+      return
+    }
+
+    const previousBodyOverflow = document.body.style.overflow
+
+    const handleEscClose = (event) => {
+      if (event.key === 'Escape') {
+        setShowAskInfoDrawer(false)
+      }
+    }
+
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', handleEscClose)
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow
+      document.removeEventListener('keydown', handleEscClose)
+    }
+  }, [showAskInfoDrawer])
 
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
@@ -232,6 +302,16 @@ const LeaveManagementTLHr = () => {
   return (
     <>
       <div className='p-5 bg-gray-50 card-animate'>
+        <style>{`
+          @keyframes askInfoSlideIn {
+            from {
+              transform: translateX(100%);
+            }
+            to {
+              transform: translateX(0);
+            }
+          }
+        `}</style>
 
         {/* heading */}
         <div className='flex justify-between items-center gap-4 flex-wrap card-animate'>
@@ -336,13 +416,23 @@ const LeaveManagementTLHr = () => {
                 </div>
 
                 <div className='flex gap-[10px]'>
-                  {(Array.isArray(item.status) ? item.status : ["Ask Info"]).map((status, i) => (
-                    <button key={i} className={`h-[32px] min-w-[90px] px-3 rounded-md text-center text-[13px] font-medium leading-none shadow-none outline-none focus:outline-none focus:ring-0 ${status === "Approve"
-                      ? "text-white bg-[#0575E6] border border-[#E4E9EE]"
-                      : status === "Reject"
-                        ? "text-[#B91C1C] bg-[#FDECEC] border border-[#FAC2C2]"
-                        : "text-[#344054] border border-[#D1D5DB] bg-[#EEF2F6]"
-                      }`}>
+                  {item.status.map((status, i) => (
+                    <button
+                      key={i}
+                      type='button'
+                      onClick={() => {
+                        if (status === 'Ask Info') {
+                          handleOpenAskInfo(item, index)
+                        }
+                      }}
+                      className={`h-[32px] min-w-[90px] px-3 rounded-md text-center text-[13px] font-medium leading-none shadow-none outline-none focus:outline-none focus:ring-0 ${
+                      status === "Approve"
+                        ? "text-white bg-[#0575E6] border border-[#E4E9EE]"
+                        : status === "Reject"
+                          ? "text-[#B91C1C] bg-[#FDECEC] border border-[#FAC2C2]"
+                          : "text-[#344054] border border-[#D1D5DB] bg-[#EEF2F6]"
+                      }`}
+                    >
                       {status}
                     </button>
                   ))}
@@ -358,6 +448,154 @@ const LeaveManagementTLHr = () => {
         {/* ================this part is shown only hr========================== */}
         {isHR && <LeaveManagementHr1 holidayData={holidayData} />}
       </div>
+
+      {showAskInfoDrawer &&
+        createPortal(
+          <div className='fixed inset-0 z-[1300]'>
+            <button
+              type='button'
+              onClick={() => setShowAskInfoDrawer(false)}
+              aria-label='Close ask info drawer'
+              className='absolute inset-0 border-none bg-black/35'
+            />
+
+            <div
+              className='absolute right-0 top-0 h-full w-full max-w-[720px] border-l border-[#E5E7EB] bg-[#F8F9FA] shadow-xl flex flex-col overflow-hidden'
+              style={{ animation: 'askInfoSlideIn 260ms ease-out' }}
+            >
+              <div className='sticky top-0 z-20 flex items-start justify-between border-b border-[#E5E7EB] bg-[#F8F9FA] px-5 py-4'>
+                <div>
+                  <h1 className='text-[22px] font-semibold text-[#111827]'>Ask Info</h1>
+                  <p className='mt-1 text-[13px] text-[#667085]'>Request clarification/documents without approving or rejecting.</p>
+                </div>
+
+                <button
+                  type='button'
+                  onClick={() => setShowAskInfoDrawer(false)}
+                  className='flex h-9 w-9 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-[#F9FAFB]'
+                >
+                  <RxCross2 className='text-[18px]' />
+                </button>
+              </div>
+
+              <div className='flex-1 overflow-y-auto px-5 py-5 space-y-5'>
+              <div className='rounded-xl border border-[#E5E7EB] bg-white p-4'>
+                <div className='flex flex-wrap items-center justify-between gap-2'>
+                  <h2 className='text-[16px] font-semibold text-[#344054]'>Request Summary</h2>
+
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <span className='inline-flex h-[30px] min-w-[90px] items-center justify-center rounded-md border border-[#D4D8DE] bg-[#F2F4F7] px-3 text-[12px] font-medium text-[#344054]'>
+                      {selectedApprovalSummary?.requestId || 'REQ-0000'}
+                    </span>
+                    <span className='inline-flex h-[30px] min-w-[140px] items-center justify-center rounded-md border border-[#A9C9FF] bg-[#E9F2FF] px-3 text-[12px] font-medium text-[#1677FF]'>
+                      Pending Approval
+                    </span>
+                    <span className='inline-flex h-[30px] min-w-[104px] items-center justify-center rounded-md border border-[#F5B5B5] bg-[#FDECEC] px-3 text-[12px] font-medium text-[#D92D20]'>
+                      Overlap Risk
+                    </span>
+                  </div>
+                </div>
+
+                <div className='mt-5 grid grid-cols-1 gap-3 md:grid-cols-2'>
+                  <div className='rounded-lg border border-[#EAECF0] bg-[#F8FAFC] p-3'>
+                    <p className='text-[12px] text-[#667085]'>Employee</p>
+                    <p className='mt-1 text-[16px] font-semibold text-[#111827]'>{selectedApprovalSummary?.employee}</p>
+                  </div>
+                  <div className='rounded-lg border border-[#EAECF0] bg-[#F8FAFC] p-3'>
+                    <p className='text-[12px] text-[#667085]'>Leave Type</p>
+                    <p className='mt-1 text-[16px] font-semibold text-[#111827]'>{selectedApprovalSummary?.leaveType}</p>
+                  </div>
+                  <div className='rounded-lg border border-[#EAECF0] bg-[#F8FAFC] p-3'>
+                    <p className='text-[12px] text-[#667085]'>Dates</p>
+                    <p className='mt-1 text-[16px] font-semibold text-[#111827]'>{selectedApprovalSummary?.dates}</p>
+                  </div>
+                  <div className='rounded-lg border border-[#EAECF0] bg-[#F8FAFC] p-3'>
+                    <p className='text-[12px] text-[#667085]'>Duration</p>
+                    <p className='mt-1 text-[16px] font-semibold text-[#111827]'>{selectedApprovalSummary?.duration}</p>
+                  </div>
+                  <div className='rounded-lg border border-[#EAECF0] bg-[#F8FAFC] p-3'>
+                    <p className='text-[12px] text-[#667085]'>Reason</p>
+                    <p className='mt-1 text-[16px] font-semibold text-[#111827]'>{selectedApprovalSummary?.reason}</p>
+                  </div>
+                  <div className='rounded-lg border border-[#EAECF0] bg-[#F8FAFC] p-3'>
+                    <p className='text-[12px] text-[#667085]'>Attachment</p>
+                    <p className='mt-1 text-[16px] font-semibold text-[#111827]'>{selectedApprovalSummary?.attachment}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className='rounded-xl border border-[#E5E7EB] bg-white p-4'>
+                <div className='flex flex-wrap items-center justify-between gap-2'>
+                  <h2 className='text-[16px] font-semibold text-[#344054]'>What do you need from employee?</h2>
+                  <button type='button' className='text-[13px] font-medium text-[#1677FF] bg-transparent border-none shadow-none outline-none focus:outline-none focus:ring-0'>
+                    Use quick template to save time
+                  </button>
+                </div>
+
+                <div className='mt-5'>
+                  <label className='mb-2 block text-[14px] font-medium text-[#111827]'>Details</label>
+                  <textarea
+                    value={askInfoForm.details}
+                    onChange={(event) => setAskInfoForm((prev) => ({ ...prev, details: event.target.value }))}
+                    placeholder='Write what clarification/documents are needed'
+                    className='min-h-[120px] w-full rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 text-[14px] text-[#111827] outline-none focus:border-[#0575E6]'
+                  />
+                </div>
+
+                <div className='mt-4 flex flex-wrap gap-3'>
+                  {quickTemplates.map((template) => (
+                    <button
+                      key={template}
+                      type='button'
+                      onClick={() => handleTemplateClick(template)}
+                      className='h-[36px] rounded-lg border border-[#D0D5DD] bg-[#F8FAFC] px-3 text-[13px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-[#EEF2F6]'
+                    >
+                      {template}
+                    </button>
+                  ))}
+                </div>
+
+                <div className='mt-5'>
+                  <DivDropdown
+                    value={`Response Due: ${askInfoForm.responseDue}`}
+                  options={responseDueOptions.map((option) => `Response Due: ${option}`)}
+                  onSelect={(value) =>
+                    setAskInfoForm((prev) => ({
+                      ...prev,
+                      responseDue: value.replace('Response Due: ', '')
+                    }))
+                  }
+                  widthClass='w-full'
+                  direction='up'
+                />
+              </div>
+              </div>
+              </div>
+
+              <div className='border-t border-[#E5E7EB] bg-[#F8F9FA] px-5 py-4 flex justify-end gap-3'>
+                <button
+                  type='button'
+                  onClick={() => setShowAskInfoDrawer(false)}
+                  className='h-[40px] rounded-lg border border-[#D0D5DD] bg-white px-4 text-[14px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0'
+                >
+                  Cancel
+                </button>
+                <button
+                  type='button'
+                  onClick={handleAskInfoSubmit}
+                  className='h-[40px] rounded-lg border border-[#E4E9EE] bg-[#0575E6] px-5 text-[14px] font-medium text-white shadow-none outline-none focus:outline-none focus:ring-0'
+                >
+                  Send Request
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+        {/* {
+          isHR &&
+        } */}
+        <LeaveManagementHr1/>
     </>
   )
 }

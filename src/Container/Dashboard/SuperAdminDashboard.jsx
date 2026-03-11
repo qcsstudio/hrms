@@ -182,17 +182,26 @@ const SuperAdminDashboard = () => {
   }, [dashboarddata?.companies, sortBy])
 
    const getStatusStyle = (status) => {
-    switch (status) {
+    const normalizedStatus = (status || "").toUpperCase();
+    switch (normalizedStatus) {
       case "ACTIVE":
-        return "bg-[#ECFDF3] text-[#2B8A3E] border-[#D3F9D8]";
+        return "border border-[#C5F5D5] bg-[#E9FFEF] text-[#10B981] px-2 rounded-md";
       case "PAUSED":
-        return "bg-[#FFF4C8] text-[#AB653B] border-[#FFEEAB]";
+        return "border border-[#FFEEAB] bg-[#FFF4C8] text-[#AB653B] px-2 rounded-md";
       case "DRAFT":
-        return "bg-[#EFF6FF] text-[#31D4ED8] border-[#D6E8FF]";
+        return "border border-[#D6E8FF] bg-[#EFF6FF] text-[#1D4ED8] px-2 rounded-md";
       default:
-        return "bg-gray-100 text-gray-600";
+        return "border border-gray-200 bg-gray-100 text-gray-600 px-2 rounded-md";
     }
   };
+
+  const formatStatusLabel = (status) =>
+    (status || "")
+      .toLowerCase()
+      .split("_")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
 
   return (
     <div className="w-full p-5 bg-gray-50 card-animate">
@@ -316,11 +325,11 @@ const SuperAdminDashboard = () => {
             </div>
 
             <div className="w-1/5">
-              <button
-                className={`px-4 py-1 rounded-md border text-[14px]  ${getStatusStyle(row.status)}`}
+              <span
+                className={`inline-flex items-center text-[14px] shadow-none ${getStatusStyle(row.status)}`}
               >
-                {row.status}
-              </button>
+                {formatStatusLabel(row.status)}
+              </span>
             </div>
 
             <div className="w-1/5">

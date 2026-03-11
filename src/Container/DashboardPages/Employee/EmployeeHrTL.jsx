@@ -67,12 +67,14 @@ const statsData = [
     value: '13',
     icon: statslogo1,
     bg: 'bg-indigo-100',
-    range: "Stable"
+    range: "Stable",
+    rangeStyle: "text-[#10B981] border border-[#C5F5D5] bg-[#E9FFEF]"
   },
   {
     title: "Present Today",
     value: '10',
     range: "2 Not Marked",
+    rangeStyle: "text-[#F59E0B] border border-[#FDE2AD] bg-[#FFF3D6]",
     icon: statslogo2,
     bg: 'bg-indigo-100'
   },
@@ -80,6 +82,7 @@ const statsData = [
     title: "Pending Approvals",
     value: '4',
     range: "2 Due Today",
+    rangeStyle: "text-[#B91C1C] border border-[#FAC2C2] bg-[#FDECEC]",
     icon: statslogo3,
     bg: 'bg-indigo-100'
   },
@@ -88,7 +91,8 @@ const statsData = [
     value: '10',
     icon: statslogo4,
     bg: 'bg-emerald-100',
-    range: "In Progress"
+    range: "In Progress",
+    rangeStyle: "text-[#334155] border border-[#D2D8E0] bg-[#F2F4F6]"
   }
 ]
 
@@ -150,6 +154,24 @@ const FilterDropdown = ({ label, value, options, onSelect }) => {
       )}
     </div>
   )
+}
+
+const getEmployeeStatusStyle = (status) => {
+  const normalizedStatus = (status || "").toUpperCase()
+
+  if (normalizedStatus === "ACTIVE") {
+    return "border-[#C5F5D5] bg-[#E9FFEF] text-[#10B981]"
+  }
+
+  if (normalizedStatus === "PENDING INVITE") {
+    return "border-[#FDE2AD] bg-[#FFF3D6] text-[#F59E0B]"
+  }
+
+  if (normalizedStatus === "INACTIVE") {
+    return "border-[#FAC2C2] bg-[#FDECEC] text-[#B91C1C]"
+  }
+
+  return "border-[#D2D8E0] bg-[#F2F4F6] text-[#334155]"
 }
 
 /* -------------------- MAIN COMPONENT -------------------- */
@@ -346,7 +368,7 @@ const EmployeeHrTL = () => {
             <div className='w-[120px]'>{item.department}</div>
             <div>{item.Role}</div>
 
-            <div className='border border-[#C5F5D5] bg-[#E9FFEF] text-[#10B981] px-2 rounded-md'>
+            <div className={`border px-2 rounded-md ${getEmployeeStatusStyle(item.Status)}`}>
               {item.Status}
             </div>
 
