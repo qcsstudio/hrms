@@ -1,5 +1,4 @@
 import React from 'react'
-import { statslogo1, statslogo2, statslogo3, statslogo4 } from '../../allAssetsImport/allAssets'
 
 // const statsData = [
 //   {
@@ -67,7 +66,13 @@ const Statics = ({ data }) => {
             </p>
           }
           {item.range &&
-            <p className="text-sm text-gray-400 border rounded-md px-2 w-fit mt-2">
+            <p
+              className={
+                item.rangeStyle
+                  ? `mt-2 inline-flex h-[26px] items-center justify-center rounded-md px-2 text-[12px] leading-none font-medium ${item.rangeStyle}`
+                  : "text-sm text-gray-400 border rounded-md px-2 w-fit mt-2"
+              }
+            >
               {item.range}
             </p>
           }
