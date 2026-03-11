@@ -143,7 +143,6 @@ const LeaveManagementTLHr = () => {
     })
     setShowAskInfoDrawer(true)
   }
-
   const handleTemplateClick = (template) => {
     setAskInfoForm((prev) => ({
       ...prev,
