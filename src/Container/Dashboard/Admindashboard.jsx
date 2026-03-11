@@ -21,6 +21,8 @@ import { FaAngleDown, FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/
 import { useDispatch } from 'react-redux'
 import createAxios from '../../utils/axios.config'
 import { createPortal } from 'react-dom'
+import { toast } from 'react-toastify'
+import { setAddLoginData } from '../../Redux/userSlice'
 
 const quickActions = [
   { img: Add_employees, title: 'Add Employees', desc: 'Create new employee profile' },
@@ -369,13 +371,22 @@ const Admindashboard = () => {
         meta: { auth: "TENANT_ONLY" }
       })
       console.log("after login change password response========", res.data)
-      toast.success("Password changed successfully");
-      dispatch(setAddLoginData(res.data))
       localStorage.setItem("istemporyPassword", "true");
       setIstemporayPassword(true);
+      setChangepassword({
+        confirmPassword: "",
+        newPassword: ""
+      })
+      setErrors({
+        newPassword: "",
+        confirmPassword: ""
+      })
+      toast.success("Password changed successfully");
+      dispatch(setAddLoginData(res.data))
 
     } catch (error) {
       console.warn("api is not working", error)
+      toast.error(error?.response?.data?.message || "Failed to change password")
     }
   }
 
@@ -383,7 +394,7 @@ const Admindashboard = () => {
     <div className='p-[15px] bg-[#F8F9FA] card-animate'>
        {/* popup================================== */}
       {!istemporyPassword && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-2000 flex items-center justify-center bg-black/50">
 
           {/* Popup Box */}
           <div className="bg-white rounded-2xl p-6 w-[450px] shadow-xl">
