@@ -109,7 +109,7 @@ const DeviceIntegration = () => {
                 </div>
             ))}
             {modal && createPortal(
-                <div className="fixed inset-0 bg-black/60 flex justify-end z-50">
+                <div className="fixed inset-0 bg-black/60 flex justify-end z-2000">
                     <div className="w-[543px] bg-white rounded-2xl shadow-xl p-8 relative overflow-y-auto">
                         {/* Close Button */}
                         <button

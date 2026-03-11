@@ -289,6 +289,9 @@ const SideBar = () => {
       case "extratime":
         navigate("/config/track/Attendance/extra-time/list");
         break;
+      case "attendancereqcycle":
+        navigate("/config/track/Attendance/attendanceRequest");
+        break;
 
       case "week-off":
         navigate("/config/track/leave/Weekly-off/list");

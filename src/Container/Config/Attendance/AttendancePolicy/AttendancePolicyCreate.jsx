@@ -1,7 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import createAxios from "../../../../utils/axios.config";
 
 export default function AttendancePolicyCreate() {
+  const navigate = useNavigate();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState({
     policyName: "", policyDesc: "",
     wfhOd: "wfh", wfhCount: "", backupCount: "",
@@ -28,6 +35,124 @@ export default function AttendancePolicyCreate() {
   });
 
   const set = (key, val) => setData(prev => ({ ...prev, [key]: val }));
+  const toNumber = (value, fallback = 0) => {
+    if (value === "" || value === null || value === undefined) return fallback;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? fallback : parsed;
+  };
+  const toNullableNumber = (value) => {
+    if (value === "" || value === null || value === undefined) return null;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+  const toTime = (hours, minutes) => ({
+    hours: toNumber(hours, 0),
+    minutes: toNumber(minutes, 0)
+  });
+  const buildMinDuration = (mode, percent, hours, minutes) => ({
+    mode,
+    percent: mode === "percent" ? toNullableNumber(percent) : null,
+    time: mode === "hrs" ? toTime(hours, minutes) : { hours: 0, minutes: 0 }
+  });
+  const buildPenalty = (enabled, leaveType, leavesToDeduct, deductionPolicy) => ({
+    enabled,
+    leaveType: leaveType || "",
+    leavesToDeduct: leavesToDeduct || "",
+    deductionPolicy: deductionPolicy || "auto-leave"
+  });
+  const buildPayload = (status) => {
+    const useGraceHours = data.lateType === "grace-hours";
+    const punctualityTrigger = useGraceHours
+      ? toTime(data.graceTriggerHrs, data.graceTriggerMins)
+      : toTime(data.graceCountTriggerHrs, data.graceCountTriggerMins);
+    const punctualityMaxAllowed = useGraceHours
+      ? toTime(data.graceMaxHrs, data.graceMaxMins)
+      : toTime(data.graceCountMaxHrs, data.graceCountMaxMins);
+
+    return {
+      policyName: data.policyName.trim(),
+      policyDescription: data.policyDesc.trim(),
+      workRequest: {
+        wfhOdType: data.wfhOd || "wfh",
+        wfhMaxRequestsPerMonth: toNumber(data.wfhCount, 0),
+        backupMaxRequestsPerMonth: toNumber(data.backupCount, 0),
+        restrictAttendanceRequests: data.restrictRequests === "yes",
+        restrictedRequestsCount: data.restrictRequests === "yes" ? toNumber(data.restrictCount, 0) : 0
+      },
+      absenteeism: {
+        autoActionsEnabled: data.autoActions === "yes",
+        noShowHandling: data.noShowAction || "",
+        leaveSubAction: data.leaveSubAction || "",
+        absentLeaveType: data.absentLeaveType || "",
+        absentLeavesToDeduct: data.absentLeavesDeduct || ""
+      },
+      punctuality: {
+        trackLateComers: data.lateComers === "yes",
+        lateMarkTrackingType: data.lateType || "grace-hours",
+        graceHours: {
+          monthlyGrace: useGraceHours
+            ? toTime(data.graceHrs, data.graceMins)
+            : { hours: toNumber(data.graceCountNum, 0), minutes: 0 },
+          triggerAfter: punctualityTrigger,
+          maxAllowed: punctualityMaxAllowed,
+          penaltyType: data.gracePenalty || "deduct-refill",
+          penalty: {
+            enabled: data.lateComers === "yes" ? "yes" : "no-absent",
+            leaveType: data.gracePenaltyLeaveType || "",
+            leavesToDeduct: data.gracePenaltyLeavesDeduct || "",
+            deductionPolicy: data.gracePenaltyDeductPolicy || "auto-leave"
+          }
+        }
+      },
+      timeAtWork: {
+        requirementEnabled: data.timeReq || "yes-daily",
+        halfDay: {
+          minDuration: buildMinDuration(data.halfDayMode, data.halfDayPct, data.halfDayHrs, data.halfDayMins),
+          penalty: buildPenalty(data.halfDayPenalty, data.halfDayLeaveType, data.halfDayLeavesDeduct, data.halfDayDeductPolicy)
+        },
+        fullDay: {
+          minDuration: buildMinDuration(data.fullDayMode, data.fullDayPct, data.fullDayHrs, data.fullDayMins),
+          penalty: buildPenalty(data.fullDayPenalty, data.fullDayLeaveType, data.fullDayLeavesDeduct, data.fullDayDeductPolicy)
+        },
+        weekly: {
+          requiredHours: toTime(data.weeklyHrs, data.weeklyMins),
+          penalty: buildPenalty(data.weeklyPenalty, data.weeklyLeaveType, data.weeklyLeavesDeduct, data.weeklyDeductPolicy)
+        }
+      },
+      status
+    };
+  };
+  const submitPolicy = async (status) => {
+    if (!data.policyName.trim()) {
+      toast.error("Policy name is required");
+      setStep(1);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = buildPayload(status);
+      const res = await axiosInstance.post("/config/attendance-policy", payload, {
+        meta: { auth: "ADMIN_AUTH" }
+      });
+
+      toast.success(res?.data?.message || `Attendance policy ${status === "draft" ? "saved as draft" : "created"} successfully`);
+      navigate("/config/track/Attendance/attendance-policy/list");
+    } catch (error) {
+      console.log(error, "attendance policy create error");
+      toast.error(error?.response?.data?.message || "Failed to save attendance policy");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handlePrimaryAction = async () => {
+    if (step < 6) {
+      setStep((s) => Math.min(6, s + 1));
+      return;
+    }
+
+    await submitPolicy("active");
+  };
 
   const iStyle = { width: "100%", padding: "10px 14px", border: "1px solid #e2e8f0", borderRadius: "8px", fontSize: "14px", color: "#374151", background: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "inherit" };
   const selStyle = { ...iStyle, appearance: "none", WebkitAppearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23B3B3B3' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 18px center", backgroundSize: "14px 14px", paddingRight: "40px", cursor: "pointer" };
@@ -498,12 +623,12 @@ export default function AttendancePolicyCreate() {
       {/* ════ BOTTOM BAR ════ */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1px solid #e5e7eb", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: 20 }}>
         <div style={{ display: "flex", gap: "12px" }}>
-          <button style={{ padding: "10px 20px", background: "transparent", color: "#374151", border: "none", borderRadius: "6px", fontSize: "14px", fontWeight: "600", cursor: "pointer" }}>Cancel</button>
-          <button style={{ padding: "10px 20px", background: "transparent", color: "#2563eb", border: "1.5px solid #2563eb", borderRadius: "6px", fontSize: "14px", fontWeight: "600", cursor: "pointer" }}>Save As Draft</button>
+          <button onClick={() => navigate("/config/track/Attendance/attendance-policy/list")} style={{ padding: "10px 20px", background: "transparent", color: "#374151", border: "none", borderRadius: "6px", fontSize: "14px", fontWeight: "600", cursor: "pointer" }}>Cancel</button>
+          <button onClick={() => submitPolicy("draft")} disabled={isSubmitting} style={{ padding: "10px 20px", background: "transparent", color: "#2563eb", border: "1.5px solid #2563eb", borderRadius: "6px", fontSize: "14px", fontWeight: "600", cursor: isSubmitting ? "not-allowed" : "pointer", opacity: isSubmitting ? 0.7 : 1 }}>Save As Draft</button>
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
           {step > 1 && <button onClick={() => setStep(s => Math.max(1, s - 1))} style={{ padding: "10px 24px", background: "transparent", color: "#2563eb", border: "none", borderRadius: "6px", fontSize: "14px", fontWeight: "600", cursor: "pointer" }}>Previous</button>}
-          <button onClick={() => setStep(s => Math.min(6, s + 1))} style={{ padding: "10px 28px", background: "#2563eb", color: "#fff", border: "none", borderRadius: "6px", fontSize: "14px", fontWeight: "600", cursor: "pointer" }}>{step === 6 ? "Save Policy" : "Next"}</button>
+          <button onClick={handlePrimaryAction} disabled={isSubmitting} style={{ padding: "10px 28px", background: "#2563eb", color: "#fff", border: "none", borderRadius: "6px", fontSize: "14px", fontWeight: "600", cursor: isSubmitting ? "not-allowed" : "pointer", opacity: isSubmitting ? 0.7 : 1 }}>{step === 6 ? (isSubmitting ? "Saving..." : "Save Policy") : "Next"}</button>
         </div>
       </div>
 
