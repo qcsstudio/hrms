@@ -90,6 +90,9 @@ const AddEmployee = lazy(() =>
 const AttendanceEmployee = lazy(() =>
   import("../Container/DashboardPages/Attendance/AttendanceEmployee")
 );
+const AttendanceCalendar = lazy(() =>
+  import("../Container/DashboardPages/Attendance/Calender")
+);
 const LeavemanagementEmployee = lazy(() =>
   import("../Container/DashboardPages/LeaveManagement/LeavemanagementEmployee")
 );
@@ -343,8 +346,10 @@ const AppRoutes = () => {
           } />
           <Route path="employee/add-Employee" element={<AddEmployee />} />
           <Route path="attendance" element={
-           isEMP ?  <AttendanceEmployee /> : <AttendanceHrTL/>
+          //  isEMP ?  <AttendanceEmployee /> : <AttendanceHrTL/>
+            <AttendanceEmployee /> 
             } />
+          <Route path="attendance-calendar" element={<AttendanceCalendar />} />
           <Route path="leave-management" element={
           //  isEMP ?  <LeavemanagementEmployee /> : <LeaveManagementTLHr/>
           // <LeavemanagementEmployee /> 

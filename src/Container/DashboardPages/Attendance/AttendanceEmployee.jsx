@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { action } from '../../../allAssetsImport/allAssets'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import createAxios from '../../../utils/axios.config'
 
 const cards = [
@@ -143,6 +144,7 @@ const myattandanceLog = [
 const AttendanceEmployee = () => {
 const {token} = useSelector(state=>state.user)
 console.log("token==========",token)
+const navigate = useNavigate()
 
 const [openPunchMenu, setOpenPunchMenu] = useState(false);
   const [selectedPunch, setSelectedPunch] = useState("Punch Out");
@@ -265,7 +267,7 @@ const [openPunchMenu, setOpenPunchMenu] = useState(false);
 
                         </div>
                         <div className='mr-[12px]'>
-                            <button className='border-2 border-[#868E961A] text-[#344054] rounded-md  bg-[#E4E9EE4D] h-[40px] font-semibold px-4'>Open Full Calandar</button>
+                            <button onClick={() => navigate('/dashboard/attendance-calendar')} className='border-2 border-[#868E961A] text-[#344054] rounded-md  bg-[#E4E9EE4D] h-[40px] font-semibold px-4'>Open Full Calendar</button>
                         </div>
                     </div>
                     <div>
