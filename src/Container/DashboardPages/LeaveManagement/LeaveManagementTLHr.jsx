@@ -176,9 +176,9 @@ const LeaveManagementTLHr = () => {
     }
   }, [showAskInfoDrawer])
 
-  const [dateRange, setDateRange] = useState([null, null]);
-  const [startDate, endDate] = dateRange;
-  const [rangePreset, setRangePreset] = useState("This Month");
+  const [dateRange, setDateRange] = useState([null, null])
+  const [startDate, endDate] = dateRange
+  const [rangePreset, setRangePreset] = useState("This Month")
   const [cardsData, setCardsData] = useState(days)
   const [approvalQueueData, setApprovalQueueData] = useState(ApprovalQueue)
   const [holidayData, setHolidayData] = useState([])
@@ -259,43 +259,43 @@ const LeaveManagementTLHr = () => {
   }, [rangePreset, startDate, endDate])
 
   const handleRangePresetChange = (preset) => {
-    setRangePreset(preset);
+    setRangePreset(preset)
 
-    const today = new Date();
-    const end = new Date(today);
-    const start = new Date(today);
+    const today = new Date()
+    const end = new Date(today)
+    const start = new Date(today)
 
     if (preset === "Today") {
-      setDateRange([start, end]);
-      return;
+      setDateRange([start, end])
+      return
     }
 
     if (preset === "Last 7 Days") {
-      start.setDate(today.getDate() - 6);
-      setDateRange([start, end]);
-      return;
+      start.setDate(today.getDate() - 6)
+      setDateRange([start, end])
+      return
     }
 
     if (preset === "This Month") {
-      setDateRange([null, null]);
-      return;
+      setDateRange([null, null])
+      return
     }
 
     if (preset === "Last Month") {
-      const firstDayCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const lastDayPreviousMonth = new Date(firstDayCurrentMonth);
-      lastDayPreviousMonth.setDate(0);
+      const firstDayCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+      const lastDayPreviousMonth = new Date(firstDayCurrentMonth)
+      lastDayPreviousMonth.setDate(0)
       const firstDayPreviousMonth = new Date(
         lastDayPreviousMonth.getFullYear(),
         lastDayPreviousMonth.getMonth(),
         1
-      );
-      setDateRange([firstDayPreviousMonth, lastDayPreviousMonth]);
-      return;
+      )
+      setDateRange([firstDayPreviousMonth, lastDayPreviousMonth])
+      return
     }
 
-    setDateRange([null, null]);
-  };
+    setDateRange([null, null])
+  }
 
   return (
     <>
@@ -348,8 +348,8 @@ const LeaveManagementTLHr = () => {
             <DatePicker
               selected={startDate}
               onChange={(update) => {
-                setDateRange(update);
-                setRangePreset("Custom");
+                setDateRange(update)
+                setRangePreset("Custom")
               }}
               startDate={startDate}
               endDate={endDate}
@@ -589,10 +589,6 @@ const LeaveManagementTLHr = () => {
           </div>,
           document.body
         )}
-        {/* {
-          isHR &&
-        } */}
-        <LeaveManagementHr1/>
     </>
   )
 }
