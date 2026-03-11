@@ -135,7 +135,6 @@ const LeaveManagementTLHr = () => {
     details: '',
     responseDue: '24 Hours'
   })
-
   const handleOpenAskInfo = (requestItem, index) => {
     setSelectedApprovalSummary(getApprovalSummary(requestItem, index))
     setAskInfoForm({
@@ -495,7 +494,6 @@ const LeaveManagementTLHr = () => {
                     </span>
                   </div>
                 </div>
-
                 <div className='mt-5 grid grid-cols-1 gap-3 md:grid-cols-2'>
                   <div className='rounded-lg border border-[#EAECF0] bg-[#F8FAFC] p-3'>
                     <p className='text-[12px] text-[#667085]'>Employee</p>
@@ -599,5 +597,4 @@ const LeaveManagementTLHr = () => {
     </>
   )
 }
-
 export default LeaveManagementTLHr
