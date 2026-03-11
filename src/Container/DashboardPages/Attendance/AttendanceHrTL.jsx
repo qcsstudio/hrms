@@ -298,31 +298,25 @@ const AttendanceHrTL = () => {
                             </button>
                         ))}
                     </div>
-                    <div className="mt-6">
-                        <table className="w-full border-separate border-spacing-y-4">
+                    <div className="mt-6 overflow-x-auto">
+                        <div className="min-w-[980px]">
+                            <ul className="flex justify-between text-[#8F97A3] m-[15px] p-5 items-center border-b-2 border-[#E3E5E8]">
+                                <li className="w-[320px]">Employee</li>
+                                <li className="w-[130px]">Department</li>
+                                <li className="w-[120px]">Role</li>
+                                <li className="w-[120px]">Status</li>
+                                <li className="w-[110px]">Joining</li>
+                                <li className="w-[100px] text-right">Action</li>
+                            </ul>
 
-                            {/* HEADER */}
-                            <thead>
-                                <tr className="text-[#8F97A3] text-[16px] font-medium">
-                                    <th className="text-left pl-6">Employee</th>
-                                    <th className="text-left">Department</th>
-                                    <th className="text-left">Role</th>
-                                    <th className="text-left">Status</th>
-                                    <th className="text-left">Joining</th>
-                                    <th className="text-right pr-6">Action</th>
-                                </tr>
-                            </thead>
-
-                            {/* BODY */}
-                            <tbody className="list-stagger">
+                            <div className="list-stagger">
                                 {filteredAttendanceEmployees.map((item, index) => (
-                                    <tr
+                                    <div
                                         key={index}
-                                        className="bg-white/90 border border-[#E5E7EB] rounded-[6px] shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]"
+                                        className="my-4 flex justify-between items-center border border-[#E5E7EB] px-6 py-3 rounded-[6px] bg-white/90 shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]"
                                         style={{ "--stagger": index }}
                                     >
-                                        {/* Employee */}
-                                        <td className="pl-6 py-3 rounded-[6px]">
+                                        <div className="w-[320px]">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full bg-[#D9D9D9]" />
                                                 <div>
@@ -334,20 +328,17 @@ const AttendanceHrTL = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </td>
+                                        </div>
 
-                                        {/* Department */}
-                                        <td className="py-3 text-[15px]">
+                                        <div className="w-[130px] text-[15px]">
                                             {item.department}
-                                        </td>
+                                        </div>
 
-                                        {/* Role */}
-                                        <td className="py-3 text-[15px]">
+                                        <div className="w-[120px] text-[15px]">
                                             {item.role}
-                                        </td>
+                                        </div>
 
-                                        {/* Status */}
-                                        <td className="py-3">
+                                        <div className="w-[120px]">
                                             <span className={`inline-flex items-center justify-center px-3 h-7 rounded-md text-xs font-medium
                                                             ${item.status === "Present"
                                                         ? "bg-[#ECFDF3] text-[#2B8A3E] border border-[#D3F9D8]"
@@ -359,15 +350,13 @@ const AttendanceHrTL = () => {
                                                     }`}>
                                                 {item.status}
                                             </span>
-                                        </td>
+                                        </div>
 
-                                        {/* Joining */}
-                                        <td className="py-3 text-xs text-[#6B7280]">
+                                        <div className="w-[110px] text-xs text-[#6B7280]">
                                             {item.joining || "-----"}
-                                        </td>
+                                        </div>
 
-                                        {/* Action */}
-                                        <td className="pr-6 py-3 rounded-[6px] ">
+                                        <div className="w-[100px] flex justify-end">
                                             <div className="flex justify-end gap-3 table-action-icons">
                                                 {item.actionicon && <img src={item.actionicon} />}
                                                 {item.actionicon1 && <img src={item.actionicon1} />}
@@ -375,12 +364,11 @@ const AttendanceHrTL = () => {
                                                 {item.actionicon3 && <img src={item.actionicon3} />}
                                                 {item.actionicon4 && <img src={item.actionicon4} />}
                                             </div>
-                                        </td>
-                                    </tr>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-
-                        </table>
+                            </div>
+                        </div>
                     </div>
 
 
