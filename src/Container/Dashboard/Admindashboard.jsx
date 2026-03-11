@@ -20,6 +20,7 @@ import {
 import { FaAngleDown, FaChevronLeft, FaChevronRight, FaPlus } from 'react-icons/fa'
 import { useDispatch } from 'react-redux'
 import createAxios from '../../utils/axios.config'
+import { createPortal } from 'react-dom'
 
 const quickActions = [
   { img: Add_employees, title: 'Add Employees', desc: 'Create new employee profile' },
