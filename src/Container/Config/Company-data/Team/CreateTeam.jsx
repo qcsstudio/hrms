@@ -101,6 +101,7 @@ const CreateTeam = ({ onCancel }) => {
     teamName: "",
     assignTeamLead: false,
     teamLeadId: "",
+    teamLeadName: "",
   });
   const [employees, setEmployees] = useState([]);
   const [isLoadingTeam, setIsLoadingTeam] = useState(false);
@@ -117,12 +118,11 @@ const CreateTeam = ({ onCancel }) => {
           meta: { auth: "ADMIN_AUTH" },
         });
 
-        const rawList = Array.isArray(res?.data) ? res.data : [];
+        const rawList = Array.isArray(res?.data?.data) ? res.data.data : [];
         const normalized = rawList
           .map((item) => {
-            const employee = item?.employees || item;
-            const id = employee?._id || employee?.id;
-            const fullName = employee?.fullName || employee?.name;
+            const id = item?._id;
+            const fullName = item?.fullName;
             if (!id || !fullName) return null;
             return { value: id, label: fullName };
           })
@@ -162,6 +162,11 @@ const CreateTeam = ({ onCancel }) => {
               ? source.assignTeamLead
               : Boolean(inferredLeadId || source?.lead),
           teamLeadId: inferredLeadId,
+          teamLeadName:
+            source?.teamLeadName ||
+            source?.teamLead?.fullName ||
+            source?.lead?.fullName ||
+            "",
         });
       } catch (error) {
         toast.error(error?.response?.data?.message || "Failed to load team details");
@@ -198,7 +203,9 @@ const CreateTeam = ({ onCancel }) => {
         teamName: team.teamName.trim(),
         assignTeamLead: team.assignTeamLead,
         teamLeadId: team.assignTeamLead ? team.teamLeadId : "",
+        teamLeadName: team.assignTeamLead ? team.teamLeadName : "",
       };
+      console.log("team payload", payload);
 
       if (isEdit) {
         await axiosInstance.patch(`/config/update-team/${teamId}`, payload, {
@@ -273,7 +280,14 @@ const CreateTeam = ({ onCancel }) => {
                 <label className="text-sm font-medium text-gray-700">Select Team Lead</label>
                 <FormDivSelect
                   value={team.teamLeadId}
-                  onSelect={(value) => setTeam((prev) => ({ ...prev, teamLeadId: value }))}
+                  onSelect={(value) => {
+                    const selectedEmployee = employees.find((employee) => employee.value === value);
+                    setTeam((prev) => ({
+                      ...prev,
+                      teamLeadId: value,
+                      teamLeadName: selectedEmployee?.label || "",
+                    }));
+                  }}
                   options={employeeOptions}
                   placeholder="Select team lead"
                   disabled={isLoadingTeam}
@@ -291,6 +305,7 @@ const CreateTeam = ({ onCancel }) => {
                     ...prev,
                     assignTeamLead: false,
                     teamLeadId: "",
+                    teamLeadName: "",
                   }))
                 }
                 disabled={isLoadingTeam}
