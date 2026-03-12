@@ -1,235 +1,324 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { FaAngleDown } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import createAxios from "../../../../utils/axios.config";
-import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import createAxios from "../../../../utils/axios.config";
+
+const fieldClassName =
+  "mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+
+const radioCardClassName =
+  "border border-gray-200 rounded-lg p-4 bg-white transition-colors hover:border-gray-300";
+
+const FormDivSelect = ({
+  options = [],
+  value,
+  onSelect,
+  placeholder = "Select",
+  disabled = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const selectedOption = options.find((option) => option.value === value);
+
+  return (
+    <div ref={selectRef} className="relative w-full">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) setIsOpen((prev) => !prev);
+        }}
+        className={`mt-2 w-full h-[42px] border border-gray-300 rounded-lg bg-white px-4 text-sm text-left text-gray-900 shadow-none outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between ${
+          disabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""
+        }`}
+      >
+        <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
+          {selectedOption?.label || placeholder}
+        </span>
+        <FaAngleDown
+          className={`text-[12px] text-gray-500 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && !disabled && (
+        <div className="absolute left-0 mt-2 w-full overflow-hidden rounded-xl border border-[#D6DDE8] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.10)] z-20">
+          {options.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-gray-500">No options available</div>
+          ) : (
+            options.map((option) => {
+              const isSelected = value === option.value;
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    onSelect(option.value);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full border-none px-4 py-3 text-left text-sm shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${
+                    isSelected
+                      ? "bg-[#E8EDF4] text-[#111827] font-semibold"
+                      : "text-[#1F2937] hover:bg-[#F4F7FB] active:bg-[#EDEFF4]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CreateTeam = ({ onCancel }) => {
   const token = localStorage.getItem("authToken");
-    console.log("token hai====",token)
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const teamId = searchParams.get("teamid");
+  const isEdit = Boolean(teamId);
+
+  const axiosInstance = createAxios(token);
 
   const [team, setTeam] = useState({
     teamName: "",
     assignTeamLead: false,
-    teamLeadId: ""
-
+    teamLeadId: "",
   });
-  const [assignLead, setAssignLead] = useState("no");
-  // const [teamLead, setTeamLead] = useState("");
-  const [employee, setEmployee] = useState([])
+  const [employees, setEmployees] = useState([]);
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
 
-  const [searchParams] = useSearchParams();
-  const teamId = searchParams.get("teamid");
+  const employeeOptions = employees.map((emp) => ({
+    value: emp.value,
+    label: emp.label,
+  }));
 
-  const [teamdata,setTeamdata] = useState()
-  
-  const navigate = useNavigate()
-  const axiosInstance = createAxios(token)
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await axiosInstance.get("/employees/all", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
 
- useEffect(() => {
-  const fetchTeam = async () => {
+        const rawList = Array.isArray(res?.data) ? res.data : [];
+        const normalized = rawList
+          .map((item) => {
+            const employee = item?.employees || item;
+            const id = employee?._id || employee?.id;
+            const fullName = employee?.fullName || employee?.name;
+            if (!id || !fullName) return null;
+            return { value: id, label: fullName };
+          })
+          .filter(Boolean);
+
+        setEmployees(normalized);
+      } catch (error) {
+        toast.error(error?.response?.data?.message || "Failed to load employees");
+      }
+    };
+
+    fetchUsers();
+  }, [token]);
+
+  useEffect(() => {
+    if (!isEdit || !teamId) return;
+
+    const fetchTeam = async () => {
+      try {
+        setIsLoadingTeam(true);
+        const res = await axiosInstance.get(`/config/getOne-team/${teamId}`, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const source = res?.data?.data || res?.data?.team || res?.data || {};
+        const inferredLeadId =
+          source?.teamLeadId ||
+          source?.leadId ||
+          source?.teamLead?._id ||
+          source?.lead?._id ||
+          "";
+
+        setTeam({
+          teamName: source?.teamName || source?.name || "",
+          assignTeamLead:
+            typeof source?.assignTeamLead === "boolean"
+              ? source.assignTeamLead
+              : Boolean(inferredLeadId || source?.lead),
+          teamLeadId: inferredLeadId,
+        });
+      } catch (error) {
+        toast.error(error?.response?.data?.message || "Failed to load team details");
+      } finally {
+        setIsLoadingTeam(false);
+      }
+    };
+
+    fetchTeam();
+  }, [isEdit, teamId]);
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+      return;
+    }
+
+    navigate("/config/hris/Company_data/team");
+  };
+
+  const handleSave = async () => {
     try {
-      const res = await axiosInstance.get(`/config/getOne-team/${teamId}`);
-      setTeamdata(res?.data);
-      console.log("fetch one team ========", res?.data);
+      if (!team.teamName.trim()) {
+        toast.error("Enter team name");
+        return;
+      }
+
+      if (team.assignTeamLead && !team.teamLeadId) {
+        toast.error("Select team lead");
+        return;
+      }
+
+      const payload = {
+        teamName: team.teamName.trim(),
+        assignTeamLead: team.assignTeamLead,
+        teamLeadId: team.assignTeamLead ? team.teamLeadId : "",
+      };
+
+      if (isEdit) {
+        await axiosInstance.patch(`/config/update-team/${teamId}`, payload, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+      } else {
+        await axiosInstance.post("/config/create-team", payload, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+      }
+
+      navigate("/config/hris/Company_data/team");
     } catch (error) {
       toast.error(error?.response?.data?.message || "Something went wrong");
     }
   };
-    fetchTeam();
-  
-}, []);
-
-
-
-  const handleSave = async () => {
-    const payload =
-    {
-      teamName: team.teamName,
-      assignTeamLead: team.assignTeamLead,
-      teamLeadId: team.teamLeadId,
-
-    }
-    const res = await axiosInstance.post(
-      "/config/create-team",
-      payload,
-      {
-        meta: { auth: "ADMIN_AUTH" }
-      }
-    );
-
-    setTeam(res.data);
-    console.log("create team=========",res.data)
-
-
-    console.log("Saved Team:", payload);
-
-    if (onCancel) onCancel();
-
-
-
-  };
-
-  const handleUpdate = async()=>{
-    await axiosInstance.patch(`/config/update-team/${teamId}`,{
-      meta:{auth:"ADMIN_AUTH"}
-    })
-  }
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setTeam({
-      ...team,
-      [name]: value
-    })
-
-  }
-
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const res = await axiosInstance.get("/employees/all", {
-        meta: { auth: "ADMIN_AUTH" }
-      }
-      )
-      console.log("all Employees============",res.data)
-      setEmployee(res.data)
-     
-    }
-
-    fetchUsers()
-  }, [token])
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="mb-6">
-        {teamId ?
-          <div className="flex justify-between">
-            <h1 className="text-2xl font-semibold">update Team</h1>
-            <button className="px-4 py-2 bg-[#0575E6] text-white rounded-md text-sm" onClick={handleUpdate}>Save Changes</button>
-          </div>
-          :
-          <h1 className="text-2xl font-semibold">Create Team</h1>
-        }
-        <h1 className="text-2xl font-semibold">update Team</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Manage employee directory, documents, and role-based actions.
-        </p>
+    <div className="p-8 mx-auto">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {isEdit ? "Edit Team" : "Create Team"}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Manage employee directory, documents, and role-based actions.
+          </p>
+        </div>
+
+        {isEdit && (
+          <button
+            type="button"
+            onClick={handleSave}
+            className="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+          >
+            Save Changes
+          </button>
+        )}
       </div>
 
-      {/* Form Card */}
-      <div className="bg-white border rounded-lg p-6 max-w-2xl space-y-6">
-
-        {/* Team Name */}
+      <div className="space-y-6 bg-white p-6 rounded-xl border border-gray-200 max-w-3xl">
         <div>
-          <label className="block text-sm font-medium mb-2">
-            Team Name
-          </label>
+          <label className="text-sm font-medium text-gray-700">Team Name</label>
           <input
             type="text"
-              name="teamName"   
+            name="teamName"
             placeholder="Enter team name"
-            value={team.teamName }
-            onChange={handleChange}
-            className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={team.teamName}
+            onChange={(e) => setTeam((prev) => ({ ...prev, teamName: e.target.value }))}
+            className={fieldClassName}
+            disabled={isLoadingTeam}
           />
         </div>
-        {/* Assign Team Lead */}
-        <div>
-          <label className="block text-sm font-medium mb-3">
-            Do you want to assign a Team Lead?
-          </label>
 
-          {/* YES Option */}
-          <div className="border rounded-lg p-4 mb-3">
-            <label className="flex items-center gap-2 cursor-pointer">
+        <div>
+          <p className="text-sm font-medium text-gray-700">Do you want to assign a Team Lead?</p>
+
+          <div className="mt-3 space-y-3">
+            <label className={`${radioCardClassName} flex items-center gap-2 cursor-pointer`}>
               <input
                 type="radio"
                 name="assignTeamLead"
-
                 checked={team.assignTeamLead === true}
-                onChange={() => {
-                  setTeam({
-                    ...team,
-                    assignTeamLead: true
-                  })
-                  setAssignLead("yes");
-                }}
+                onChange={() => setTeam((prev) => ({ ...prev, assignTeamLead: true }))}
+                disabled={isLoadingTeam}
               />
-              Yes
+              <span className="text-sm text-gray-700">Yes</span>
             </label>
 
-            {/* Dropdown */}
-            {assignLead === "yes" && (
-              <div className="mt-4 pl-6">
-                <label className="block text-sm font-medium mb-2">
-                  Select Team Lead
-                </label>
-                <select
-                  name="teamLeadId"
+            {team.assignTeamLead && (
+              <div className="pl-6">
+                <label className="text-sm font-medium text-gray-700">Select Team Lead</label>
+                <FormDivSelect
                   value={team.teamLeadId}
-                  onChange={handleChange}
-                  className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-
-                  {employee.map((item) => (
-                    <option
-                      key={item.employees._id}
-                      value={item.employees._id}
-                    >
-                      {item.employees.fullName}
-                    </option>
-                  ))}
-
-
-                </select>
+                  onSelect={(value) => setTeam((prev) => ({ ...prev, teamLeadId: value }))}
+                  options={employeeOptions}
+                  placeholder="Select team lead"
+                  disabled={isLoadingTeam}
+                />
               </div>
             )}
-          </div>
 
-          {/* NO Option */}
-          <div className="border rounded-lg p-4">
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className={`${radioCardClassName} flex items-center gap-2 cursor-pointer`}>
               <input
                 type="radio"
-
                 name="assignTeamLead"
-
                 checked={team.assignTeamLead === false}
-                onChange={() => {
-                  setTeam({
-                    ...team,
-                    assignTeamLead: false
-                  })
-                  setAssignLead("no");
-                }}
+                onChange={() =>
+                  setTeam((prev) => ({
+                    ...prev,
+                    assignTeamLead: false,
+                    teamLeadId: "",
+                  }))
+                }
+                disabled={isLoadingTeam}
               />
-              No
+              <span className="text-sm text-gray-700">No</span>
             </label>
           </div>
         </div>
 
-        {/* Buttons */}
-        {
-          !teamId && <div className="flex justify-end gap-3 pt-4">
-            <button
-              // onClick={onCancel}
-              onClick={() => navigate('/config/hris/Company_data/team')}
-              className="px-4 py-2 border rounded-md text-sm"
-            >
-              Cancel
-            </button>
+        <div className="flex justify-end gap-4 pt-2">
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="px-6 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-100 transition"
+          >
+            Cancel
+          </button>
 
+          {!isEdit && (
             <button
+              type="button"
               onClick={handleSave}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm"
+              className="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
             >
               Save
             </button>
-          </div>
-        }
-
+          )}
+        </div>
       </div>
     </div>
   );
