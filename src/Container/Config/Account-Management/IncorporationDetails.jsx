@@ -134,7 +134,7 @@ const IncorporationDetails = () => {
         // const axiosInstance = createAxios(token);
 
         const res = await axiosInstance.get(
-          `/config/incorporation-get/${incorporationid}`,
+          `/config/incorporation-get`,
           { meta: { auth: "ADMIN_AUTH" } }
         );
 
