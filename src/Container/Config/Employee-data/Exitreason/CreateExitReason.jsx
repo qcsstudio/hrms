@@ -34,7 +34,7 @@ const axiosInstance = createAxios(token);
       })
       dispatch(setExitReasons(res?.data?.data))
       console.log(res.data,"exit reason created successfully")
-      navigate("/config/hris/Employee-data/Exit-reason");
+      navigate("/config/hris/Employee-data/exit-reason");
       
     } catch (error) {
       console.log(error,"api is not working")  
