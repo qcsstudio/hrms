@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { BiSolidDownArrow } from "react-icons/bi";
 import { RxCross2 } from "react-icons/rx";
 import createAxios from "../utils/axios.config";
+import { getSlug } from "./CompanySlug";
 
 
 
@@ -147,14 +148,21 @@ const Navbar = () => {
     navigate("/login");
   }
 
-
+const slug = getSlug()
   const handleProfileAction = (value) => {
     if (value === "config") {
       dispatch(setIsConfig(true));
+      navigate("/config/hris/Account-management/Global-defaults");
     }
 
     if (value === "normal") {
       dispatch(setIsConfig(false));
+      if(slug){
+           navigate("/dashboard/Companyadmin-dashboard")
+      }else{
+        navigate("/dashboard/superadmin-dashboard")
+      }
+      
     }
     if (value === "logout") {
       setIsLogoutModalOpen(true);

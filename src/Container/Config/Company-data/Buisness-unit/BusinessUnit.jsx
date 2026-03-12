@@ -101,7 +101,7 @@ const BusinessUnit = () => {
   };
 
   const handleEdit = (unit) => {
-    navigate("/config/hris/Company_data/create-buisness-unit", {
+    navigate(`/config/hris/Company_data/create-buisness-unit?id=${unit}`, {
       state: {
         isEdit: true,
         data: unit,
@@ -167,7 +167,7 @@ const BusinessUnit = () => {
               const unitName = unit?.businessUnitName || unit?.name || "--";
               const createdByName = unit?.addedByName || unit?.createdBy || "Admin";
               const employees = mapAssignedEmployees(unit);
-              const location = unit?.locationName || unit?.location || "--";
+              const location = unit?.locationName || "";
               const businessHead = unit?.businessHead || unit?.head || "--";
               const createdDate = formatDateTime(unit?.createdAt || unit?.date);
 
@@ -224,7 +224,7 @@ const BusinessUnit = () => {
                     <div className="flex items-center justify-end gap-3">
                       <button
                         type="button"
-                        onClick={() => handleEdit(unit)}
+                        onClick={() => handleEdit(unit?._id)}
                         className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-blue-600 hover:bg-blue-50 transition hover:translate-y-0"
                         title="Edit business unit"
                       >

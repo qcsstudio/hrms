@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { FaAngleDown } from "react-icons/fa";
 import createAxios from "../../../../utils/axios.config";
+import { toast } from "react-toastify";
 
 const fieldClassName =
   "mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
@@ -54,9 +55,8 @@ const FormDivSelect = ({ options = [], value, onSelect, placeholder = "Select", 
         onClick={() => {
           if (!disabled) setIsOpen((prev) => !prev);
         }}
-        className={`mt-2 w-full h-[42px] border border-gray-300 rounded-lg bg-white px-4 text-sm text-left text-gray-900 shadow-none outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between ${
-          disabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""
-        }`}
+        className={`mt-2 w-full h-[42px] border border-gray-300 rounded-lg bg-white px-4 text-sm text-left text-gray-900 shadow-none outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between ${disabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""
+          }`}
       >
         <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
           {selectedOption?.label || placeholder}
@@ -78,11 +78,10 @@ const FormDivSelect = ({ options = [], value, onSelect, placeholder = "Select", 
                   onSelect(option.value);
                   setIsOpen(false);
                 }}
-                className={`w-full border-none px-4 py-3 text-left text-sm shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${
-                  isSelected
-                    ? "bg-[#E8EDF4] text-[#111827] font-semibold"
-                    : "text-[#1F2937] hover:bg-[#F4F7FB] active:bg-[#EDEFF4]"
-                }`}
+                className={`w-full border-none px-4 py-3 text-left text-sm shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${isSelected
+                  ? "bg-[#E8EDF4] text-[#111827] font-semibold"
+                  : "text-[#1F2937] hover:bg-[#F4F7FB] active:bg-[#EDEFF4]"
+                  }`}
               >
                 {option.label}
               </button>
@@ -108,11 +107,32 @@ const CreateBusinessUnit = () => {
   const [logoFile, setLogoFile] = useState(null);
   const [companyOfficeId] = useState([]);
 
+    const [searchParams] = useSearchParams()
+    const bussinessid = searchParams.get("id")
+ useEffect(()=>{
+    const fetchbussinessunit = async()=>{
+      try {
+        const res = await axiosInstance.get(`/config/getOne-buinessUnit/${bussinessid}`,{
+          meta:{auth:"AUTH_ADMIN"}
+        })
+        const data = res?.data
+        console.log(data,"fetch all bussiness unit response")
+        
+      } catch (error) {
+        console.log(error)
+        // toast.error(error?.response?.data?.message)
+      }
+    };
+    fetchbussinessunit();
+  },[bussinessid])
   const [form, setForm] = useState({
     businessUnitName: "",
     locationName: "",
     businessHead: "",
   });
+  const [locations, setLocations] = useState([]);
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
 
   useEffect(() => {
     if (isEdit && editData) {
@@ -121,6 +141,8 @@ const CreateBusinessUnit = () => {
         locationName: editData.location || "",
         businessHead: editData.head || "",
       });
+      setLatitude(editData.latitude || "");
+      setLongitude(editData.longitude || "");
 
       setAssignHead(Boolean(editData.head));
       setLogoPreview(editData.logo || null);
@@ -144,53 +166,128 @@ const CreateBusinessUnit = () => {
     navigate("/config/hris/Company_data/buisness-unit-list");
   };
 
-  const handleSave = async () => {
+
+  const searchLocation = async (value) => {
+    setForm((prev) => ({ ...prev, locationName: value }));
+    setLatitude("");
+    setLongitude("");
+
+    if (value.length < 3) {
+      setLocations([]);
+      return;
+    }
+
     try {
-      const payload = {
-        businessUnitName: form.businessUnitName,
-        locationName: form.locationName,
-        logo: logoFile || null,
-        assignBusinessHead: assignHead,
-        businessHead: assignHead ? form.businessHead : null,
-        companyOfficeId: [companyOfficeId],
-      };
-
-      await axiosInstance.post("/config/create-buinessUnit", payload, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        meta: { auth: "ADMIN_AUTH" },
-      });
-
-      navigate("/config/hris/Company_data/buisness-unit-list");
-    } catch (error) {
-      console.error(error);
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${value}&format=json&limit=5`
+      );
+      const data = await res.json();
+      setLocations(data);
+    } catch (err) {
+      console.log(err);
     }
   };
+
+  const selectLocation = (loc) => {
+    setForm((prev) => ({
+      ...prev,
+      locationName: loc.display_name,
+    }));
+
+    setLatitude(loc.lat);
+    setLongitude(loc.lon);
+    setLocations([]);
+  };
+const buildPayload = () => {
+  const payload = new FormData();
+
+  payload.append("businessUnitName", form.businessUnitName || "");
+  payload.append("locationName", form.locationName || "");
+  payload.append("latitude", latitude || "");
+  payload.append("longitude", longitude || "");
+  payload.append("assignBusinessHead", assignHead);
+
+  if (assignHead && form.businessHead) {
+    payload.append("businessHead", form.businessHead);
+  }
+
+  if (logoFile) {
+    payload.append("logo", logoFile);
+  }
+
+  companyOfficeId.forEach((id) => {
+    payload.append("companyOfficeId[]", id);
+  });
+
+  return payload;
+};
+
+  // const buildPayload = () => {
+  //   const payload = new FormData();
+
+  //   payload.append("businessUnitName", form.businessUnitName || "");
+  //   payload.append("locationName", form.locationName || "");
+  //   payload.append("latitude", latitude || "");
+  //   payload.append("longitude", longitude || "");
+  //   payload.append("assignBusinessHead", String(assignHead));
+
+  //   if (assignHead && form.businessHead) {
+  //     payload.append("businessHead", form.businessHead);
+  //   }
+
+  //   if (logoFile) {
+  //     payload.append("logo", logoFile);
+  //   }
+
+  //   companyOfficeId.forEach((id) => {
+  //     payload.append("companyOfficeId[]", id);
+  //   });
+
+  //   return payload;
+  // };
+
+const handleSave = async () => {
+  try {
+    const payload = buildPayload();
+
+    // FormData ko check karne ka correct tarika
+    for (let pair of payload.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
+    await axiosInstance.post("/config/create-buinessUnit", payload, {
+      meta: { auth: "ADMIN_AUTH" },
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    navigate("/config/hris/Company_data/buisness-unit-list");
+
+  } catch (error) {
+    console.error(
+      "create-buinessUnit error",
+      error?.response?.data || error
+    );
+  }
+};
 
   const handleUpdate = async () => {
     try {
-      const payload = {
-        businessUnitId: editData.id,
-        businessUnitName: form.businessUnitName,
-        locationName: form.locationName,
-        logo: logoFile || editData.logo,
-        assignBusinessHead: assignHead,
-        businessHead: assignHead ? form.businessHead : null,
-      };
+      const payload = buildPayload();
+      console.log("update-buinessUnit payload", Object.fromEntries(payload.entries()));
 
       await axiosInstance.put(`/config/update-buinessUnit/${editData.id}`, payload, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
         meta: { auth: "ADMIN_AUTH" },
       });
 
       navigate("/config/hris/Company_data/buisness-unit-list");
     } catch (error) {
-      console.error(error);
+      console.error("update-buinessUnit error", error?.response?.data || error);
     }
   };
+
+ 
 
   return (
     <div className="p-8 mx-auto">
@@ -216,22 +313,34 @@ const CreateBusinessUnit = () => {
           <label className="text-sm font-medium text-gray-700">Business Unit Name</label>
           <input
             name="businessUnitName"
-            value={form.businessUnitName}
+            value={form?.businessUnitName}
             onChange={handleChange}
             className={fieldClassName}
           />
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700">Location</label>
-          <FormDivSelect
+        <div className="relative">
+          <input
+            type="text"
             value={form.locationName}
-            onSelect={(selectedLocation) =>
-              setForm((prev) => ({ ...prev, locationName: selectedLocation }))
-            }
-            options={LOCATION_OPTIONS}
-            placeholder="Choose Account"
+            onChange={(e) => searchLocation(e.target.value)}
+            placeholder="Search city or country"
+            className={fieldClassName}
           />
+
+          {locations.length > 0 && (
+            <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-60 overflow-auto">
+              {locations.map((loc, index) => (
+                <div
+                  key={index}
+                  onClick={() => selectLocation(loc)}
+                  className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm"
+                >
+                  {loc.display_name}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="rounded-xl border border-dashed border-gray-300 bg-[#FCFDFE] p-6">

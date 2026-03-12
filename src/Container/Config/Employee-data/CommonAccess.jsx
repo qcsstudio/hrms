@@ -83,8 +83,7 @@ const CommonAccess = () => {
     try {
       setLoading(true);
       const payload = {
-        whosInToday: {
-          department: {
+         department: {
             enabled: !!checked["whos-dept"],
             showClockInTime: !!toggles["whos-dept"],
           },
@@ -92,7 +91,7 @@ const CommonAccess = () => {
             enabled: !!checked["whos-org"],
             showClockInTime: !!toggles["whos-org"],
           },
-        },
+       
         calendarDataLevel: {
           department: !!checked["cal-dept"],
           organization: !!checked["cal-org"],
