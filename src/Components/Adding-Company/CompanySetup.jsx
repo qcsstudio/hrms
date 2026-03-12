@@ -135,7 +135,7 @@ const CompanySetup = ({ onNext, onBack }) => {
       onNext()
     } catch (error) {
       // console.log("API Error:", error)
-      toast.error(error?.response?.data?.message)
+      toast.error(error?.response?.data?.error)
     }
   }
 
