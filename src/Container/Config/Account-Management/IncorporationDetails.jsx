@@ -55,11 +55,12 @@ const IncorporationDetails = () => {
   const { incorporationid } = useSelector(state => state.incorporation);
 
   const navigate = useNavigate();
-  const { token } = useSelector(state => state.user);
+  // const { token } = useSelector(state => state.user);
+  const token =localStorage.getItem('authToken')
   console.log(token, "555555555555555555555")
 
   const dispatch = useDispatch();
-  // const axiosInstance = createAxios(token);
+  const axiosInstance = createAxios(token);
 
   const [form, setForm] = useState({
     legalName: "",
@@ -77,7 +78,7 @@ const IncorporationDetails = () => {
   useEffect(() => {
     const fetchincorporation = async () => {
       try {
-        const axiosInstance = createAxios(token);
+        // const axiosInstance = createAxios(token);
 
         const res = await axiosInstance.get(
           `/config/incorporation-get/${incorporationid}`,
@@ -112,7 +113,7 @@ const IncorporationDetails = () => {
   // POST API=============================
   const handleSave = async () => {
     try {
-      const axiosInstance = createAxios(token);
+      // const axiosInstance = createAxios(token);
 
       const payload = {
         companyLegalName: form.legalName,

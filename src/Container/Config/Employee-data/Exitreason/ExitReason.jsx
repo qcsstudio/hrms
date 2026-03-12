@@ -34,20 +34,22 @@ const ExitReasonList = () => {
     navigate("/config/hris/Employee-data/exit-reason/create");
   };
 
-  const toggleResignation = (id) => {
-    setResignation(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, inUse: !item.inUse } : item
-      )
-    );
-  };
-
-  const toggleTermination = (id) => {
-    setTermination(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, inUse: !item.inUse } : item
-      )
-    );
+  const toggleStatus = async (id, currentStatus) => {
+    const axiosInstance = createAxios(token);
+    try {
+      const res = await axiosInstance.patch(
+        `/config/exit-reason-status/${id}?isActive=${!currentStatus}`,
+        {},
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+      setReasonList(prev =>
+        prev.map(item =>
+          item._id === id ? { ...item, isActive: !currentStatus } : item
+        )
+      );
+    } catch (err) {
+      console.error("Error updating exit reason status:", err);
+    }
   };
   // get api =============================
   useEffect(() => {
@@ -115,7 +117,7 @@ const ExitReasonList = () => {
                 <div className="flex justify-end">
                   {/* Toggle */}
                   <button
-                    onClick={() => toggleResignation(item._id)}
+                    onClick={() => toggleStatus(item._id, item.isActive)}
                     className={`w-12 h-6 flex items-center rounded-full p-1 transition ${item.isActive ? "bg-blue-600" : "bg-gray-300"
                       }`}
                   >
@@ -153,7 +155,7 @@ const ExitReasonList = () => {
                 <div className="flex justify-end">
                   {/* Toggle */}
                   <button
-                    onClick={() => toggleTermination(item._id)}
+                    onClick={() => toggleStatus(item._id, item.isActive)}
                     className={`w-12 h-6 flex items-center rounded-full p-1 transition ${item.isActive ? "bg-blue-600" : "bg-gray-300"
                       }`}
                   >
