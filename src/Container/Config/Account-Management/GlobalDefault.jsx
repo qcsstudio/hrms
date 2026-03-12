@@ -344,7 +344,7 @@ const GlobalDefaults = () => {
     } catch (error) {
       console.error("SAVE ERROR →", error);
       // alert("Failed to save global defaults");
-      toast.error(error.response?.data?.message)
+      toast.error(error.response?.data?.error)
     }
   };
 
