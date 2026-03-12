@@ -255,20 +255,20 @@ const GlobalDefaults = () => {
   }, []);
 
   // 2️ Fetch global settings
-  // useEffect(() => {
-  //   const fetchGlobalSettings = async () => {
-  //     try {
-  //       const res = await axiosInstance.get("/companies/global-setting-get", {
-  //         meta: { auth: "ADMIN_AUTH" }
-  //       });
-  //       setGlobalSettings(res?.data?.data);
-  //       console.log(res?.data?.data)
-  //     } catch (err) {
-  //       console.error("Error fetching global settings:", err);
-  //     }
-  //   };
-  //   fetchGlobalSettings();
-  // }, []);
+  useEffect(() => {
+    const fetchGlobalSettings = async () => {
+      try {
+        const res = await axiosInstance.get("/companies/global-setting-get", {
+          meta: { auth: "ADMIN_AUTH" }
+        });
+        setGlobalSettings(res?.data?.data);
+        console.log(res?.data?.data)
+      } catch (err) {
+        console.error("Error fetching global settings:", err);
+      }
+    };
+    fetchGlobalSettings();
+  }, []);
 
   // 3️ Once both countries + settings loaded → populate form
   useEffect(() => {
@@ -346,7 +346,7 @@ const GlobalDefaults = () => {
     }
   };
 
-  if (!globalSettings || countries.length === 0 || !selectedCountry) {
+  if (!globalSettings ) {
     return <div>Loading...</div>;
   }
 
