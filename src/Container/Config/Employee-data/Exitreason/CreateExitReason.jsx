@@ -5,7 +5,8 @@ import { useSelector } from "react-redux";
 import { setExitReasons } from "../../../../Redux/configSlices/exitReasonSlice";
 
 const CreateExitReason = () => {
-const {token} = useSelector((state) => state.user)
+// const {token} = useSelector((state) => state.user)
+const token = localStorage.getItem('authToken')
 
 const [form, setForm] = useState({
     exitType: "",
@@ -36,8 +37,7 @@ const axiosInstance = createAxios(token);
       navigate("/config/hris/Employee-data/Exit-reason");
       
     } catch (error) {
-      console.log(error,"api is not working")
-      
+      console.log(error,"api is not working")  
     }
 
 
