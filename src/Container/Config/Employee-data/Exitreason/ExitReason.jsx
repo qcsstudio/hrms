@@ -97,11 +97,11 @@ const ExitReasonList = () => {
           <div className="space-y-4">
             {reasonList.map(item => (
               <div
-                key={item.id}
+                key={item._id}
                 className="bg-white border border-gray-200 rounded-xl px-6 py-5 grid grid-cols-3 items-center shadow-sm"
               >
                 <div className="text-gray-900 font-medium">
-                  {item.reason}
+                  {item.exitType}
                 </div>
 
                 <div className="text-gray-700">+{item.timeUsed}</div>
@@ -109,12 +109,12 @@ const ExitReasonList = () => {
                 <div className="flex justify-end">
                   {/* Toggle */}
                   <button
-                    onClick={() => toggleResignation(item.id)}
-                    className={`w-12 h-6 flex items-center rounded-full p-1 transition ${item.inUse ? "bg-blue-600" : "bg-gray-300"
+                    onClick={() => toggleResignation(item._id)}
+                    className={`w-12 h-6 flex items-center rounded-full p-1 transition ${item.isActive ? "bg-blue-600" : "bg-gray-300"
                       }`}
                   >
                     <div
-                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${item.inUse ? "translate-x-6" : "translate-x-0"
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${item.isActive ? "translate-x-6" : "translate-x-0"
                         }`}
                     />
                   </button>
@@ -133,13 +133,13 @@ const ExitReasonList = () => {
           </div>
 
           <div className="space-y-4">
-            {termination.map(item => (
+            {reasonList.map(item => (
               <div
-                key={item.id}
+                key={item._id}
                 className="bg-white border border-gray-200 rounded-xl px-6 py-5 grid grid-cols-3 items-center shadow-sm"
               >
                 <div className="text-gray-900 font-medium">
-                  {item.reason}
+                  {item.exitType}
                 </div>
 
                 <div className="text-gray-700">+{item.timeUsed}</div>
@@ -147,12 +147,12 @@ const ExitReasonList = () => {
                 <div className="flex justify-end">
                   {/* Toggle */}
                   <button
-                    onClick={() => toggleTermination(item.id)}
-                    className={`w-12 h-6 flex items-center rounded-full p-1 transition ${item.inUse ? "bg-blue-600" : "bg-gray-300"
+                    onClick={() => toggleTermination(item._id)}
+                    className={`w-12 h-6 flex items-center rounded-full p-1 transition ${item.isActive ? "bg-blue-600" : "bg-gray-300"
                       }`}
                   >
                     <div
-                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${item.inUse ? "translate-x-6" : "translate-x-0"
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition ${item.isActive ? "translate-x-6" : "translate-x-0"
                         }`}
                     />
                   </button>
