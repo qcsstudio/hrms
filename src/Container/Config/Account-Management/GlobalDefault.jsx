@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Select, { components } from "react-select";
 import createAxios from "../../../utils/axios.config";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -342,7 +343,8 @@ const GlobalDefaults = () => {
       alert("Global defaults saved successfully!");
     } catch (error) {
       console.error("SAVE ERROR →", error);
-      alert("Failed to save global defaults");
+      // alert("Failed to save global defaults");
+      toast.error(error.response?.data?.message)
     }
   };
 
