@@ -1,212 +1,217 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import createAxios from "../../../../utils/axios.config";
-import { useSelector } from "react-redux";
-import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
+import { FiEdit2 } from "react-icons/fi";
+import { HiOutlineDotsVertical } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
+import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import AssignedEmployeesDrawer from "./AssignedEmployeesDrawer";
+
+const INITIAL_DEPARTMENTS = [
+  {
+    id: 1,
+    name: "Leap Of Faith",
+    date: "12 Jun 2025 11:10 AM",
+    linkedBusinessUnit: "Mohali Office",
+    createdBy: "Admin User",
+    assignedEmployees: [
+      { name: "A B" },
+      { name: "C D" },
+      { name: "E F" },
+      { name: "G H" },
+      { name: "I J" },
+    ],
+    head: "XYZ______",
+  },
+  {
+    id: 2,
+    name: "People Operations",
+    date: "14 Jun 2025 09:30 AM",
+    linkedBusinessUnit: "Delhi Office",
+    createdBy: "Admin User",
+    assignedEmployees: [{ name: "A B" }, { name: "C D" }, { name: "E F" }],
+    head: "ABC______",
+  },
+];
+
+const getInitials = (name = "") =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "--";
 
 const Department = () => {
-  const token = localStorage.getItem("authToken");
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(null);
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+  const [isAssignedDrawerOpen, setIsAssignedDrawerOpen] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [data, setData] = useState(INITIAL_DEPARTMENTS);
 
- const [showCountryDialog, setShowCountryDialog] = useState(false)
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!event.target.closest("[data-department-menu]")) {
+        setOpenMenu(null);
+      }
+    };
 
-  const axiosInstance = createAxios(token);
-
-  const [data, setData] = useState([
-    {
-      id: 1,
-      name: "Leap Of Faith",
-      date: "12 Jun 2025  11:10 AM",
-      linkedBusinessUnit: "Mohali Office",
-      createdBy: "Admin User",
-      assignedEmployees: [
-        { name: "A B" },
-        { name: "C D" },
-        { name: "E F" },
-        { name: "G H" },
-        { name: "I J" },
-      ],
-      head: "XYZ______",
-    },
-    {
-      id: 2,
-      name: "Leap Of Faith",
-      date: "12 Jun 2025  11:10 AM",
-      linkedBusinessUnit: "Mohali Office",
-      createdBy: "Admin User",
-      assignedEmployees: [
-        { name: "A B" },
-        { name: "C D" },
-        { name: "E F" },
-        { name: "G H" },
-        { name: "I J" },
-      ],
-      head: "XYZ______",
-    },
-  ]);
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const handleDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
+    setData((prev) => prev.filter((item) => item.id !== id));
     setOpenMenu(null);
   };
 
-  // useEffect(() => {
-  //   const fetchDepartmantData = async () => {
-  //     try {
-  //       const res = await axiosInstance.get("/config/all-department", { meta: { auth: "ADMIN_AUTH" } });
-  //       setData(res.data.departments);
-
-  //     } catch (error) {
-  //       confirm.error("Error fetching department data:", error);
-
-  //     }
-  //   };
-  //   fetchDepartmantData();
-  // }, [])
-const handleCreate = () => {
+  const handleCreate = () => {
     navigate("/config/hris/Company_data/department/create");
   };
+
+  const openAssignedEmployeesDrawer = (department) => {
+    setSelectedDepartment(department);
+    setIsAssignedDrawerOpen(true);
+  };
+
+  const closeAssignedEmployeesDrawer = () => {
+    setIsAssignedDrawerOpen(false);
+  };
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-8 mx-auto">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Department</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold text-gray-900">Department</h1>
+          <p className="text-sm text-gray-500 mt-1">
             Manage employee directory, documents, and role-based actions.
           </p>
         </div>
 
         <button
-          // onClick={() => navigate("/config/hris/Company_data/department/create")}
-          onClick={()=>setShowCountryDialog(true)}
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+          type="button"
+          onClick={() => setShowCountryDialog(true)}
+          className="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
         >
           Create +
         </button>
       </div>
 
-      {/* Table */}
-      <div className="bg-white border rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 text-sm text-gray-500">
-            <tr className="text-left">
-              <th className="px-4 py-3">Department Unit Name</th>
-              <th className="px-4 py-3">Linked Business Units</th>
-              <th className="px-4 py-3">Created By</th>
-              <th className="px-4 py-3">Assigned Employee</th>
-              <th className="px-4 py-3">Department Head Unit</th>
-              <th className="px-4 py-3 text-right">Action</th>
+      <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
+        <table className="min-w-full text-sm">
+          <thead className="bg-gray-50 text-gray-500">
+            <tr>
+              <th className="px-5 py-3.5 text-left font-medium">Department Unit Name</th>
+              <th className="px-5 py-3.5 text-left font-medium">Linked Business Units</th>
+              <th className="px-5 py-3.5 text-left font-medium">Created By</th>
+              <th className="px-5 py-3.5 text-left font-medium">Assigned Employee</th>
+              <th className="px-5 py-3.5 text-left font-medium">Department Head Unit</th>
+              <th className="px-5 py-3.5 text-right font-medium">Action</th>
             </tr>
           </thead>
 
           <tbody>
+            {data.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-500">
+                  No departments found.
+                </td>
+              </tr>
+            )}
+
             {data.map((item) => (
-              <tr key={item.id} className="border-t hover:bg-gray-50">
-                {/* Name */}
-                <td className="px-4 py-4">
-                  <div className="font-medium">{item.name}</div>
-                  <div className="text-xs text-gray-400">{item.date}</div>
+              <tr key={item.id} className="border-t border-gray-100 hover:bg-gray-50/70">
+                <td className="px-5 py-4 align-middle">
+                  <div className="font-medium text-gray-900">{item.name}</div>
+                  <div className="text-xs text-gray-400 mt-0.5">{item.date}</div>
                 </td>
 
-                {/* Linked Business Unit */}
-                <td className="px-4 py-4">{item.linkedBusinessUnit}</td>
+                <td className="px-5 py-4 align-middle text-gray-700">
+                  {item.linkedBusinessUnit || "--"}
+                </td>
 
-                {/* Created By */}
-                <td className="px-4 py-4">
-                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs">
-                    {item.createdBy.charAt(0)}
+                <td className="px-5 py-4 align-middle">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
+                    {getInitials(item.createdBy)}
                   </div>
                 </td>
 
-                {/* Assigned Employees */}
-                <td className="px-4 py-4">
-                  <div className="flex -space-x-2">
-                    {item.assignedEmployees.slice(0, 4).map((emp, i) => (
-                      <div
-                        key={i}
-                        className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs border"
-                      >
-                        {emp.name.charAt(0)}
-                      </div>
-                    ))}
-                  </div>
+                <td className="px-5 py-4 align-middle">
+                  {item.assignedEmployees?.length > 0 ? (
+                    <div className="flex -space-x-2">
+                      {item.assignedEmployees.slice(0, 4).map((emp, index) => (
+                        <div
+                          key={`${item.id}-${emp.name}-${index}`}
+                          className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 border border-white flex items-center justify-center text-xs font-medium"
+                          title={emp.name}
+                        >
+                          {getInitials(emp.name)}
+                        </div>
+                      ))}
+                      {item.assignedEmployees.length > 4 && (
+                        <button
+                          type="button"
+                          onClick={() => openAssignedEmployeesDrawer(item)}
+                          className="w-8 h-8 rounded-full bg-gray-900 text-white border border-white flex items-center justify-center text-xs font-medium hover:bg-black transition outline-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          title="View assigned employees"
+                        >
+                          +{item.assignedEmployees.length - 4}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">No Employee Assigned</span>
+                  )}
                 </td>
 
-                {/* Head */}
-                <td className="px-4 py-4">{item.head}</td>
+                <td className="px-5 py-4 align-middle text-gray-700">{item.head || "--"}</td>
 
-                {/* Action Column */}
-                <td className="px-4 py-4 text-right relative">
-                  <div className="flex justify-end items-center gap-4">
-                    {/* ✅ Edit Button (SVG) */}
+                <td className="px-5 py-4 align-middle text-right relative" data-department-menu>
+                  <div className="flex items-center justify-end gap-3">
                     <button
+                      type="button"
                       onClick={() =>
-                        navigate(
-                          `/config/hris/Company_data/department/create`,
-                          {
-                            state: {
-                              department: item,
-                              isEdit: true,
-                            },
-                          },
-                        )
+                        navigate("/config/hris/Company_data/department/create", {
+                          state: { department: item, isEdit: true },
+                        })
                       }
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-blue-600 hover:bg-blue-50 transition hover:translate-y-0"
+                      title="Edit department"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-5 h-5"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                        />
-                      </svg>
+                      <FiEdit2 className="h-4 w-4" />
                     </button>
 
-                    {/* 3 Dot Button */}
                     <button
-                      onClick={() =>
-                        setOpenMenu(openMenu === item.id ? null : item.id)
-                      }
-                      className="text-lg text-gray-600 hover:text-black"
+                      type="button"
+                      onClick={() => setOpenMenu((prev) => (prev === item.id ? null : item.id))}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-gray-900 hover:bg-gray-100 transition hover:translate-y-0"
+                      title="More actions"
                     >
-                      ⋮
+                      <HiOutlineDotsVertical className="h-4 w-4" />
                     </button>
                   </div>
 
-                  {/* Dropdown */}
                   {openMenu === item.id && (
-                    <div className="absolute right-4 mt-2 w-32 bg-white border rounded-md shadow-md z-10">
-                      {/* View */}
+                    <div className="absolute right-5 top-12 w-36 overflow-hidden rounded-md border border-gray-200 bg-white divide-y divide-gray-100 z-20">
                       <button
+                        type="button"
                         onClick={() => {
-                          navigate(
-                            `/config/Company_data/department/view/${item.id}`,
-                            {
-                              state: { department: item },
-                            },
-                          );
+                          navigate(`/config/hris/Company_data/department/view/${item.id}`, {
+                            state: { department: item },
+                          });
                           setOpenMenu(null);
                         }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                        className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 bg-white shadow-none hover:shadow-none hover:bg-gray-50 transition hover:translate-y-0"
                       >
-                        👁 View
+                        View
                       </button>
 
-                      {/* Delete */}
                       <button
+                        type="button"
                         onClick={() => handleDelete(item.id)}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 bg-white shadow-none hover:shadow-none hover:bg-red-50 transition hover:translate-y-0"
                       >
-                        🗑 Delete
+                        Delete
                       </button>
                     </div>
                   )}
@@ -217,8 +222,20 @@ const handleCreate = () => {
         </table>
       </div>
 
-            {showCountryDialog && createPortal( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
+      {showCountryDialog &&
+        createPortal(
+          <CreateCountryPopup
+            onClose={() => setShowCountryDialog(false)}
+            onContinue={handleCreate}
+          />,
+          document.body
+        )}
 
+      <AssignedEmployeesDrawer
+        isOpen={isAssignedDrawerOpen}
+        onClose={closeAssignedEmployeesDrawer}
+        department={selectedDepartment}
+      />
     </div>
   );
 };

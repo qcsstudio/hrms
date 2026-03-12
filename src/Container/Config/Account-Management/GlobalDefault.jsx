@@ -330,7 +330,6 @@ const GlobalDefaults = () => {
       timeFormat: timeFormat === "24" ? "24-hour" : "12-hour",
       callingCode: selectedCountry.callingCode
     };
-
     console.log("FINAL PAYLOAD →", payload);
 
     try {

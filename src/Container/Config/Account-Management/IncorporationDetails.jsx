@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import createAxios from '../../../utils/axios.config'
 import { useDispatch, useSelector } from "react-redux";
 import { handleincorporation } from "../../../Redux/configSlices/incorporationslice";
+import { FaAngleDown } from "react-icons/fa";
 
 /* ---------- Custom Components ---------- */
 
@@ -32,21 +33,73 @@ const FormInput = ({ placeholder, type = "text", value, onChange }) => (
   />
 );
 
+const FormDivSelect = ({
+  options = [],
+  value,
+  onSelect,
+  placeholder = "Select",
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef(null);
 
-const FormSelect = ({ options = [], value, onChange }) => (
-  <select
-    value={value}
-    onChange={onChange}
-    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-  >
-    <option value="">Select</option>
-    {options.map((opt) => (
-      <option key={opt.value} value={opt.label}>
-        {opt.label}
-      </option>
-    ))}
-  </select>
-);
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const normalizedOptions = options;
+
+  return (
+    <div ref={selectRef} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="w-full h-[40px] border border-[#DEE2E6] rounded-lg bg-white px-3 text-[14px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0 flex items-center justify-between"
+      >
+        <span className={value ? "text-[#344054]" : "text-[#98A2B3]"}>
+          {value || placeholder}
+        </span>
+        <FaAngleDown
+          className={`text-[12px] transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 mt-2 w-full overflow-hidden rounded-[16px] border border-[#D6DDE8] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.10)] z-20">
+          {normalizedOptions.map((option) => {
+            const isSelected = value === option;
+
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => {
+                  onSelect(option);
+                  setIsOpen(false);
+                }}
+                className={`w-full border-none px-6 py-5 text-left text-sm leading-none shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${
+                  isSelected
+                    ? "bg-[#E8EDF4] text-[#111827] font-semibold"
+                    : "text-[#1F2937] hover:bg-[#F4F7FB] active:bg-[#EDEFF4]"
+                }`}
+              >
+                {option}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 
 /* ---------- Main Component ---------- */
@@ -177,15 +230,15 @@ const IncorporationDetails = () => {
         {/* Row 2 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField label="Company Type (Optional)">
-            <FormSelect
+            <FormDivSelect
               value={form.companyType}
-              onChange={(e) =>
-                setForm({ ...form, companyType: e.target.value })
+              onSelect={(selectedValue) =>
+                setForm({ ...form, companyType: selectedValue })
               }
               options={[
-                { value: "private", label: "Private Limited" },
-                { value: "public", label: "Public Limited" },
-                { value: "llp", label: "LLP" }
+                "Private Limited",
+                "Public Limited",
+                "LLP"
               ]}
             />
           </FormField>
