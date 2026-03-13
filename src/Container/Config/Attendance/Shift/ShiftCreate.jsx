@@ -1,13 +1,146 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import {
+  buildEmptyTimings,
+  buildShiftPayload,
+  extractCompanyOffices,
+  getShiftCount,
+  validateRequiredShiftTimes,
+} from "./shiftApiUtils";
 
 const ShiftCreate = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
+
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const selectedCountry = queryParams.get("country") || "";
+  const selectedOffice = queryParams.get("office") || "";
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [shiftCategory, setShiftCategory] = useState("two");
+  const [colorCode, setColorCode] = useState("#00FF00");
   const [shiftsPerDay, setShiftsPerDay] = useState("two");
   const [isFlexible, setIsFlexible] = useState("no");
+  const [shiftTimings, setShiftTimings] = useState(buildEmptyTimings(3));
+  const [companyOffices, setCompanyOffices] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const shiftCount =
-    shiftsPerDay === "three" ? 3 : shiftsPerDay === "two" ? 2 : 1;
+  const shiftCount = getShiftCount(shiftsPerDay);
+
+  useEffect(() => {
+    setShiftCategory(shiftsPerDay);
+  }, [shiftsPerDay]);
+
+  useEffect(() => {
+    const fetchOffices = async () => {
+      try {
+        const res = await axiosInstance.get("/config/company-offices-data", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        setCompanyOffices(extractCompanyOffices(res?.data));
+      } catch (error) {
+        setCompanyOffices([]);
+      }
+    };
+
+    fetchOffices();
+  }, []);
+
+  const selectedCompanyOfficeIds = useMemo(() => {
+    if (!selectedCountry) return [];
+
+    return companyOffices
+      .filter((office) => {
+        const sameCountry =
+          (office.country || "").trim().toLowerCase() ===
+          selectedCountry.trim().toLowerCase();
+        if (!sameCountry) return false;
+        if (selectedOffice === "ALL") return true;
+
+        return (
+          (office.name || "").trim().toLowerCase() ===
+          selectedOffice.trim().toLowerCase()
+        );
+      })
+      .map((office) => office.id);
+  }, [companyOffices, selectedCountry, selectedOffice]);
+
+  const resolvedCompanyOfficeIds = useMemo(() => {
+    if (selectedCompanyOfficeIds.length > 0) return selectedCompanyOfficeIds;
+
+    if (!selectedOffice || selectedOffice === "ALL") return [];
+
+    // Fallback: if office query already contains an object id, pass it directly.
+    if (/^[a-f\d]{24}$/i.test(selectedOffice)) {
+      return [selectedOffice];
+    }
+
+    return [];
+  }, [selectedCompanyOfficeIds, selectedOffice]);
+
+  const updateShiftTime = (index, field, value) => {
+    setShiftTimings((prev) => {
+      const next = [...prev];
+
+      if (field === "startTime" || field === "endTime") {
+        next[index] = { ...next[index], [field]: value };
+        return next;
+      }
+
+      const [group, key] = field.split(".");
+      next[index] = {
+        ...next[index],
+        [group]: {
+          ...next[index][group],
+          [key]: value,
+        },
+      };
+
+      return next;
+    });
+  };
+
+  const handleSubmit = async (activeState) => {
+    setErrorMessage("");
+    if (!title.trim()) {
+      setErrorMessage("Shift name is required.");
+      return;
+    }
+
+    const timeValidationMessage = validateRequiredShiftTimes(shiftTimings, shiftsPerDay);
+    if (timeValidationMessage) {
+      setErrorMessage(timeValidationMessage);
+      return;
+    }
+
+    const payload = buildShiftPayload({
+      title: title.trim(),
+      description: description.trim(),
+      shiftCategory,
+      colorCode,
+      isActive: activeState,
+      shiftsPerDay,
+      shiftTimings,
+      companyOfficeId: resolvedCompanyOfficeIds,
+    });
+
+    try {
+      setIsSaving(true);
+      await axiosInstance.post("/config/shift-create", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      navigate("/config/track/Attendance/shift/list");
+    } catch (error) {
+      setErrorMessage(error?.response?.data?.message || "Unable to create shift.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -23,13 +156,16 @@ const ShiftCreate = () => {
       </div>
 
       <div className="space-y-6">
+        {errorMessage && <div className="text-sm text-red-600">{errorMessage}</div>}
 
         {/* Shift Name */}
         <div>
           <label className="text-sm font-medium">Shift Name</label>
           <input
             type="text"
-            placeholder="Choose Account"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter shift name"
             className="w-full mt-2 border rounded-lg px-4 py-2 bg-white"
           />
         </div>
@@ -38,10 +174,43 @@ const ShiftCreate = () => {
         <div>
           <label className="text-sm font-medium">Internal description</label>
           <textarea
-            placeholder="Choose Account"
-            className="w-full mt-2 border rounded-lg px-4 py-3 bg-white min-h-[100px]"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter internal description"
+            className="w-full mt-2 border rounded-lg px-4 py-3 bg-white min-h-25"
           />
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium">Shift Category</label>
+            <select
+              value={shiftCategory}
+              onChange={(e) => setShiftCategory(e.target.value)}
+              className="w-full mt-2 border rounded-lg px-4 py-2 bg-white"
+            >
+              <option value="one">one</option>
+              <option value="two">two</option>
+              <option value="three">three</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Color Code</label>
+            <input
+              type="text"
+              value={colorCode}
+              onChange={(e) => setColorCode(e.target.value)}
+              className="w-full mt-2 border rounded-lg px-4 py-2 bg-white"
+            />
+          </div>
+        </div>
+
+        {(selectedCountry || selectedOffice) && (
+          <div className="text-xs text-gray-500">
+            Country: {selectedCountry || "-"} | Office: {selectedOffice || "-"}
+          </div>
+        )}
 
         {/* Shift Count */}
         <div>
@@ -112,6 +281,8 @@ const ShiftCreate = () => {
                 <div className="relative mt-2">
                   <input
                     type="time"
+                    value={shiftTimings[i]?.startTime || ""}
+                    onChange={(e) => updateShiftTime(i, "startTime", e.target.value)}
                     className="w-full border rounded-lg px-4 py-2 bg-white"
                   />
                 </div>
@@ -125,6 +296,8 @@ const ShiftCreate = () => {
                 <div className="relative mt-2">
                   <input
                     type="time"
+                    value={shiftTimings[i]?.endTime || ""}
+                    onChange={(e) => updateShiftTime(i, "endTime", e.target.value)}
                     className="w-full border rounded-lg px-4 py-2 bg-white"
                   />
                 </div>
@@ -136,14 +309,18 @@ const ShiftCreate = () => {
                 <div className="flex items-center gap-3 mt-2">
                   <input
                     type="number"
-                    placeholder="00"
+                    value={shiftTimings[i]?.startOff?.hours ?? 0}
+                    onChange={(e) => updateShiftTime(i, "startOff.hours", e.target.value)}
+                    min="0"
                     className="w-24 border rounded-lg px-3 py-2 bg-white"
                   />
                   <span className="text-sm text-gray-500">Hrs</span>
 
                   <input
                     type="number"
-                    placeholder="00"
+                    value={shiftTimings[i]?.startOff?.minutes ?? 0}
+                    onChange={(e) => updateShiftTime(i, "startOff.minutes", e.target.value)}
+                    min="0"
                     className="w-24 border rounded-lg px-3 py-2 bg-white"
                   />
                   <span className="text-sm text-gray-500">Mins</span>
@@ -156,14 +333,18 @@ const ShiftCreate = () => {
                 <div className="flex items-center gap-3 mt-2">
                   <input
                     type="number"
-                    placeholder="00"
+                    value={shiftTimings[i]?.cutOff?.hours ?? 0}
+                    onChange={(e) => updateShiftTime(i, "cutOff.hours", e.target.value)}
+                    min="0"
                     className="w-24 border rounded-lg px-3 py-2 bg-white"
                   />
                   <span className="text-sm text-gray-500">Hrs</span>
 
                   <input
                     type="number"
-                    placeholder="00"
+                    value={shiftTimings[i]?.cutOff?.minutes ?? 0}
+                    onChange={(e) => updateShiftTime(i, "cutOff.minutes", e.target.value)}
+                    min="0"
                     className="w-24 border rounded-lg px-3 py-2 bg-white"
                   />
                   <span className="text-sm text-gray-500">Mins</span>
@@ -175,7 +356,11 @@ const ShiftCreate = () => {
 
         {/* Footer Buttons */}
         <div className="flex justify-between items-center pt-8 border-t mt-6">
-          <button className="border border-blue-600 text-blue-600 px-5 py-2 rounded-lg">
+          <button
+            onClick={() => handleSubmit(false)}
+            disabled={isSaving}
+            className="border border-blue-600 text-blue-600 px-5 py-2 rounded-lg disabled:opacity-60"
+          >
             Save as Draft
           </button>
 
@@ -187,7 +372,11 @@ const ShiftCreate = () => {
               Cancel
             </button>
 
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+            <button
+              onClick={() => handleSubmit(true)}
+              disabled={isSaving}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
+            >
               Save
             </button>
           </div>

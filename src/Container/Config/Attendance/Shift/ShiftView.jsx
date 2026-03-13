@@ -1,65 +1,45 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
-const mockShifts = {
-  "1": {
-    name: "Leap Of Faith",
-    description: "Default office shift for all departments",
-    shiftsPerDay: "one",
-    isFlexible: "no",
-    times: [
-      {
-        start: "8:00 AM",
-        end: "6:30 PM",
-        startOffHrs: "0",
-        startOffMins: "15",
-        cutOffHrs: "0",
-        cutOffMins: "30",
-      },
-    ],
-  },
-  "2": {
-    name: "Remote Shift",
-    description: "Remote work shift",
-    shiftsPerDay: "two",
-    isFlexible: "yes",
-    times: [
-      {
-        start: "8:00 AM",
-        end: "12:00 PM",
-        startOffHrs: "0",
-        startOffMins: "10",
-        cutOffHrs: "0",
-        cutOffMins: "15",
-      },
-      {
-        start: "1:00 PM",
-        end: "5:00 PM",
-        startOffHrs: "0",
-        startOffMins: "10",
-        cutOffHrs: "0",
-        cutOffMins: "15",
-      },
-    ],
-  },
-};
+import createAxios from "../../../../utils/axios.config";
+import { getShiftCount, toShiftViewModel } from "./shiftApiUtils";
 
 export default function ShiftView() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
 
-  const shift = mockShifts[id] || mockShifts["1"];
+  const [shift, setShift] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const shiftCount =
-    shift.shiftsPerDay === "two"
-      ? 2
-      : shift.shiftsPerDay === "three"
-      ? 3
-      : 1;
+  useEffect(() => {
+    const fetchShift = async () => {
+      setLoading(true);
+      setErrorMessage("");
+      try {
+        const res = await axiosInstance.get(`/config/getOne-shift/${id}`, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const raw = res?.data?.data || res?.data?.result || res?.data || {};
+        setShift(toShiftViewModel(raw));
+      } catch (error) {
+        setErrorMessage(error?.response?.data?.message || "Unable to fetch shift details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchShift();
+    }
+  }, [id]);
+
+  const shiftCount = useMemo(() => getShiftCount(shift?.shiftsPerDay || "one"), [shift]);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen max-w-6xl">
-      {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-2xl font-semibold">View Shift</h1>
@@ -77,91 +57,82 @@ export default function ShiftView() {
       </div>
 
       <div className="space-y-6 bg-white p-6 rounded-xl shadow-sm border">
-        {/* Shift Name */}
-        <div>
-          <p className="text-sm text-gray-500">Shift Name</p>
-          <p className="font-medium text-lg">{shift.name}</p>
-        </div>
+        {loading && <div className="text-sm text-gray-500">Loading shift...</div>}
+        {!loading && errorMessage && <div className="text-sm text-red-600">{errorMessage}</div>}
 
-        {/* Description */}
-        <div>
-          <p className="text-sm text-gray-500">Internal Description</p>
-          <p className="font-medium">{shift.description}</p>
-        </div>
-
-        {/* Shift Count */}
-        <div>
-          <p className="text-sm text-gray-500">Shifts Per Day</p>
-          <p className="font-medium capitalize">
-            {shift.shiftsPerDay} Shift
-          </p>
-        </div>
-
-        {/* Flexible */}
-        <div>
-          <p className="text-sm text-gray-500">Flexible Shift</p>
-          <span
-            className={`inline-block px-3 py-1 text-sm rounded-full ${
-              shift.isFlexible === "yes"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-600"
-            }`}
-          >
-            {shift.isFlexible === "yes" ? "Yes" : "No"}
-          </span>
-        </div>
-
-        {/* Time Sections */}
-        <div
-          className={`grid gap-8 ${
-            shiftCount === 1
-              ? "grid-cols-1 max-w-xl"
-              : shiftCount === 2
-              ? "grid-cols-2"
-              : "grid-cols-3"
-          }`}
-        >
-          {shift.times.slice(0, shiftCount).map((time, i) => (
-            <div
-              key={i}
-              className="border rounded-lg p-4 bg-gray-50 space-y-3"
-            >
-              <h2 className="font-semibold text-lg">
-                {i === 0
-                  ? "First Shift"
-                  : i === 1
-                  ? "Second Shift"
-                  : "Third Shift"}
-              </h2>
-
-              <div>
-                <p className="text-sm text-gray-500">Start Time</p>
-                <p className="font-medium">{time.start}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">End Time</p>
-                <p className="font-medium">{time.end}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">Start-off</p>
-                <p className="font-medium">
-                  {time.startOffHrs} Hrs {time.startOffMins} Mins
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">Cut-off</p>
-                <p className="font-medium">
-                  {time.cutOffHrs} Hrs {time.cutOffMins} Mins
-                </p>
-              </div>
+        {!loading && !errorMessage && shift && (
+          <>
+            <div>
+              <p className="text-sm text-gray-500">Shift Name</p>
+              <p className="font-medium text-lg">{shift.title || "-"}</p>
             </div>
-          ))}
-        </div>
 
-        {/* Footer */}
+            <div>
+              <p className="text-sm text-gray-500">Internal Description</p>
+              <p className="font-medium">{shift.description || "-"}</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">Shifts Per Day</p>
+              <p className="font-medium capitalize">{shift.shiftsPerDay} Shift</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">Shift Category</p>
+              <p className="font-medium">{shift.shiftCategory || "General"}</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">Flexible Shift</p>
+              <span
+                className={`inline-block px-3 py-1 text-sm rounded-full ${
+                  shift.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
+                }`}
+              >
+                {shift.isActive ? "Active" : "Draft"}
+              </span>
+            </div>
+
+            <div
+              className={`grid gap-8 ${
+                shiftCount === 1 ? "grid-cols-1 max-w-xl" : shiftCount === 2 ? "grid-cols-2" : "grid-cols-3"
+              }`}
+            >
+              {shift.shiftTimings.slice(0, shiftCount).map((time, i) => (
+                <div key={i} className="border rounded-lg p-4 bg-gray-50 space-y-3">
+                  <h2 className="font-semibold text-lg">
+                    {i === 0 ? "First Shift" : i === 1 ? "Second Shift" : "Third Shift"}
+                  </h2>
+
+                  <div>
+                    <p className="text-sm text-gray-500">Start Time</p>
+                    <p className="font-medium">{time.startTime || "-"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500">End Time</p>
+                    <p className="font-medium">{time.endTime || "-"}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500">Start-off</p>
+                    <p className="font-medium">
+                      {time.startOff?.hours ?? 0} Hrs {time.startOff?.minutes ?? 0} Mins
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-500">Cut-off</p>
+                    <p className="font-medium">
+                      {time.cutOff?.hours ?? 0} Hrs {time.cutOff?.minutes ?? 0} Mins
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
         <div className="flex justify-end pt-6 border-t">
           <button
             onClick={() => navigate("/config/track/Attendance/shift/list")}

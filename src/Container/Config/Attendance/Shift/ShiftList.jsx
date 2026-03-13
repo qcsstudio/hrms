@@ -2,62 +2,111 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 import { createPortal } from "react-dom";
+import createAxios from "../../../../utils/axios.config";
+import { formatTimeRange } from "./shiftApiUtils";
 
 const ShiftList = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
 
   /* ================= STATES ================= */
   const [selectedLocation, setSelectedLocation] = useState("");
   const [statusFilter, setStatusFilter] = useState("Active");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [showDialog, setShowDialog] = useState(false);
-  
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedOffice, setSelectedOffice] = useState("");
-  const [applyAll, setApplyAll] = useState(false);
 
   const [openMenu, setOpenMenu] = useState(null);
 
-  const [shifts, setShifts] = useState([
-    {
-      id: 1,
-      name: "Morning Shift",
-      date: "12 Jun 2025 11:10 AM",
-      assignedCount: 15,
-      time: "8:00AM to 6:30PM",
-      country: "India",
-      office: "HeadOffice",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Night Shift",
-      date: "15 Jun 2025 10:00 AM",
-      assignedCount: 0,
-      time: "9:00PM to 6:00AM",
-      country: "USA",
-      office: "Branch1",
-      status: "Draft",
-    },
-    {
-      id: 3,
-      name: "General Shift",
-      date: "20 Jun 2025",
-      assignedCount: 8,
-      time: "10:00AM to 7:00PM",
-      country: "India",
-      office: "Branch1",
-      status: "Active",
-    },
-  ]);
+  const [shifts, setShifts] = useState([]);
 
-  const locationData = {
-    India: ["HeadOffice", "Branch1"],
-    USA: ["Branch1"],
+  const formatDate = (date) => {
+    if (!date) return "-";
+    const parsed = new Date(date);
+    if (Number.isNaN(parsed.getTime())) return "-";
+
+    return parsed.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
-  const countries = Object.keys(locationData);
+  const normalizeListResponse = (payload) => {
+    if (Array.isArray(payload?.data)) return payload.data;
+    if (Array.isArray(payload?.result)) return payload.result;
+    if (Array.isArray(payload?.shifts)) return payload.shifts;
+    if (Array.isArray(payload)) return payload;
+    return [];
+  };
+
+  const getShiftLocation = (shift) => {
+    const offices = shift?.companyOfficeId;
+    const officeObj = Array.isArray(offices) ? offices[0] : offices;
+
+    if (officeObj && typeof officeObj === "object") {
+      const country =
+        typeof officeObj.country === "string"
+          ? officeObj.country
+          : officeObj?.country?.name || officeObj?.countryName || "-";
+
+      const office =
+        officeObj?.officeName ||
+        officeObj?.name ||
+        officeObj?.office ||
+        "-";
+
+      return { country, office };
+    }
+
+    return {
+      country: shift?.country || "-",
+      office: shift?.office || "-",
+    };
+  };
+
+  const loadShifts = async () => {
+    setLoading(true);
+    setErrorMessage("");
+    try {
+      const res = await axiosInstance.get("/config/getAll-create", {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      const records = normalizeListResponse(res?.data);
+      const mapped = records.map((shift) => {
+        const { country, office } = getShiftLocation(shift);
+        const employees = Array.isArray(shift?.assignedEmployees)
+          ? shift.assignedEmployees.length
+          : Number(shift?.assignedCount || 0);
+
+        return {
+          id: shift?._id || shift?.id,
+          name: shift?.title || shift?.name || "-",
+          date: formatDate(shift?.updatedAt || shift?.createdAt),
+          assignedCount: Number.isFinite(employees) ? employees : 0,
+          time: formatTimeRange(shift?.shiftTimings || shift?.times || []),
+          country,
+          office,
+          status: shift?.isActive ? "Active" : "Draft",
+        };
+      });
+
+      setShifts(mapped);
+    } catch (error) {
+      setErrorMessage(
+        error?.response?.data?.message || "Unable to fetch shift list."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ================= OUTSIDE CLICK CLOSE ================= */
   useEffect(() => {
@@ -69,6 +118,10 @@ const ShiftList = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () =>
       document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    loadShifts();
   }, []);
 
   /* ================= UNIQUE LOCATIONS ================= */
@@ -94,8 +147,15 @@ const ShiftList = () => {
   }, [shifts, selectedLocation, statusFilter]);
 
   /* ================= DELETE ================= */
-  const handleDelete = (id) => {
-    setShifts((prev) => prev.filter((item) => item.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await axiosInstance.delete(`/config/delete-shift/${id}`, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      setShifts((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      alert(error?.response?.data?.message || "Unable to delete shift.");
+    }
     setOpenMenu(null);
   };
 
@@ -105,29 +165,13 @@ const ShiftList = () => {
   };
 
   /* ================= CONTINUE ================= */
-  const handleContinue = () => {
-    if (!selectedCountry) {
-      alert("Please select country");
-      return;
-    }
-
-    if (!applyAll && !selectedOffice) {
-      alert("Please select office");
-      return;
-    }
-
+  const handleCreate = ({ country, office, applyAll }) => {
     navigate(
       `/config/track/Attendance/shift/create?country=${encodeURIComponent(
-        selectedCountry
-      )}&office=${applyAll ? "ALL" : encodeURIComponent(selectedOffice)}`
+        country
+      )}&office=${applyAll ? "ALL" : encodeURIComponent(office || "")}`
     );
-
     setShowDialog(false);
-  };
-     const handleCreate = () => {
-    navigate(`/config/track/Attendance/shift/create?country=${encodeURIComponent(
-        selectedCountry
-      )}&office=${applyAll ? "ALL" : encodeURIComponent(selectedOffice)}`);
   };
 
   return (
@@ -202,6 +246,16 @@ const ShiftList = () => {
 
       {/* ================= SHIFT LIST ================= */}
       <div className="space-y-4 mt-4">
+        {loading && <div className="text-sm text-gray-500">Loading shifts...</div>}
+
+        {!loading && errorMessage && (
+          <div className="text-sm text-red-600">{errorMessage}</div>
+        )}
+
+        {!loading && !errorMessage && filteredShifts.length === 0 && (
+          <div className="text-sm text-gray-500">No shift found.</div>
+        )}
+
         {filteredShifts.map((shift) => (
           <div
             key={shift.id}

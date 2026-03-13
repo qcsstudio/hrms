@@ -1,34 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 import { createPortal } from "react-dom";
+import createAxios from "../../../../utils/axios.config";
 
-const initialSignatories = [
-  {
-    id: "1",
-    fullName: "Ajay Kumar",
-    signatureImage: null,
-    status: true,
-    country: "India",
-    location: "Bangalore",
-  },
-  {
-    id: "2",
-    fullName: "Ravi Sharma",
-    signatureImage: null,
-    status: true,
-    country: "USA",
-    location: "New York",
-  },
-];
-
-const countries = ["India", "USA"];
-
-const locationData = {
-  India: ["Bangalore", "Delhi"],
-  USA: ["New York", "San Francisco"],
-};
+const initialSignatories = [];
 
 const AuthoritySignature = () => {
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
+
   const [signatories, setSignatories] = useState(initialSignatories);
   const [activeTab, setActiveTab] = useState("all");
 
@@ -41,8 +21,9 @@ const AuthoritySignature = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
 
   // form
-  const [fullName, setFullName] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
   const [signaturePreview, setSignaturePreview] = useState(null);
+  const [employees, setEmployees] = useState([]);
 
   // country modal
   const [showCountryDialog, setShowCountryDialog] = useState(false);
@@ -62,24 +43,39 @@ const AuthoritySignature = () => {
 
   const openAddDrawer = () => {
     setDrawerMode("add");
-    setFullName("");
+    setEmployeeId("");
     setSignaturePreview(null);
   };
 
   const openEditDrawer = (data) => {
     setDrawerMode("edit");
     setSelectedSignatory(data);
-    setFullName(data.fullName);
+    setEmployeeId(data.employeeId || "");
     setSignaturePreview(data.signatureImage);
     setOpenDropdown(null);
   };
 
-  const openViewDrawer = (data) => {
+  const openViewDrawer = async (data) => {
     setDrawerMode("view");
     setSelectedSignatory(data);
-    setFullName(data.fullName);
+    setEmployeeId(data.employeeId || "");
     setSignaturePreview(data.signatureImage);
     setOpenDropdown(null);
+
+    if (!data?.id) return;
+    try {
+      const res = await axiosInstance.get(
+        `/config/get-one-authoritySignature/${data.id}`,
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+      const item = res?.data?.data || res?.data;
+      if (item) {
+        setEmployeeId(item.employeeId || "");
+        setSignaturePreview(item.signatureImage || "");
+      }
+    } catch (error) {
+      console.log("authority signature view error", error);
+    }
   };
 
   const closeDrawer = () => {
@@ -87,39 +83,102 @@ const AuthoritySignature = () => {
     setSelectedSignatory(null);
   };
 
-  const handleSave = () => {
-    if (!fullName.trim()) return;
+  const getEmployeeLabel = (emp) => {
+    if (!emp) return "";
+    return (
+      emp.fullName ||
+      emp.name ||
+      [emp.firstName, emp.lastName].filter(Boolean).join(" ")
+    );
+  };
 
-    if (drawerMode === "add") {
-      setSignatories((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          fullName,
-          signatureImage: signaturePreview,
-          status: true,
-          country: selectedCountry,
-          location: applyAll ? "ALL" : selectedOffice,
-        },
-      ]);
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await axiosInstance.get("/employees/all", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        const list = res?.data?.data || res?.data || [];
+        setEmployees(Array.isArray(list) ? list : []);
+      } catch (error) {
+        console.log("employee list error", error);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+
+  const normalizeSignatory = (item) => ({
+    id: item?._id || item?.id,
+    employeeId: item?.employeeId || "",
+    fullName:
+      item?.employeeName ||
+      item?.employee?.fullName ||
+      item?.fullName ||
+      "",
+    signatureImage: item?.signatureImage || "",
+    status: item?.status ?? true,
+    location: item?.location || "",
+  });
+
+  const fetchSignatories = async () => {
+    try {
+      const res = await axiosInstance.get("/config/get-all-authoritySignature", {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      const list = res?.data?.data || res?.data || [];
+      setSignatories(Array.isArray(list) ? list.map(normalizeSignatory) : []);
+    } catch (error) {
+      console.log("authority signature list error", error);
     }
+  };
 
-    if (drawerMode === "edit") {
-      setSignatories((prev) =>
-        prev.map((s) =>
-          s.id === selectedSignatory.id
-            ? { ...s, fullName, signatureImage: signaturePreview }
-            : s
-        )
-      );
+  useEffect(() => {
+    fetchSignatories();
+  }, []);
+
+  const handleSave = async () => {
+    if (!employeeId.trim()) return;
+
+    const payload = {
+      employeeId: employeeId.trim(),
+      signatureImage: signaturePreview || "",
+    };
+
+    try {
+      if (drawerMode === "add") {
+        await axiosInstance.post("/config/create-authoritySignature", payload, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+      }
+
+      if (drawerMode === "edit" && selectedSignatory?.id) {
+        await axiosInstance.put(
+          `/config/update-authoritySignature/${selectedSignatory.id}`,
+          payload,
+          { meta: { auth: "ADMIN_AUTH" } }
+        );
+      }
+
+      await fetchSignatories();
+    } catch (error) {
+      console.log("authority signature save error", error);
+      return;
     }
 
     closeDrawer();
   };
 
-  const handleDelete = (id) => {
-    setSignatories((prev) => prev.filter((s) => s.id !== id));
-    setOpenDropdown(null);
+  const handleDelete = async (id) => {
+    try {
+      await axiosInstance.put(`/config/delete-authoritySignature/${id}`, null, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      await fetchSignatories();
+      setOpenDropdown(null);
+    } catch (error) {
+      console.log("authority signature delete error", error);
+    }
   };
 
   const handleSignatureUpload = (e) => {
@@ -233,6 +292,12 @@ const AuthoritySignature = () => {
 
               <div className="col-span-2 flex justify-end gap-2">
                 <button
+                  onClick={() => openViewDrawer(s)}
+                  className="px-3 py-1 text-sm border rounded"
+                >
+                  View
+                </button>
+                <button
                   onClick={() => openEditDrawer(s)}
                   className="px-3 py-1 text-sm bg-blue-600 text-white rounded"
                 >
@@ -259,10 +324,12 @@ const AuthoritySignature = () => {
     </div>
         {/* RIGHT SIDE DRAWER */}
       {drawerMode && createPortal(
-        
           <div className="fixed inset-0 bg-black/40 z-50" onClick={closeDrawer} >
 
-          <div className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col z-50">
+          <div
+            className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col z-50"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between p-6 border-b">
               <h2 className="text-xl font-bold capitalize">
                 {drawerMode} Signatory
@@ -271,14 +338,23 @@ const AuthoritySignature = () => {
             </div>
 
             <div className="flex-1 p-6">
-              <label className="block text-sm mb-2">Full Name</label>
-              <input
-                type="text"
-                value={fullName}
+              <label className="block text-sm mb-2">Employee</label>
+              <select
+                value={employeeId}
                 disabled={drawerMode === "view"}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => setEmployeeId(e.target.value)}
                 className="w-full border px-4 py-3 rounded mb-6"
-              />
+              >
+                <option value="">Select employee</option>
+                {employees.map((emp) => {
+                  const value = emp._id || emp.id;
+                  return (
+                    <option key={value} value={value}>
+                      {getEmployeeLabel(emp)}
+                    </option>
+                  );
+                })}
+              </select>
 
               <label className="block text-sm mb-2">Signature</label>
               <div className="border rounded p-4 flex justify-between items-center">

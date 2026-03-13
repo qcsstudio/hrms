@@ -103,64 +103,66 @@ const RefreshSection = ({
     </p>
 
     {["yes", "no"].map((opt) => (
-      <div
-        key={opt}
-        onClick={() => setRefreshAcc(opt)}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "8px 0",
-          cursor: "pointer",
-          borderBottom: opt === "yes" ? "1px solid #f1f5f9" : "none",
-        }}
-      >
-        <span style={{ fontSize: 13, textTransform: "capitalize" }}>
-          {opt === "yes" ? "Yes" : "No"}
-        </span>
+      <div key={opt}>
+        <div
+          onClick={() => setRefreshAcc(opt)}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "8px 0",
+            cursor: "pointer",
+            borderBottom:
+              opt === "yes" && refreshAcc !== "yes" ? "1px solid #f1f5f9" : "none",
+          }}
+        >
+          <span style={{ fontSize: 13, textTransform: "capitalize" }}>
+            {opt === "yes" ? "Yes" : "No"}
+          </span>
 
-        <Radio
-          checked={refreshAcc === opt}
-          onChange={() => setRefreshAcc(opt)}
-        />
+          <Radio
+            checked={refreshAcc === opt}
+            onChange={() => setRefreshAcc(opt)}
+          />
+        </div>
+
+        {opt === "yes" && refreshAcc === "yes" && (
+          <div style={{ marginTop: 12, paddingLeft: 8, borderBottom: "1px solid #f1f5f9" }}>
+            {[
+              {
+                value: "monthly",
+                label: "Monthly refresh of accumulated weekly off counts",
+              },
+              {
+                value: "yearly",
+                label: "Yearly refresh of accumulated weekly off counts",
+              },
+            ].map((frequencyOption) => (
+              <div
+                key={frequencyOption.value}
+                onClick={() => setRefreshFrequency(frequencyOption.value)}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 0",
+                  cursor: "pointer",
+                  borderBottom:
+                    frequencyOption.value === "monthly" ? "1px solid #f1f5f9" : "none",
+                }}
+              >
+                <span style={{ fontSize: 13 }}>{frequencyOption.label}</span>
+
+                <Radio
+                  checked={refreshFrequency === frequencyOption.value}
+                  onChange={() => setRefreshFrequency(frequencyOption.value)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     ))}
-
-    {refreshAcc === "yes" && (
-      <div style={{ marginTop: 12, paddingLeft: 8 }}>
-        {[
-          {
-            value: "monthly",
-            label: "Monthly refresh of accumulated weekly off counts",
-          },
-          {
-            value: "yearly",
-            label: "Yearly refresh of accumulated weekly off counts",
-          },
-        ].map((opt) => (
-          <div
-            key={opt.value}
-            onClick={() => setRefreshFrequency(opt.value)}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "8px 0",
-              cursor: "pointer",
-              borderBottom:
-                opt.value === "monthly" ? "1px solid #f1f5f9" : "none",
-            }}
-          >
-            <span style={{ fontSize: 13 }}>{opt.label}</span>
-
-            <Radio
-              checked={refreshFrequency === opt.value}
-              onChange={() => setRefreshFrequency(opt.value)}
-            />
-          </div>
-        ))}
-      </div>
-    )}
   </div>
 );
 
