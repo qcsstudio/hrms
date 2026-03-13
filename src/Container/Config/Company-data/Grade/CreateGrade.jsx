@@ -6,10 +6,10 @@ const fieldClassName =
   "mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 const flatSecondaryButtonClassName =
-  "px-6 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium shadow-none hover:shadow-none hover:bg-gray-100 transition hover:translate-y-0";
+  "inline-flex items-center justify-center h-10 px-6 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium shadow-none hover:shadow-none hover:bg-gray-100 transition hover:translate-y-0";
 
 const flatPrimaryButtonClassName =
-  "px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium shadow-none hover:shadow-none hover:bg-blue-700 transition hover:translate-y-0";
+  "inline-flex items-center justify-center h-10 px-6 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-none hover:shadow-none hover:bg-blue-700 transition hover:translate-y-0";
 
 const CreateGrade = () => {
   const token = localStorage.getItem("authToken");
@@ -88,7 +88,11 @@ const CreateGrade = () => {
         </div>
 
         {isEdit && (
-          <button type="button" onClick={handleSave} className={flatPrimaryButtonClassName}>
+          <button
+            type="button"
+            onClick={handleSave}
+            className={`${flatPrimaryButtonClassName} w-full sm:w-auto`}
+          >
             Save Changes
           </button>
         )}
@@ -108,12 +112,20 @@ const CreateGrade = () => {
         </div>
 
         <div className="flex justify-end gap-4 pt-2">
-          <button type="button" onClick={handleCancel} className={flatSecondaryButtonClassName}>
+          <button
+            type="button"
+            onClick={handleCancel}
+            className={`${flatSecondaryButtonClassName} w-full sm:w-auto`}
+          >
             Cancel
           </button>
 
           {!isEdit && (
-            <button type="button" onClick={handleSave} className={flatPrimaryButtonClassName}>
+            <button
+              type="button"
+              onClick={handleSave}
+              className={`${flatPrimaryButtonClassName} w-full sm:w-auto`}
+            >
               Save
             </button>
           )}

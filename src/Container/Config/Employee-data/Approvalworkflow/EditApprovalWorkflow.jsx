@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { FaAngleDown } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
-/* -------------------- Mock Fetch (replace with API) -------------------- */
 const mockFetchWorkflow = () => ({
   selected: "all-hands",
   inactionHandling: "yes",
@@ -9,77 +9,168 @@ const mockFetchWorkflow = () => ({
   managerChange: "pending",
   levels: 2,
   hierarchySelect: "manager",
+  inactionDays: "",
+  inactionAction: "",
+  backupPerson: "",
+  levelInactionAction: "",
 });
 
-/* -------------------- Tabs Config -------------------- */
-
 const tabConfigs = [
-  { title: "Define Workflow", heading: "HRIS", description: "HRIS covers employee bank-detail changes and probation confirmations." },
-  { title: "HRIS Workflow", heading: "HRIS", description: "HRIS covers employee bank-detail changes and probation confirmations." },
-  { title: "Attendance Workflow", heading: "Attendance", description: "Attendance covers employee check-in, check-out and overtime requests." },
-  { title: "Leave Workflow", heading: "Leave", description: "Leave covers employee leave applications and compensatory off requests." },
-  { title: "Expense Workflow", heading: "Expense", description: "Expense covers employee reimbursement and advance salary requests." },
-  { title: "Exit Workflow", heading: "Exit", description: "Exit covers employee resignation, termination and full & final settlement." },
+  {
+    title: "Define Workflow",
+    heading: "HRIS",
+    description:
+      "HRIS covers employee bank-detail changes and probation confirmations.",
+  },
+  {
+    title: "HRIS Workflow",
+    heading: "HRIS",
+    description:
+      "HRIS covers employee bank-detail changes and probation confirmations.",
+  },
+  {
+    title: "Attendance Workflow",
+    heading: "Attendance",
+    description:
+      "Attendance covers employee check-in, check-out and overtime requests.",
+  },
+  {
+    title: "Leave Workflow",
+    heading: "Leave",
+    description:
+      "Leave covers employee leave applications and compensatory off requests.",
+  },
+  {
+    title: "Expense Workflow",
+    heading: "Expense",
+    description:
+      "Expense covers employee reimbursement and advance salary requests.",
+  },
+  {
+    title: "Exit Workflow",
+    heading: "Exit",
+    description:
+      "Exit covers employee resignation, termination and full & final settlement.",
+  },
 ];
-
-/* -------------------- Workflow Options -------------------- */
 
 const workflowOptions = [
-  { id: "full-trust", label: "Full-trust workflow", description: "All requests auto-approved instantly." },
-  { id: "free-flowing", label: "Free flowing workflow", description: "Any one approver can approve." },
-  { id: "all-hands", label: "All-hands-in workflow", description: "All approvers must approve." },
-  { id: "level-based", label: "Level-based workflow", description: "Multi-level approval workflow." },
+  {
+    id: "full-trust",
+    label: "Full-trust workflow",
+    description: "All requests auto-approved instantly.",
+  },
+  {
+    id: "free-flowing",
+    label: "Free flowing workflow",
+    description: "Any one approver can approve.",
+  },
+  {
+    id: "all-hands",
+    label: "All-hands-in workflow",
+    description: "All approvers must approve.",
+  },
+  {
+    id: "level-based",
+    label: "Level-based workflow",
+    description: "Multi-level approval workflow.",
+  },
 ];
 
-/* -------------------- Header Actions -------------------- */
+const hierarchyOptions = [
+  { value: "manager", label: "Manager" },
+  { value: "hr", label: "HR Admin" },
+  { value: "department-head", label: "Department Head" },
+];
 
-const HeaderActions = ({ id }) => {
-  const navigate = useNavigate();
-  const [openMenu, setOpenMenu] = useState(false);
+const flatSecondaryButtonClassName =
+  "inline-flex items-center justify-center h-10 px-6 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium shadow-none hover:shadow-none hover:bg-gray-100 transition hover:translate-y-0";
 
-//   return (
-//     <div className="relative flex items-center gap-3">
-//       {/* Edit */}
-//       <button
-//         onClick={() => navigate(`/approval-workflow/edit/${id}`)}
-//         className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-//         title="Edit"
-//       >
-//         ✏️
-//       </button>
+const flatPrimaryButtonClassName =
+  "inline-flex items-center justify-center h-10 px-6 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-none hover:shadow-none hover:bg-blue-700 transition hover:translate-y-0";
 
-//       {/* More */}
-//       <button
-//         onClick={() => setOpenMenu((p) => !p)}
-//         className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-//         title="More"
-//       >
-//         ⋮
-//       </button>
+const FormDivSelect = ({
+  options = [],
+  value,
+  onSelect,
+  placeholder = "Select",
+  disabled = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef(null);
 
-//       {/* Dropdown */}
-//       {openMenu && (
-//         <div className="absolute right-0 top-11 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-//           <button
-//             onClick={() => {
-//               setOpenMenu(false);
-//               console.log("Delete workflow:", id);
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
 
-//               // API example:
-//               // fetch(`/api/workflows/${id}`, { method: "DELETE" })
-//               //   .then(() => navigate("/approval-workflow"));
-//             }}
-//             className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
-//           >
-//             🗑 Delete
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const selectedOption = options.find((option) => option.value === value);
+
+  return (
+    <div ref={selectRef} className="relative w-full">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) setIsOpen((prev) => !prev);
+        }}
+        className={`mt-2 w-full h-[42px] border border-gray-300 rounded-lg bg-white px-4 text-sm text-left text-gray-900 shadow-none outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between ${
+          disabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""
+        }`}
+      >
+        <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
+          {selectedOption?.label || placeholder}
+        </span>
+        <FaAngleDown
+          className={`text-[12px] text-gray-500 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && !disabled && (
+        <div className="absolute left-0 mt-2 w-full overflow-hidden rounded-xl border border-[#D6DDE8] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.10)] z-20">
+          {options.map((option) => {
+            const isSelected = value === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onSelect(option.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full border-none px-4 py-3 text-left text-sm shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${
+                  isSelected
+                    ? "bg-[#E8EDF4] text-[#111827] font-semibold"
+                    : "text-[#1F2937] hover:bg-[#F4F7FB] active:bg-[#EDEFF4]"
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 };
 
-/* -------------------- Main Component -------------------- */
+const ChoiceCard = ({ active, children }) => (
+  <div
+    className={`flex gap-3 rounded-lg border p-4 transition ${
+      active ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-white hover:bg-gray-50"
+    }`}
+  >
+    {children}
+  </div>
+);
 
 const EditApprovalWorkflow = () => {
   const navigate = useNavigate();
@@ -89,213 +180,190 @@ const EditApprovalWorkflow = () => {
   const [form, setForm] = useState(null);
 
   useEffect(() => {
-    // Replace with API call using ID
     const data = mockFetchWorkflow();
     setForm(data);
   }, [id]);
 
   if (!form) {
-    return <div className="p-10 text-gray-500">Loading workflow...</div>;
+    return (
+      <div className="p-8 mx-auto">
+        <div className="max-w-5xl rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">
+          Loading workflow...
+        </div>
+      </div>
+    );
   }
 
   const config = tabConfigs[activeTab];
+  const setFormValue = (patch) => setForm((prev) => ({ ...prev, ...patch }));
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Edit Approval Workflow</h1>
-          <p className="text-sm text-gray-500">Update existing workflow configuration</p>
-        </div>
-
-        <HeaderActions id={id} />
+    <div className="p-8 mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-900">Edit Approval Workflow</h1>
+        <p className="text-sm text-gray-500 mt-1">Update existing workflow configuration</p>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white rounded-xl border border-gray-200 mb-6">
-        <div className="flex overflow-x-auto">
-          {tabConfigs.map((tab, i) => (
-            <button
-              key={tab.title}
-              onClick={() => setActiveTab(i)}
-              className={`px-5 py-3 text-sm font-medium border-b-2 transition ${
-                activeTab === i
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-800"
-              }`}
-            >
-              {tab.title}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="font-semibold text-gray-900 mb-1">{config.heading}</h3>
-        <p className="text-sm text-gray-500 mb-5">{config.description}</p>
-
-        {/* Workflow Type */}
-        <div className="space-y-3">
-          {workflowOptions.map((opt) => {
-            const active = form.selected === opt.id;
+      <div className="mb-6 overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="flex min-w-max">
+          {tabConfigs.map((tab, index) => {
+            const isActive = activeTab === index;
             return (
-              <label
-                key={opt.id}
-                className={`flex gap-3 p-4 rounded-lg border cursor-pointer transition ${
-                  active
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200 bg-white hover:bg-gray-50"
+              <button
+                key={tab.title}
+                type="button"
+                onClick={() => setActiveTab(index)}
+                className={`border-none px-5 py-3 text-sm font-medium transition ${
+                  isActive
+                    ? "border-b-2 border-blue-600 text-blue-600"
+                    : "border-b-2 border-transparent text-gray-500 hover:text-gray-800"
                 }`}
               >
-                <input
-                  type="radio"
-                  checked={active}
-                  onChange={() => setForm({ ...form, selected: opt.id })}
-                  className="mt-1 accent-blue-600"
-                />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{opt.label}</p>
-                  <p className="text-xs text-gray-500 mt-1">{opt.description}</p>
-                </div>
-              </label>
+                {tab.title}
+              </button>
             );
           })}
         </div>
+      </div>
 
-        {/* Hierarchy */}
+      <div className="max-w-5xl space-y-8 rounded-xl border border-gray-200 bg-white p-6">
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">{config.heading}</h3>
+          <p className="mt-1 text-sm text-gray-500">{config.description}</p>
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm font-medium text-gray-800">Choose workflow type</p>
+          <div className="space-y-3">
+            {workflowOptions.map((option) => {
+              const isSelected = form.selected === option.id;
+              return (
+                <label key={option.id} className="cursor-pointer">
+                  <ChoiceCard active={isSelected}>
+                    <input
+                      type="radio"
+                      checked={isSelected}
+                      onChange={() => setFormValue({ selected: option.id })}
+                      className="mt-1 accent-blue-600"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{option.label}</p>
+                      <p className="mt-1 text-xs text-gray-500">{option.description}</p>
+                    </div>
+                  </ChoiceCard>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
         {(form.selected === "free-flowing" || form.selected === "all-hands") && (
-          <div className="mt-5">
-            <p className="text-sm font-medium text-gray-800 mb-2">
-              Select employees based on hierarchy
+          <div>
+            <p className="text-sm font-medium text-gray-800">
+              Select employees based on their position in hierarchy
             </p>
-            <select
+            <FormDivSelect
+              options={hierarchyOptions}
               value={form.hierarchySelect}
-              onChange={(e) => setForm({ ...form, hierarchySelect: e.target.value })}
-              className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="">Choose Account</option>
-              <option value="manager">Manager</option>
-              <option value="hr">HR Admin</option>
-              <option value="department-head">Department Head</option>
-            </select>
+              onSelect={(value) => setFormValue({ hierarchySelect: value })}
+              placeholder="Choose hierarchy"
+            />
           </div>
         )}
 
-        {/* Inaction */}
-        <div className="mt-8">
-          <p className="text-sm font-medium text-gray-800 mb-3">
-            Auto-handle inaction?
-          </p>
-          <div className="flex gap-4">
-            {["yes", "no"].map((v) => (
-              <label
-                key={v}
-                className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer ${
-                  form.inactionHandling === v
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  checked={form.inactionHandling === v}
-                  onChange={() => setForm({ ...form, inactionHandling: v })}
-                  className="accent-blue-600"
-                />
-                <span className="text-sm capitalize">{v}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Backup */}
-        <div className="mt-8">
-          <p className="text-sm font-medium text-gray-800 mb-3">
-            Backup decision
-          </p>
-          <div className="flex gap-4">
-            {["self", "backup"].map((v) => (
-              <label
-                key={v}
-                className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer ${
-                  form.backupDecision === v
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  checked={form.backupDecision === v}
-                  onChange={() => setForm({ ...form, backupDecision: v })}
-                  className="accent-blue-600"
-                />
-                <span className="text-sm">
-                  {v === "self" ? "Allow Self Approval" : "Select Backup Approver"}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Manager Change */}
-        <div className="mt-8">
-          <p className="text-sm font-medium text-gray-800 mb-3">
-            Manager change handling
+        <div>
+          <p className="mb-3 text-sm font-medium text-gray-800">
+            Do you want to automatically handle inaction on any request by the selected persons
+            in this workflow?
           </p>
           <div className="space-y-3">
-            <label
-              className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer ${
-                form.managerChange === "all"
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200"
-              }`}
-            >
-              <input
-                type="radio"
-                checked={form.managerChange === "all"}
-                onChange={() => setForm({ ...form, managerChange: "all" })}
-                className="accent-blue-600"
-              />
-              <span className="text-sm">
-                Transfer all requests to new manager
-              </span>
-            </label>
-
-            <label
-              className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer ${
-                form.managerChange === "pending"
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200"
-              }`}
-            >
-              <input
-                type="radio"
-                checked={form.managerChange === "pending"}
-                onChange={() => setForm({ ...form, managerChange: "pending" })}
-                className="accent-blue-600"
-              />
-              <span className="text-sm">
-                Transfer only pending requests
-              </span>
-            </label>
+            {["yes", "no"].map((value) => {
+              const isSelected = form.inactionHandling === value;
+              return (
+                <label key={value} className="cursor-pointer">
+                  <ChoiceCard active={isSelected}>
+                    <input
+                      type="radio"
+                      checked={isSelected}
+                      onChange={() => setFormValue({ inactionHandling: value })}
+                      className="accent-blue-600"
+                    />
+                    <span className="text-sm font-medium capitalize text-gray-800">{value}</span>
+                  </ChoiceCard>
+                </label>
+              );
+            })}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-3 mt-10 pt-5 border-t border-gray-200">
+        <div>
+          <p className="mb-3 text-sm font-medium text-gray-800">
+            If approvers mentioned above do not exist for any requester, choose backup decision
+            maker
+          </p>
+          <div className="space-y-3">
+            {[
+              { id: "self", label: "Allow Self Approval" },
+              { id: "backup", label: "Select as a back-up decision maker" },
+            ].map((option) => {
+              const isSelected = form.backupDecision === option.id;
+              return (
+                <label key={option.id} className="cursor-pointer">
+                  <ChoiceCard active={isSelected}>
+                    <input
+                      type="radio"
+                      checked={isSelected}
+                      onChange={() => setFormValue({ backupDecision: option.id })}
+                      className="accent-blue-600"
+                    />
+                    <span className="text-sm font-medium text-gray-800">{option.label}</span>
+                  </ChoiceCard>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm font-medium text-gray-800">
+            How do you want to handle requests after change of manager/approver?
+          </p>
+          <div className="space-y-3">
+            {[
+              { id: "all", label: "Transfer all request to the New Manager" },
+              { id: "pending", label: "Transfer only Pending request to the New Manager" },
+            ].map((option) => {
+              const isSelected = form.managerChange === option.id;
+              return (
+                <label key={option.id} className="cursor-pointer">
+                  <ChoiceCard active={isSelected}>
+                    <input
+                      type="radio"
+                      checked={isSelected}
+                      onChange={() => setFormValue({ managerChange: option.id })}
+                      className="accent-blue-600"
+                    />
+                    <span className="text-sm font-medium text-gray-800">{option.label}</span>
+                  </ChoiceCard>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-end gap-4 pt-2 border-t border-gray-200">
           <button
+            type="button"
             onClick={() => navigate(-1)}
-            className="px-5 py-2.5 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-100"
+            className={`${flatSecondaryButtonClassName} w-full sm:w-auto`}
           >
             Cancel
           </button>
 
           <button
+            type="button"
             onClick={() => console.log("Updated workflow:", form)}
-            className="px-6 py-2.5 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+            className={`${flatPrimaryButtonClassName} w-full sm:w-auto`}
           >
             Update Workflow
           </button>
