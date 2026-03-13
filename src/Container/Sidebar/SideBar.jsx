@@ -6,16 +6,20 @@ import { setActiveUrl, setOpenMenu } from "../../Redux/sidebarSlice";
 import { toast } from "react-toastify";
 import { MdArrowDropDown } from "react-icons/md";
 import {
+  addEmployee_logo,
   attendance_logo,
   attendance_logo_blue,
+  call_logo,
   dashboard_logo,
   dashboard_logo_blue,
   employee_logo,
   employee_logo_blue,
+  hierarcy_logo,
   leave_logo,
   leave_logo_blue,
   notification_logo,
   notification_logo_blue,
+  operation_logo,
   payroll_logo,
   payroll_logo_blue,
   settings_logo,
@@ -23,8 +27,14 @@ import {
   support_logo,
   support_logo_blue,
 } from "../../allAssetsImport/allAssets";
+import createAxios from "../../utils/axios.config";
+
+const PUNCH_COOLDOWN_SECONDS = 10;
 
 const SideBar = () => {
+  const token = localStorage.getItem('authToken')
+  const axiosInstance = createAxios(token)
+
   const { openMenu, activeUrl, isConfig } = useSelector(
     (state) => state.sidebar,
   );
@@ -131,6 +141,20 @@ const SideBar = () => {
 
   // for mobile and tabview--------------
   const [isMobile, setIsMobile] = useState(false);
+  const [isPunchedIn, setIsPunchedIn] = useState(() => {
+    return localStorage.getItem("sidebarPunchState") === "in";
+  });
+  const [isPunchSubmitting, setIsPunchSubmitting] = useState(false);
+  const [punchCooldown, setPunchCooldown] = useState(() => {
+    const cooldownEndAt = Number(localStorage.getItem("sidebarPunchCooldownEndAt"));
+
+    if (!cooldownEndAt) {
+      return 0;
+    }
+
+    const remainingSeconds = Math.ceil((cooldownEndAt - Date.now()) / 1000);
+    return remainingSeconds > 0 ? remainingSeconds : 0;
+  });
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -139,6 +163,29 @@ const SideBar = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (punchCooldown <= 0) {
+      localStorage.removeItem("sidebarPunchCooldownEndAt");
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      const cooldownEndAt = Number(localStorage.getItem("sidebarPunchCooldownEndAt"));
+      const remainingSeconds = Math.ceil((cooldownEndAt - Date.now()) / 1000);
+
+      if (remainingSeconds <= 0) {
+        setPunchCooldown(0);
+        localStorage.removeItem("sidebarPunchCooldownEndAt");
+        window.clearInterval(intervalId);
+        return;
+      }
+
+      setPunchCooldown(remainingSeconds);
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [punchCooldown]);
 
   //-------------------
 
@@ -366,7 +413,7 @@ const SideBar = () => {
         navigate("/config/organise/page-layout");
         break;
       case "template":
-        navigate("/config/organise/");
+        navigate("/config/organise/template/list");
         break;
       case "authorized-signatory":
         navigate("/config/organise/authority-signature");
@@ -401,17 +448,54 @@ const SideBar = () => {
 
   const loacation = useLocation();
 
+  const handlePunchAction = async () => {
+    if (isPunchSubmitting || punchCooldown > 0) {
+      return;
+    }
+
+    try {
+      setIsPunchSubmitting(true);
+      const type = isPunchedIn ? "Punch-Out" : "Punch-In";
+      const url =
+        type === "Punch-In" ? "/attendance/punch-in" : "/attendance/punch-out";
+
+      const res = await axiosInstance.post(url, null, {
+        meta: { auth: "ADMIN_AUTH" }
+      });
+      const nextPunchState = type === "Punch-In";
+      const cooldownEndAt = Date.now() + PUNCH_COOLDOWN_SECONDS * 1000;
+
+      setIsPunchedIn(nextPunchState);
+      setPunchCooldown(PUNCH_COOLDOWN_SECONDS);
+      localStorage.setItem("sidebarPunchState", nextPunchState ? "in" : "out");
+      localStorage.setItem("sidebarPunchCooldownEndAt", cooldownEndAt.toString());
+      toast.success(
+        res?.data?.message ||
+        (type === "Punch-In"
+          ? "Clock in successful"
+          : "Clock out successful")
+      );
+    } catch (error) {
+      console.error("Punch API failed", error);
+      toast.error(
+        error?.response?.data?.message || "Unable to process punch action"
+      );
+    } finally {
+      setIsPunchSubmitting(false);
+    }
+  };
+
   return (
     <>
       {isConfig ? (
         <nav
           className={`sidebar transition-all ease-linear duration-300 flex flex-col justify-between ${openMenu ? "w-[100%]" : "w-[100%]"} h-[90vh] bg-[#fff] overflow-hidden select-none`}
         >
-          <div>
+          <div className="h-fit overflow-y-scroll hide-scrollbar">
             {openMenu && (
               <>
                 {/* =============================HRIS====================================== */}
-                <div>
+                <div >
                   <h1
                     className="px-4 text-[#64748B]  mt-3 font-bold text-[16px]"
                     onClick={() => handleConfigDropdown("hris")}
@@ -708,8 +792,7 @@ const SideBar = () => {
                       {innerconfigdropdowntrack.attendance && (
                         <div className="px-4">
                           <h1
-                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
-                              "/config/hris/Account-management/Global-defaults"
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname.includes("/config/track/Attendance/shift")
                               ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
                               : "text-[#64748B]"
                               }`}
@@ -718,8 +801,7 @@ const SideBar = () => {
                             Shift
                           </h1>
                           <h1
-                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
-                              "/config/hris/Account-management/Global-defaults"
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname.includes("/config/track/Attendance/clock-in-method")
                               ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
                               : "text-[#64748B]"
                               }`}
@@ -728,8 +810,7 @@ const SideBar = () => {
                             Clock-in-Method
                           </h1>
                           <h1
-                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
-                              "/config/hris/Account-management/Global-defaults"
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname.includes("/config/track/Attendance/attendance-policy")
                               ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
                               : "text-[#64748B]"
                               }`}
@@ -738,8 +819,7 @@ const SideBar = () => {
                             Attendance Policy
                           </h1>
                           <h1
-                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
-                              "/config/hris/Account-management/Global-defaults"
+                            className={`px-4 py-2 font-medium text-[14px]  ${loacation.pathname.includes("/config/track/Attendance/extra-time")
                               ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
                               : "text-[#64748B]"
                               }`}
@@ -748,8 +828,7 @@ const SideBar = () => {
                             Extra Time (Compoff)
                           </h1>
                           <h1
-                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
-                              "/config/hris/Account-management/Global-defaults"
+                            className={`px-4 py-2 font-medium text-[14px]  ${loacation.pathname.includes("/config/track/Attendance/attendanceRequest")
                               ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
                               : "text-[#64748B]"
                               }`}
@@ -847,7 +926,7 @@ const SideBar = () => {
                         <div className="px-4">
                           <h1
                             className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
-                              "/config/track/deviveintegration"
+                              "/config/track/deviceintegration"
                               ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
                               : "text-[#64748B]"
                               }`}
@@ -1099,7 +1178,7 @@ const SideBar = () => {
                           </h1>
                           <h1
                             className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
-                              "/config/hris/Account-management/Global-defaults"
+                              "/config/organise/template/list"
                               ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
                               : "text-[#64748B]"
                               }`}
@@ -1242,192 +1321,225 @@ const SideBar = () => {
         >
           {/* ===============================Open Sidebar (full labels)======================== */}
           {openMenu && (
-            <ul className="w-[100%] h-[100%] py-[1.5rem] flex flex-col gap-[.5rem] px-5">
-              {/* ================= Dashboard ================= */}
-              <li
-                className={`transition-all duration-500 w-[100%] 
+            <div className="flex flex-col justify-between h-screen ">
+
+
+              <ul className="w-[100%] h-[100%] py-[1.5rem] flex flex-col gap-[.5rem] px-5  h-fit overflow-y-scroll hide-scrollbar">
+                {/* ================= Dashboard ================= */}
+                <li
+                  className={`transition-all duration-500 w-[100%] 
   ${location.pathname.includes("dashboard") ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-                onClick={() => changeTab("home")}
-              >
-                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  <img
-                    src={dashboard_logo}
-                    width={20}
-                    height={20}
-                    alt="dashboard"
-                  />
-                </div>
-                <span>Dashboard</span>
-              </li>
+                  onClick={() => changeTab("home")}
+                >
+                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                    <img
+                      src={dashboard_logo}
+                      width={20}
+                      height={20}
+                      alt="dashboard"
+                    />
+                  </div>
+                  <span>Dashboard</span>
+                </li>
 
-              {/* ================= Employees ================= */}
-              {!isSuperAdmin && (
-                <li
-                  className={`transition-all duration-500 w-[100%]
+                {/* ================= Employees ================= */}
+                {!isSuperAdmin && (
+                  <li
+                    className={`transition-all duration-500 w-[100%]
   ${location.pathname === "/dashboard/employee" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-                  onClick={() => changeTab("employee")}
-                >
-                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                    <img
-                      src={employee_logo}
-                      width={20}
-                      height={20}
-                      alt="employee"
-                    />
-                  </div>
-                  <span>{isEMP ? "Employee" : "Employees"}</span>
-                </li>
-              )}
+                    onClick={() => changeTab("employee")}
+                  >
+                    <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                      <img
+                        src={employee_logo}
+                        width={20}
+                        height={20}
+                        alt="employee"
+                      />
+                    </div>
+                    <span>{isEMP ? "Employee" : "Employees"}</span>
+                  </li>
+                )}
 
-              {/* ================= Attendance ================= */}
-              {!isSuperAdmin && (
-                <li
-                  className={`transition-all duration-500 w-[100%]
+                {/* ================= Attendance ================= */}
+                {!isSuperAdmin && (
+                  <li
+                    className={`transition-all duration-500 w-[100%]
   ${location.pathname === "/dashboard/attendance" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-                  onClick={() => changeTab("attendance")}
-                >
-                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                    <img
-                      src={attendance_logo}
-                      width={20}
-                      height={20}
-                      alt="attendance"
-                    />
-                  </div>
-                  <span>Attendance</span>
-                </li>
-              )}
+                    onClick={() => changeTab("attendance")}
+                  >
+                    <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                      <img
+                        src={attendance_logo}
+                        width={20}
+                        height={20}
+                        alt="attendance"
+                      />
+                    </div>
+                    <span>Attendance</span>
+                  </li>
+                )}
 
-              {/* ================= Payroll ================= */}
-              {!isSuperAdmin && (
-                <li
-                  className={`transition-all duration-500 w-[100%]
+                {/* ================= Payroll ================= */}
+                {!isSuperAdmin && (
+                  <li
+                    className={`transition-all duration-500 w-[100%]
   ${location.pathname === "/dashboard/payroll" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-                  onClick={() => changeTab("DashboardPayroll1")}
-                >
-                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                    <img
-                      src={payroll_logo}
-                      width={20}
-                      height={20}
-                      alt="payroll"
-                    />
-                  </div>
-                  <span>Payroll</span>
-                </li>
-              )}
+                    onClick={() => changeTab("DashboardPayroll1")}
+                  >
+                    <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                      <img
+                        src={payroll_logo}
+                        width={20}
+                        height={20}
+                        alt="payroll"
+                      />
+                    </div>
+                    <span>Payroll</span>
+                  </li>
+                )}
 
-              {/* ================= Leave ================= */}
-              {!isSuperAdmin && (
-                <li
-                  className={`transition-all duration-500 w-[100%]
+                {/* ================= Leave ================= */}
+                {!isSuperAdmin && (
+                  <li
+                    className={`transition-all duration-500 w-[100%]
   ${location.pathname === "/dashboard/leave-management" ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-                  onClick={() => changeTab("leave-management")}
-                >
-                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                    <img src={leave_logo} width={20} height={20} alt="leave" />
-                  </div>
-                  <span>Leave Management</span>
-                </li>
-              )}
+                    onClick={() => changeTab("leave-management")}
+                  >
+                    <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                      <img src={leave_logo} width={20} height={20} alt="leave" />
+                    </div>
+                    <span>Leave Management</span>
+                  </li>
+                )}
 
-              {/* ================= Performance ================= */}
-              {!isSuperAdmin && (
-                <li
-                  className={`transition-all duration-500 w-[100%]
+                {/* ================= Performance ================= */}
+                {!isSuperAdmin && (
+                  <li
+                    className={`transition-all duration-500 w-[100%]
   ${location.pathname.includes('performance') ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
-                  onClick={() => changeTab("Performance")}
-                >
-                  <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                    <img
-                      src={leave_logo}
-                      width={20}
-                      height={20}
-                      alt="performance"
-                    />
-                  </div>
-                  <span>Performance</span>
-                </li>
-              )}
+                    onClick={() => changeTab("Performance")}
+                  >
+                    <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                      <img
+                        src={leave_logo}
+                        width={20}
+                        height={20}
+                        alt="performance"
+                      />
+                    </div>
+                    <span>Performance</span>
+                  </li>
+                )}
 
-              {/* ================= Announcements ================= */}
-              {!isSuperAdmin && (
+                {/* ================= Announcements ================= */}
+                {!isSuperAdmin && (
+                  <li
+                    className="transition-all duration-500 w-[100%] text-[#64748B]
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
+                    onClick={() => changeTab("reportsAndExports")}
+                  >
+                    <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                      <img
+                        src={notification_logo}
+                        width={20}
+                        height={20}
+                        alt="announcement"
+                      />
+                    </div>
+                    <span>Announcements</span>
+                  </li>
+                )}
+
+                {/* ================= Billing (ONLY SUPER ADMIN) ================= */}
+                {isSuperAdmin && (
+                  <li
+                    className="transition-all duration-500 w-[100%] text-[#64748B]
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
+                    onClick={() => changeTab("billing")}
+                  >
+                    <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
+                      <img
+                        src={payroll_logo}
+                        width={20}
+                        height={20}
+                        alt="billing"
+                      />
+                    </div>
+                    <span>Billing</span>
+                  </li>
+                )}
+
+                {/* ================= Settings ================= */}
                 <li
                   className="transition-all duration-500 w-[100%] text-[#64748B]
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-                  onClick={() => changeTab("reportsAndExports")}
+                  onClick={() => changeTab("settings")}
                 >
                   <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
                     <img
-                      src={notification_logo}
+                      src={settings_logo}
                       width={20}
                       height={20}
-                      alt="announcement"
+                      alt="settings"
                     />
                   </div>
-                  <span>Announcements</span>
+                  <span>Settings</span>
                 </li>
-              )}
 
-              {/* ================= Billing (ONLY SUPER ADMIN) ================= */}
-              {isSuperAdmin && (
+                {/* ================= Support ================= */}
                 <li
                   className="transition-all duration-500 w-[100%] text-[#64748B]
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-                  onClick={() => changeTab("billing")}
+                  onClick={() => changeTab("support")}
                 >
                   <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
                     <img
-                      src={payroll_logo}
+                      src={support_logo}
                       width={20}
                       height={20}
-                      alt="billing"
+                      alt="support"
                     />
                   </div>
-                  <span>Billing</span>
+                  <span>Support</span>
                 </li>
-              )}
+              </ul>
+              {
+                isEMP || isHR || isTL && (
+                  <div className="  p-2">
+                    <button
+                      className="bg-[#0575E6] px-4 py-2 w-full rounded-lg text-white disabled:opacity-60"
+                      onClick={handlePunchAction}
+                      disabled={isPunchSubmitting || punchCooldown > 0}
+                    >
+                      {isPunchSubmitting
+                        ? "Please wait..."
+                        : punchCooldown > 0
+                          // ? `${isPunchedIn ? "Clock-out" : "Clock-in"} in ${punchCooldown}s`
+                          ? `${isPunchedIn ? "Clock-out" : "Clock-in"}`
+                          : isPunchedIn
+                            ? "Clock-out"
+                            : "Clock-in"}
+                    </button>
+                    <div className="flex justify-evenly my-3">
+                      <button><img src={addEmployee_logo} /></button>
+                      <button><img src={call_logo} /></button>
+                      <button><img src={hierarcy_logo} /></button>
+                      <button><img src={operation_logo} /></button>
 
-              {/* ================= Settings ================= */}
-              <li
-                className="transition-all duration-500 w-[100%] text-[#64748B]
-  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-                onClick={() => changeTab("settings")}
-              >
-                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  <img
-                    src={settings_logo}
-                    width={20}
-                    height={20}
-                    alt="settings"
-                  />
-                </div>
-                <span>Settings</span>
-              </li>
+                    </div>
 
-              {/* ================= Support ================= */}
-              <li
-                className="transition-all duration-500 w-[100%] text-[#64748B]
-  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-                onClick={() => changeTab("support")}
-              >
-                <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
-                  <img
-                    src={support_logo}
-                    width={20}
-                    height={20}
-                    alt="support"
-                  />
-                </div>
-                <span>Support</span>
-              </li>
-            </ul>
+                  </div>
+               )
+              } 
+
+            </div>
           )}
 
           {/* ===============================Closed Sidebar (icons only)======================== */}

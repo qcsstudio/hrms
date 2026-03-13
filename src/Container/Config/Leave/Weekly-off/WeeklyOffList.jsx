@@ -1,40 +1,105 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import createAxios from "../../../../utils/axios.config";
 
 export default function WeeklyOffList() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("Active");
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
 
-    const [showCountryDialog, setShowCountryDialog] = useState(false);
-    
-     const handleCreate = () => {
-      navigate("/config/track/leave/weekly-off/create");
+  const [activeTab, setActiveTab] = useState("Active");
+  const [policies, setPolicies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showCountryDialog, setShowCountryDialog] = useState(false);
+
+  const handleCreate = () => {
+    setShowCountryDialog(false);
+    navigate("/config/track/leave/Weekly-off/create");
+  };
+
+  useEffect(() => {
+    const fetchWeeklyOffs = async () => {
+      setLoading(true);
+      setErrorMessage("");
+      try {
+        const res = await axiosInstance.get("/config/getAll/weekoff", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        setPolicies(res?.data?.data || []);
+      } catch (error) {
+        setErrorMessage(error?.response?.data?.message || "Unable to fetch weekly off policies.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-  const policies = [
-    {
-      id: 1,
-      name: "Attendance Policy",
-      date: "12 Jun 2025 11:10 AM",
-      createdBy: "JD",
-      assigned: 12,
-      version: 0,
-    },
-    {
-      id: 2,
-      name: "Attendance Policy",
-      date: "12 Jun 2025 11:10 AM",
-      createdBy: "AK",
-      assigned: 12,
-      version: 0,
-    },
-  ];
+    fetchWeeklyOffs();
+  }, []);
+
+  const visiblePolicies = useMemo(
+    () =>
+      policies.filter((item) =>
+        activeTab === "Draft" ? Boolean(item?.isDraft) : !item?.isDraft
+      ),
+    [activeTab, policies]
+  );
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+    const parsed = new Date(date);
+    if (Number.isNaN(parsed.getTime())) return "-";
+
+    return parsed.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const getCreatedBy = (policy) => {
+    if (policy?.adminId?.name) return policy.adminId.name;
+    if (policy?.createdBy?.name) return policy.createdBy.name;
+
+    const first =
+      policy?.adminId?.firstName ||
+      policy?.createdBy?.firstName ||
+      "";
+    const last =
+      policy?.adminId?.lastName ||
+      policy?.createdBy?.lastName ||
+      "";
+
+    const fullName = `${first} ${last}`.trim();
+    if (fullName) return fullName;
+
+    if (typeof policy?.createdBy === "string") return policy.createdBy;
+    return "NA";
+  };
+
+  const getInitials = (name) => {
+    const text = (name || "").trim();
+    if (!text) return "NA";
+
+    const parts = text.split(" ").filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+
+    return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+  };
+
+  const getAssignedEmployees = (policy) => {
+    if (Array.isArray(policy?.assignedEmployees)) return policy.assignedEmployees;
+    if (Array.isArray(policy?.employees)) return policy.employees;
+    return [];
+  };
 
   return (
     <div className="p-6">
-      {/* ---------------- HEADER ---------------- */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Weekly Off</h1>
@@ -44,17 +109,13 @@ export default function WeeklyOffList() {
         </div>
 
         <button
-        //  onClick={() =>
-        //     navigate("/config/track/leave/weekly-off/create")
-        //   }
-        onClick={()=>setShowCountryDialog(true)}
+          onClick={() => setShowCountryDialog(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium"
         >
           Create +
         </button>
       </div>
 
-      {/* ---------------- TABS ---------------- */}
       <div className="flex items-center gap-3 mt-6">
         {["Active", "Draft"].map((tab) => (
           <button
@@ -70,12 +131,14 @@ export default function WeeklyOffList() {
           </button>
         ))}
 
-        <button  className="ml-auto text-sm border px-4 py-1.5 rounded-lg text-gray-600">
+        <button
+          onClick={() => setActiveTab("Active")}
+          className="ml-auto text-sm border px-4 py-1.5 rounded-lg text-gray-600"
+        >
           Clear ✕
         </button>
       </div>
 
-      {/* ---------------- TABLE HEADER ---------------- */}
       <div className="grid grid-cols-[2fr_1fr_2fr_1fr] gap-4 px-4 py-3 mt-6 text-sm text-gray-500 font-medium border-b">
         <span>Weekly-off Name</span>
         <span>Created By</span>
@@ -83,45 +146,86 @@ export default function WeeklyOffList() {
         <span className="text-center">Version</span>
       </div>
 
-      {/* ---------------- LIST ---------------- */}
       <div className="space-y-4 mt-4">
-        {policies.map((policy) => (
-          <div
-            key={policy.id}
-            className="grid grid-cols-[2fr_1fr_2fr_1fr] gap-4 items-center bg-white border rounded-xl px-4 py-4"
-          >
-            {/* Name */}
-            <div>
-              <p className="text-sm font-medium">{policy.name}</p>
-              <p className="text-xs text-gray-400 mt-1">{policy.date}</p>
-            </div>
+        {loading && (
+          <div className="text-sm text-gray-500">Loading weekly off policies...</div>
+        )}
 
-            {/* Created By */}
-            <div>
-              <div className="h-9 w-9 flex items-center justify-center rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
-                {policy.createdBy}
+        {!loading && errorMessage && (
+          <div className="text-sm text-red-600">{errorMessage}</div>
+        )}
+
+        {!loading && !errorMessage && visiblePolicies.length === 0 && (
+          <div className="text-sm text-gray-500">No weekly off policy found.</div>
+        )}
+
+        {!loading &&
+          !errorMessage &&
+          visiblePolicies.map((policy) => {
+            const assignedEmployees = getAssignedEmployees(policy);
+            const createdByName = getCreatedBy(policy);
+
+            return (
+              <div
+                key={policy?._id || policy?.id}
+                className="grid grid-cols-[2fr_1fr_2fr_1fr] gap-4 items-center bg-white border rounded-xl px-4 py-4"
+              >
+                <div>
+                  <p className="text-sm font-medium">{policy?.name || "-"}</p>
+                  <p className="text-xs text-gray-400 mt-1">{formatDate(policy?.createdAt)}</p>
+                </div>
+
+                <div>
+                  <div className="h-9 w-9 flex items-center justify-center rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
+                    {getInitials(createdByName)}
+                  </div>
+                </div>
+
+                <div className="flex items-center -space-x-2">
+                  {assignedEmployees.slice(0, 3).map((employee, index) => {
+                    const empName =
+                      employee?.name ||
+                      `${employee?.firstName || ""} ${employee?.lastName || ""}`.trim() ||
+                      "NA";
+
+                    return (
+                      <div
+                        key={`${policy?._id || policy?.id}-emp-${index}`}
+                        className="h-8 w-8 rounded-full bg-gray-500 text-white text-[10px] flex items-center justify-center border-2 border-white"
+                        title={empName}
+                      >
+                        {getInitials(empName)}
+                      </div>
+                    );
+                  })}
+
+                  {assignedEmployees.length > 3 && (
+                    <div className="h-8 w-8 rounded-full bg-black text-white text-xs flex items-center justify-center border-2 border-white">
+                      +{assignedEmployees.length - 3}
+                    </div>
+                  )}
+
+                  {assignedEmployees.length === 0 && (
+                    <span className="text-xs text-gray-400">No employee assigned</span>
+                  )}
+                </div>
+
+                <div className="text-center text-sm font-medium text-gray-700">
+                  {policy?.version ?? 0}
+                </div>
               </div>
-            </div>
-
-            {/* Assigned Employees */}
-            <div className="flex items-center -space-x-2">
-              <div className="h-8 w-8 rounded-full bg-gray-300 border-2 border-white"></div>
-              <div className="h-8 w-8 rounded-full bg-gray-400 border-2 border-white"></div>
-              <div className="h-8 w-8 rounded-full bg-gray-500 border-2 border-white"></div>
-              <div className="h-8 w-8 rounded-full bg-black text-white text-xs flex items-center justify-center border-2 border-white">
-                +{policy.assigned}
-              </div>
-            </div>
-
-            {/* Version Value (NO BUTTON) */}
-            <div className="text-center text-sm font-medium text-gray-700">
-              {policy.version}
-            </div>
-          </div>
-        ))}
+            );
+          })}
       </div>
-            {showCountryDialog && createPortal ( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
 
+      {showCountryDialog &&
+        createPortal(
+          <CreateCountryPopup
+            onClose={() => setShowCountryDialog(false)}
+            onContinue={handleCreate}
+          />,
+          document.body
+        )}
     </div>
   );
 }

@@ -1,368 +1,494 @@
-import { useEffect, useRef, useState } from "react";
-import { FaAngleDown } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+/* -------------------- Config -------------------- */
 
 const workflowOptions = [
   {
     id: "full-trust",
     label: "Full-trust workflow",
     description:
-      "Selecting this workflow means that all requests will be approved as soon as they are applied. Managers and admins will be notified about the requests, and they can revoke the request if needed.",
+      "Selecting this workflow means that all requests will be approved as soon as they're applied. Managers and admins will be notified about the requests, they can revoke the request if they wish to.",
   },
   {
     id: "free-flowing",
     label: "Free flowing workflow",
     description:
-      "In this workflow, any one of the recipients can approve the request, irrespective of the number of recipients involved.",
+      "In this workflow, any 1 of the recipients can approve the request, irrespective of the number of recipients involved.",
   },
   {
     id: "all-hands",
     label: "All-hands-in workflow",
     description:
-      "In this workflow, all recipients are required to approve the request. If one recipient does not approve, the request remains pending. If one recipient rejects, the whole request is rejected.",
+      "In this workflow, all recipients are required to approve the request. Even if 1 of the recipients doesn't approve, the request will remain pending. Similarly, even if 1 of the recipients reject the request, the entire request will be rejected irrespective of recipients' approvals.",
   },
   {
     id: "level-based",
     label: "Level-based workflow",
     description:
-      "In this workflow, you can create up to 5 levels of approvals. Once approved at one level, the request moves to the next level until all levels are completed.",
+      "In this workflow, you can create up to 5 levels of approvals. As a request is approved at the first level, it will move to the next level and so on. The request will remain pending until it receives approval on all the levels.",
   },
 ];
 
-const tabConfigs = [
+const exitWorkflowOptions = [
   {
-    title: "Define Workflow",
+    id: "all-hands",
+    label: "All-hands-in workflow",
+    description:
+      "In this workflow, all recipients are required to approve the request. Even if 1 of the recipients doesn't approve, the request will remain pending. Similarly, even if 1 of the recipients reject the request, the entire request will be rejected irrespective of recipients' approvals.",
+  },
+  {
+    id: "level-based",
+    label: "Level-based workflow",
+    description:
+      "In this workflow, you can create up to 5 levels of approvals. As a request is approved at the first level, it will move to the next level and so on. The request will remain pending until it receives approval on all the levels.",
+  },
+];
+
+const tabs = [
+  { title: "Define Workflow" },
+  { title: "HRIS Workflow" },
+  { title: "Attendance Workflow" },
+  { title: "Leave Workflow" },
+  { title: "Expense Workflow" },
+  { title: "Exit Workflow" },
+];
+
+const workflowMeta = {
+  HRIS: {
     heading: "HRIS",
-    description:
-      "HRIS covers employee bank-detail changes and probation confirmations.",
+    description: "HRIS covers employee bank-detail changes and probation confirmations.",
+    showSameAsHRIS: false,
+    workflowOptions: workflowOptions,
+    isExit: false,
   },
-  {
-    title: "HRIS Workflow",
-    heading: "HRIS",
+  Attendance: {
+    heading: "Attendance Workflow",
     description:
-      "HRIS covers employee bank-detail changes and probation confirmations.",
+      "This workflow covers requests for Clock-in/WFH/OD requests, regularisations, and Geo-radius Clock-in requests.",
+    showSameAsHRIS: true,
+    workflowOptions: workflowOptions,
+    isExit: false,
   },
-  {
-    title: "Attendance Workflow",
-    heading: "Attendance",
+  Leave: {
+    heading: "Leave Workflow",
     description:
-      "Attendance covers employee check-in, check-out and overtime requests.",
+      "This workflow covers leave requests, optional holiday selections, and gifting of leaves.",
+    showSameAsHRIS: true,
+    workflowOptions: workflowOptions,
+    isExit: false,
   },
-  {
-    title: "Leave Workflow",
-    heading: "Leave",
-    description:
-      "Leave covers employee leave applications and compensatory off requests.",
+  Expense: {
+    heading: "Expense Workflow",
+    description: "This workflow covers expense advance requests, and general expense claims.",
+    showSameAsHRIS: true,
+    workflowOptions: workflowOptions,
+    isExit: false,
   },
-  {
-    title: "Expense Workflow",
-    heading: "Expense",
-    description:
-      "Expense covers employee reimbursement and advance salary requests.",
+  Exit: {
+    heading: "Exit Workflow",
+    description: "This workflow covers resignations via employee and terminations via managers.",
+    showSameAsHRIS: false,
+    workflowOptions: exitWorkflowOptions,
+    isExit: true,
   },
-  {
-    title: "Exit Workflow",
-    heading: "Exit",
-    description:
-      "Exit covers employee resignation, termination and full & final settlement.",
-  },
-];
+};
 
-const hierarchyOptions = [
-  { value: "manager", label: "Manager" },
-  { value: "hr", label: "HR Admin" },
-  { value: "department-head", label: "Department Head" },
-];
-
-const defaultTabState = () => ({
-  selected: "all-hands",
-  inactionHandling: "yes",
-  backupDecision: "backup",
-  managerChange: "pending",
+const defaultWorkflowState = () => ({
+  sameAsHRIS: "no",
+  workflowType: "",
+  approverSelect: "",
   levels: 1,
-  hierarchySelect: "",
+  inactionHandling: "no",
   inactionDays: "",
   inactionAction: "",
+  backupDecision: "",
   backupPerson: "",
-  levelInactionAction: "",
+  managerChange: "",
 });
 
-const flatSecondaryButtonClassName =
-  "inline-flex items-center justify-center h-10 px-6 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium shadow-none hover:shadow-none hover:bg-gray-100 transition hover:translate-y-0";
+/* -------------------- Checkmark Icon -------------------- */
+const CheckIcon = () => (
+  <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+    <path d="M1 4L4.5 7.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
-const flatPrimaryButtonClassName =
-  "inline-flex items-center justify-center h-10 px-6 rounded-lg bg-blue-600 text-white text-sm font-medium shadow-none hover:shadow-none hover:bg-blue-700 transition hover:translate-y-0";
+/* -------------------- Radio Option (with description) -------------------- */
+const RadioOption = ({ label, description, checked, onChange, children }) => (
+  <div>
+    <div
+      onClick={onChange}
+      className={`flex items-start gap-3 px-4 py-3 border rounded cursor-pointer transition-colors ${
+        checked ? "border-blue-400 bg-blue-50" : "border-gray-200 bg-white hover:bg-gray-50"
+      }`}
+    >
+      <div className="mt-0.5 flex-shrink-0">
+        {checked ? (
+          <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+            <CheckIcon />
+          </div>
+        ) : (
+          <div className="w-5 h-5 rounded-full border-2 border-gray-300 bg-white" />
+        )}
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-800">{label}</p>
+        {description && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{description}</p>}
+      </div>
+    </div>
+    {/* Inline sub-content shown below the selected option */}
+    {checked && children && (
+      <div className="px-4 py-3 border border-t-0 border-blue-200 bg-blue-50 rounded-b">
+        {children}
+      </div>
+    )}
+  </div>
+);
 
-const FormDivSelect = ({
-  options = [],
-  value,
-  onSelect,
-  placeholder = "Select",
-  disabled = false,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const selectRef = useRef(null);
+/* -------------------- Simple Radio -------------------- */
+const SimpleRadio = ({ label, checked, onChange, children }) => (
+  <div>
+    <div
+      onClick={onChange}
+      className={`flex items-center gap-3 px-4 py-3 border rounded cursor-pointer transition-colors ${
+        checked ? "border-blue-400 bg-blue-50" : "border-gray-200 bg-white hover:bg-gray-50"
+      }`}
+    >
+      <div className="flex-shrink-0">
+        {checked ? (
+          <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+            <CheckIcon />
+          </div>
+        ) : (
+          <div className="w-5 h-5 rounded-full border-2 border-gray-300 bg-white" />
+        )}
+      </div>
+      <span className="text-sm text-gray-800">{label}</span>
+    </div>
+    {checked && children && (
+      <div className="px-4 py-3 border border-t-0 border-blue-200 bg-blue-50 rounded-b">
+        {children}
+      </div>
+    )}
+  </div>
+);
 
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (selectRef.current && !selectRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
+/* -------------------- Dropdown -------------------- */
+const Dropdown = ({ value, onChange, placeholder, options }) => (
+  <div className="relative">
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full h-9 border border-gray-300 rounded bg-white px-3 pr-8 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>{o.label}</option>
+      ))}
+    </select>
+    <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
+  </div>
+);
 
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
-
-  const selectedOption = options.find((option) => option.value === value);
-
+/* -------------------- Define Workflow Tab -------------------- */
+const DefineWorkflowTab = ({ onNext }) => {
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
   return (
-    <div ref={selectRef} className="relative w-full">
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => {
-          if (!disabled) setIsOpen((prev) => !prev);
-        }}
-        className={`mt-2 w-full h-[42px] border border-gray-300 rounded-lg bg-white px-4 text-sm text-left text-gray-900 shadow-none outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between ${
-          disabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""
-        }`}
-      >
-        <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
-          {selectedOption?.label || placeholder}
-        </span>
-        <FaAngleDown
-          className={`text-[12px] text-gray-500 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
+    <div className="max-w-xl mx-auto py-8 px-4">
+      <p className="text-sm font-medium text-gray-800 mb-4">Kindly Define your approval workflow details</p>
+      <div className="mb-5">
+        <label className="block text-sm font-medium text-blue-600 mb-1">Workflow Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Enter Workflow Name"
+          className="w-full border border-blue-500 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
+      </div>
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-blue-600 mb-1">
+          Internal description for other admins who would view this setting
+        </label>
+        <textarea
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          placeholder="Description"
+          rows={5}
+          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+        />
+      </div>
+      <button
+        onClick={onNext}
+        className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition"
+      >
+        Save & Next
       </button>
-
-      {isOpen && !disabled && (
-        <div className="absolute left-0 mt-2 w-full overflow-hidden rounded-xl border border-[#D6DDE8] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.10)] z-20">
-          {options.map((option) => {
-            const isSelected = value === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => {
-                  onSelect(option.value);
-                  setIsOpen(false);
-                }}
-                className={`w-full border-none px-4 py-3 text-left text-sm shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${
-                  isSelected
-                    ? "bg-[#E8EDF4] text-[#111827] font-semibold"
-                    : "text-[#1F2937] hover:bg-[#F4F7FB] active:bg-[#EDEFF4]"
-                }`}
-              >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 };
 
-const ChoiceCard = ({ active, children }) => (
-  <div
-    className={`flex gap-3 rounded-lg border p-4 transition ${
-      active ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-white hover:bg-gray-50"
-    }`}
-  >
-    {children}
-  </div>
-);
+/* -------------------- Workflow Config Tab -------------------- */
+const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip }) => {
+  const meta = workflowMeta[metaKey];
+  const [state, setState] = useState(defaultWorkflowState());
+  const patch = (obj) => setState((s) => ({ ...s, ...obj }));
 
-const CreateApprovalWorkflow = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(0);
-  const [tabStates, setTabStates] = useState(
-    tabConfigs.map(() => defaultTabState())
+  // When sameAsHRIS = yes, still show the full form (per screenshots)
+  const showFullForm = true;
+
+  return (
+    <div className="max-w-xl mx-auto py-6 px-4">
+      <h2 className="text-lg font-semibold text-gray-900 mb-0.5">{meta.heading}</h2>
+      <p className="text-sm text-gray-500 mb-4">{meta.description}</p>
+
+      {/* Same as HRIS */}
+      {meta.showSameAsHRIS && (
+        <div className="mb-5">
+          <p className="text-sm font-medium text-blue-600 mb-2">
+            Should we use the same configurations as HRIS Workflow?
+          </p>
+          <div className="space-y-2">
+            <SimpleRadio label="Yes" checked={state.sameAsHRIS === "yes"} onChange={() => patch({ sameAsHRIS: "yes" })} />
+            <SimpleRadio label="No" checked={state.sameAsHRIS === "no"} onChange={() => patch({ sameAsHRIS: "no" })} />
+          </div>
+        </div>
+      )}
+
+      {/* Workflow type */}
+      <div className="mb-5">
+        <p className="text-sm font-medium text-blue-600 mb-2">What type of workflow would you like</p>
+        <div className="space-y-2">
+          {meta.workflowOptions.map((opt) => (
+            <RadioOption
+              key={opt.id}
+              label={opt.label}
+              description={opt.description}
+              checked={state.workflowType === opt.id}
+              onChange={() => patch({ workflowType: opt.id })}
+            >
+              {/* All-hands: show approver dropdown */}
+              {opt.id === "all-hands" && (
+                <div>
+                  <p className="text-xs font-medium text-blue-600 mb-1">
+                    Select employees based on their position in hierarchy
+                  </p>
+                  <Dropdown
+                    value={state.approverSelect}
+                    onChange={(v) => patch({ approverSelect: v })}
+                    placeholder="Select Approver"
+                    options={[
+                      { value: "manager", label: "Manager" },
+                      { value: "hr", label: "HR Admin" },
+                      { value: "dept-head", label: "Department Head" },
+                    ]}
+                  />
+                </div>
+              )}
+              {/* Level-based: show add/remove level buttons */}
+              {opt.id === "level-based" && (
+                <div className="space-y-2 mt-1">
+                  <button
+                    onClick={() => patch({ levels: Math.min(5, state.levels + 1) })}
+                    className="flex items-center gap-2"
+                  >
+                    <span className="w-8 h-8 bg-blue-700 text-white text-lg rounded flex items-center justify-center font-bold">+</span>
+                    <span className="text-sm text-gray-700">Add Level for approval</span>
+                  </button>
+                  <button
+                    onClick={() => patch({ levels: Math.max(1, state.levels - 1) })}
+                    className="flex items-center gap-2"
+                  >
+                    <span className="w-8 h-8 bg-blue-700 text-white text-lg rounded flex items-center justify-center font-bold">−</span>
+                    <span className="text-sm text-gray-700">Remove Level for approval</span>
+                  </button>
+                  {state.levels > 1 && (
+                    <p className="text-xs text-gray-500">Current levels: {state.levels}</p>
+                  )}
+                </div>
+              )}
+            </RadioOption>
+          ))}
+        </div>
+      </div>
+
+      {/* Inaction handling */}
+      <div className="mb-5">
+        <p className="text-sm font-medium text-blue-600 mb-2">
+          Do you want to automatically handle inaction on any request by the selected persons in this workflow?
+        </p>
+        <div className="space-y-2">
+          <SimpleRadio
+            label="Yes"
+            checked={state.inactionHandling === "yes"}
+            onChange={() => patch({ inactionHandling: "yes" })}
+          >
+            {/* Inaction Yes: days input + action dropdown */}
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-medium text-blue-600 mb-1">
+                  Select the number of days you want to forward if request is inacted
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={state.inactionDays}
+                    onChange={(e) => patch({ inactionDays: e.target.value })}
+                    className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    min="1"
+                  />
+                  <span className="text-sm text-gray-700">Days</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-800 mb-0.5">Select action for inaction on any request</p>
+                <p className="text-xs font-medium text-blue-600 mb-1">Select action</p>
+                <Dropdown
+                  value={state.inactionAction}
+                  onChange={(v) => patch({ inactionAction: v })}
+                  placeholder=""
+                  options={[
+                    { value: "approve", label: "Auto Approve" },
+                    { value: "reject", label: "Auto Reject" },
+                    { value: "escalate", label: "Escalate" },
+                  ]}
+                />
+              </div>
+            </div>
+          </SimpleRadio>
+          <SimpleRadio
+            label="No"
+            checked={state.inactionHandling === "no"}
+            onChange={() => patch({ inactionHandling: "no" })}
+          />
+        </div>
+      </div>
+
+      {/* Backup decision maker */}
+      <div className="mb-5">
+        <p className="text-sm font-medium text-blue-600 mb-2">
+          If approvers mentioned above don't exist for any particular employee (requester), then consider following for back-up decision maker
+        </p>
+        <div className="space-y-2">
+          <SimpleRadio
+            label="Allow Self Approval"
+            checked={state.backupDecision === "self"}
+            onChange={() => patch({ backupDecision: "self" })}
+          />
+          <SimpleRadio
+            label="Select as a back-up decision maker"
+            checked={state.backupDecision === "backup"}
+            onChange={() => patch({ backupDecision: "backup" })}
+          >
+            {/* Backup dropdown */}
+            <div>
+              <p className="text-xs font-medium text-blue-600 mb-1">Select back-up</p>
+              <Dropdown
+                value={state.backupPerson}
+                onChange={(v) => patch({ backupPerson: v })}
+                placeholder=""
+                options={[
+                  { value: "manager", label: "Manager" },
+                  { value: "hr", label: "HR Admin" },
+                  { value: "dept-head", label: "Department Head" },
+                ]}
+              />
+            </div>
+          </SimpleRadio>
+        </div>
+      </div>
+
+      {/* Manager change */}
+      <div className="mb-7">
+        <p className="text-sm font-medium text-blue-600 mb-2">
+          How do you want to handle requests after change of manager/approver?
+        </p>
+        <div className="space-y-2">
+          <SimpleRadio
+            label="Transfer all requests to the new Manager"
+            checked={state.managerChange === "all"}
+            onChange={() => patch({ managerChange: "all" })}
+          />
+          <SimpleRadio
+            label="Transfer only pending requests to New Manager"
+            checked={state.managerChange === "pending"}
+            onChange={() => patch({ managerChange: "pending" })}
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex gap-3">
+        {!isLast && (
+          <button
+            onClick={onSkip}
+            className="px-5 py-2 border border-gray-300 text-sm font-medium text-gray-700 rounded hover:bg-gray-100 transition"
+          >
+            Skip
+          </button>
+        )}
+        <button
+          onClick={onNext}
+          className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition"
+        >
+          {isLast ? "Save" : "Save & Next"}
+        </button>
+      </div>
+    </div>
   );
+};
 
-  const current = tabStates[activeTab];
-  const config = tabConfigs[activeTab];
+/* -------------------- Main Component -------------------- */
+const CreateApprovalWorkflow = () => {
+  const [activeTab, setActiveTab] = useState(0);
 
-  const setCurrent = (patch) => {
-    setTabStates((prev) =>
-      prev.map((state, index) => (index === activeTab ? { ...state, ...patch } : state))
-    );
+  const goNext = () => {
+    if (activeTab < tabs.length - 1) setActiveTab(activeTab + 1);
   };
 
   return (
-    <div className="p-8 mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Create Approval Workflow</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Manage employee directory, documents, and role-based actions.
-        </p>
-      </div>
-
-      <div className="mb-6 overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <div className="flex min-w-max">
-          {tabConfigs.map((tab, index) => {
-            const isActive = activeTab === index;
-            return (
-              <button
-                key={tab.title}
-                type="button"
-                onClick={() => setActiveTab(index)}
-                className={`border-none px-5 py-3 text-sm font-medium transition ${
-                  isActive
-                    ? "border-b-2 border-blue-600 text-blue-600"
-                    : "border-b-2 border-transparent text-gray-500 hover:text-gray-800"
-                }`}
-              >
-                {tab.title}
-              </button>
-            );
-          })}
+    <div className="min-h-screen bg-white font-sans">
+      {/* Tab bar */}
+      <div className="border-b border-gray-200 px-4">
+        <div className="flex overflow-x-auto">
+          {tabs.map((tab, i) => (
+            <button
+              key={tab.title}
+              onClick={() => setActiveTab(i)}
+              className={`px-4 py-3 text-sm whitespace-nowrap border-b-2 transition font-medium ${
+                activeTab === i
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              {tab.title}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="max-w-5xl space-y-8 rounded-xl border border-gray-200 bg-white p-6">
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">{config.heading}</h3>
-          <p className="mt-1 text-sm text-gray-500">{config.description}</p>
-        </div>
-
-        <div>
-          <p className="mb-3 text-sm font-medium text-gray-800">Choose workflow type</p>
-          <div className="space-y-3">
-            {workflowOptions.map((option) => {
-              const isSelected = current.selected === option.id;
-              return (
-                <label key={option.id} className="cursor-pointer">
-                  <ChoiceCard active={isSelected}>
-                    <input
-                      type="radio"
-                      name={`workflow-${activeTab}`}
-                      checked={isSelected}
-                      onChange={() => setCurrent({ selected: option.id })}
-                      className="mt-1 accent-blue-600"
-                    />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{option.label}</p>
-                      <p className="mt-1 text-xs text-gray-500">{option.description}</p>
-                    </div>
-                  </ChoiceCard>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-
-        {(current.selected === "free-flowing" || current.selected === "all-hands") && (
-          <div>
-            <p className="text-sm font-medium text-gray-800">
-              Select employees based on their position in hierarchy
-            </p>
-            <FormDivSelect
-              options={hierarchyOptions}
-              value={current.hierarchySelect}
-              onSelect={(value) => setCurrent({ hierarchySelect: value })}
-              placeholder="Choose hierarchy"
-            />
-          </div>
-        )}
-
-        <div>
-          <p className="mb-3 text-sm font-medium text-gray-800">
-            Do you want to automatically handle inaction on any request by the selected persons
-            in this workflow?
-          </p>
-          <div className="space-y-3">
-            {["yes", "no"].map((value) => {
-              const isSelected = current.inactionHandling === value;
-              return (
-                <label key={value} className="cursor-pointer">
-                  <ChoiceCard active={isSelected}>
-                    <input
-                      type="radio"
-                      checked={isSelected}
-                      onChange={() => setCurrent({ inactionHandling: value })}
-                      className="accent-blue-600"
-                    />
-                    <span className="text-sm font-medium capitalize text-gray-800">{value}</span>
-                  </ChoiceCard>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-
-        <div>
-          <p className="mb-3 text-sm font-medium text-gray-800">
-            If approvers mentioned above do not exist for any requester, choose backup decision
-            maker
-          </p>
-          <div className="space-y-3">
-            {[
-              { id: "self", label: "Allow Self Approval" },
-              { id: "backup", label: "Select as a back-up decision maker" },
-            ].map((option) => {
-              const isSelected = current.backupDecision === option.id;
-              return (
-                <label key={option.id} className="cursor-pointer">
-                  <ChoiceCard active={isSelected}>
-                    <input
-                      type="radio"
-                      checked={isSelected}
-                      onChange={() => setCurrent({ backupDecision: option.id })}
-                      className="accent-blue-600"
-                    />
-                    <span className="text-sm font-medium text-gray-800">{option.label}</span>
-                  </ChoiceCard>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-
-        <div>
-          <p className="mb-3 text-sm font-medium text-gray-800">
-            How do you want to handle requests after change of manager/approver?
-          </p>
-          <div className="space-y-3">
-            {[
-              { id: "all", label: "Transfer all request to the New Manager" },
-              { id: "pending", label: "Transfer only Pending request to the New Manager" },
-            ].map((option) => {
-              const isSelected = current.managerChange === option.id;
-              return (
-                <label key={option.id} className="cursor-pointer">
-                  <ChoiceCard active={isSelected}>
-                    <input
-                      type="radio"
-                      checked={isSelected}
-                      onChange={() => setCurrent({ managerChange: option.id })}
-                      className="accent-blue-600"
-                    />
-                    <span className="text-sm font-medium text-gray-800">{option.label}</span>
-                  </ChoiceCard>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-end gap-4 pt-2 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={() => navigate("/config/hris/Employee-data/approval-workflow")}
-            className={`${flatSecondaryButtonClassName} w-full sm:w-auto`}
-          >
-            Cancel
-          </button>
-
-          <button type="button" className={`${flatPrimaryButtonClassName} w-full sm:w-auto`}>
-            Save & Next
-          </button>
-        </div>
-      </div>
+      {/* Tab content */}
+      {activeTab === 0 && <DefineWorkflowTab onNext={goNext} />}
+      {activeTab === 1 && (
+        <WorkflowConfigTab metaKey="HRIS" isLast={false} onNext={goNext} onSkip={goNext} />
+      )}
+      {activeTab === 2 && (
+        <WorkflowConfigTab metaKey="Attendance" isLast={false} onNext={goNext} onSkip={goNext} />
+      )}
+      {activeTab === 3 && (
+        <WorkflowConfigTab metaKey="Leave" isLast={false} onNext={goNext} onSkip={goNext} />
+      )}
+      {activeTab === 4 && (
+        <WorkflowConfigTab metaKey="Expense" isLast={false} onNext={goNext} onSkip={goNext} />
+      )}
+      {activeTab === 5 && (
+        <WorkflowConfigTab metaKey="Exit" isLast={true} onNext={() => alert("Saved!")} onSkip={goNext} />
+      )}
     </div>
   );
 };

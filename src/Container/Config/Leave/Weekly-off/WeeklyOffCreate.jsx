@@ -91,6 +91,79 @@ const Radio = ({ checked, onChange }) => (
   </div>
 );
 
+const RefreshSection = ({
+  refreshAcc,
+  setRefreshAcc,
+  refreshFrequency,
+  setRefreshFrequency,
+}) => (
+  <div style={{ padding: "12px 32px", borderTop: "1px solid #e2e8f0" }}>
+    <p style={{ fontSize: 12, color: "#3b82f6", marginBottom: 10 }}>
+      Refresh accumulated weekly offs?
+    </p>
+
+    {["yes", "no"].map((opt) => (
+      <div
+        key={opt}
+        onClick={() => setRefreshAcc(opt)}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "8px 0",
+          cursor: "pointer",
+          borderBottom: opt === "yes" ? "1px solid #f1f5f9" : "none",
+        }}
+      >
+        <span style={{ fontSize: 13, textTransform: "capitalize" }}>
+          {opt === "yes" ? "Yes" : "No"}
+        </span>
+
+        <Radio
+          checked={refreshAcc === opt}
+          onChange={() => setRefreshAcc(opt)}
+        />
+      </div>
+    ))}
+
+    {refreshAcc === "yes" && (
+      <div style={{ marginTop: 12, paddingLeft: 8 }}>
+        {[
+          {
+            value: "monthly",
+            label: "Monthly refresh of accumulated weekly off counts",
+          },
+          {
+            value: "yearly",
+            label: "Yearly refresh of accumulated weekly off counts",
+          },
+        ].map((opt) => (
+          <div
+            key={opt.value}
+            onClick={() => setRefreshFrequency(opt.value)}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "8px 0",
+              cursor: "pointer",
+              borderBottom:
+                opt.value === "monthly" ? "1px solid #f1f5f9" : "none",
+            }}
+          >
+            <span style={{ fontSize: 13 }}>{opt.label}</span>
+
+            <Radio
+              checked={refreshFrequency === opt.value}
+              onChange={() => setRefreshFrequency(opt.value)}
+            />
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
 export default function WeeklyOffCreate() {
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -109,6 +182,12 @@ export default function WeeklyOffCreate() {
   const [accumulation, setAccumulation] = useState("yes"); // yes | no
   const [accType, setAccType] = useState("unlimited"); // unlimited | limited
   const [refreshAcc, setRefreshAcc] = useState(null); // yes | no | null
+
+  const [refreshFrequency, setRefreshFrequency] = useState("");
+  // Limited accumulation states
+const [limitCount, setLimitCount] = useState("");
+const [refreshAccLimited, setRefreshAccLimited] = useState(null);
+const [refreshFreqLimited, setRefreshFreqLimited] = useState("");
 
   const [draftSaved, setDraftSaved] = useState(false);
 
@@ -272,12 +351,12 @@ export default function WeeklyOffCreate() {
         )}
 
         {/* STEP 3 - Accumulation */}
-        {currentStep === 2 && (
-          <div style={{  margin: "0 auto" }}>
+    {currentStep === 2 && (
+          <div>
             <p style={{ fontSize: 13, color: "#374151", marginBottom: 12 }}>Allow accumulation of unused weekly offs?</p>
 
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 8, overflow: "hidden" }}>
-              {/* Yes option */}
+              {/* Yes */}
               <div
                 onClick={() => setAccumulation("yes")}
                 style={{
@@ -288,14 +367,7 @@ export default function WeeklyOffCreate() {
                 }}
               >
                 <span style={{ fontWeight: 500 }}>Yes</span>
-                <div style={{
-                  width: 20, height: 20, borderRadius: "50%",
-                  background: accumulation === "yes" ? "#22c55e" : "#fff",
-                  border: `2px solid ${accumulation === "yes" ? "#22c55e" : "#cbd5e1"}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  {accumulation === "yes" && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />}
-                </div>
+                <Radio checked={accumulation === "yes"} onChange={() => setAccumulation("yes")} />
               </div>
 
               {/* Sub-options when Yes */}
@@ -304,55 +376,70 @@ export default function WeeklyOffCreate() {
                   {/* Unlimited */}
                   <div
                     onClick={() => setAccType("unlimited")}
-                    style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px", cursor: "pointer", borderBottom: "1px solid #e2e8f0" }}
+                    style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      padding: "12px 24px", cursor: "pointer", borderBottom: "1px solid #e2e8f0",
+                    }}
                   >
                     <span style={{ fontSize: 13 }}>Unlimited Accumulation</span>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: "50%",
-                      background: accType === "unlimited" ? "#22c55e" : "#fff",
-                      border: `2px solid ${accType === "unlimited" ? "#22c55e" : "#cbd5e1"}`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      {accType === "unlimited" && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />}
-                    </div>
+                    <Radio checked={accType === "unlimited"} onChange={() => setAccType("unlimited")} />
                   </div>
 
-                  {/* Refresh sub-option when Unlimited */}
+                  {/* Refresh for Unlimited */}
                   {accType === "unlimited" && (
-                    <div style={{ padding: "12px 32px", borderBottom: "1px solid #e2e8f0" }}>
-                      <p style={{ fontSize: 12, color: "#3b82f6", marginBottom: 10 }}>Refresh accumulated weekly offs?</p>
-                      {["yes", "no"].map((opt) => (
-                        <div
-                          key={opt}
-                          onClick={() => setRefreshAcc(opt)}
-                          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", cursor: "pointer", borderBottom: opt === "yes" ? "1px solid #f1f5f9" : "none" }}
-                        >
-                          <span style={{ fontSize: 13, textTransform: "capitalize" }}>{opt === "yes" ? "Yes" : "No"}</span>
-                          <Radio checked={refreshAcc === opt} onChange={() => setRefreshAcc(opt)} />
-                        </div>
-                      ))}
-                    </div>
+                    <RefreshSection
+                      refreshAcc={refreshAcc}
+                      setRefreshAcc={setRefreshAcc}
+                      refreshFrequency={refreshFrequency}
+                      setRefreshFrequency={setRefreshFrequency}
+                    />
                   )}
 
                   {/* Limited */}
                   <div
                     onClick={() => setAccType("limited")}
-                    style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 24px", cursor: "pointer" }}
+                    style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      padding: "12px 24px", cursor: "pointer", borderBottom: "1px solid #e2e8f0",
+                    }}
                   >
                     <span style={{ fontSize: 13 }}>Limited Accumulation</span>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: "50%",
-                      background: accType === "limited" ? "#22c55e" : "#fff",
-                      border: `2px solid ${accType === "limited" ? "#22c55e" : "#cbd5e1"}`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      {accType === "limited" && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />}
-                    </div>
+                    <Radio checked={accType === "limited"} onChange={() => setAccType("limited")} />
                   </div>
+
+                  {/* Limited sub-options */}
+                  {accType === "limited" && (
+                    <div>
+                      {/* Limit count input */}
+                      <div style={{ padding: "12px 32px", borderBottom: "1px solid #e2e8f0" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 13, color: "#374151" }}>Limit to</span>
+                          <input
+                            type="number"
+                            value={limitCount}
+                            onChange={(e) => setLimitCount(e.target.value)}
+                            style={{
+                              width: 60, border: "1px solid #d1d5db", borderRadius: 6,
+                              padding: "6px 10px", fontSize: 13, outline: "none", textAlign: "center",
+                            }}
+                          />
+                          <span style={{ fontSize: 13, color: "#374151" }}>Number of weekly offs</span>
+                        </div>
+                      </div>
+
+                      {/* Refresh for Limited */}
+                      <RefreshSection
+                        refreshAcc={refreshAccLimited}
+                        setRefreshAcc={setRefreshAccLimited}
+                        refreshFrequency={refreshFreqLimited}
+                        setRefreshFrequency={setRefreshFreqLimited}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* No option */}
+              {/* No */}
               <div
                 onClick={() => setAccumulation("no")}
                 style={{
@@ -362,18 +449,12 @@ export default function WeeklyOffCreate() {
                 }}
               >
                 <span style={{ fontWeight: 500 }}>No</span>
-                <div style={{
-                  width: 20, height: 20, borderRadius: "50%",
-                  background: accumulation === "no" ? "#22c55e" : "#fff",
-                  border: `2px solid ${accumulation === "no" ? "#22c55e" : "#cbd5e1"}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  {accumulation === "no" && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />}
-                </div>
+                <Radio checked={accumulation === "no"} onChange={() => setAccumulation("no")} />
               </div>
             </div>
           </div>
         )}
+
 
         {/* STEP 4 - Preview */}
         {currentStep === 3 && (
