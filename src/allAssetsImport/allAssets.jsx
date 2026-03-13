@@ -57,8 +57,16 @@ import performance_logo_blue from '/assets/sidebarImage-blue/performanceblue.png
 import settings_logo_blue from '/assets/sidebarImage-blue/settingsblue.png'
 import support_logo_blue from '/assets/sidebarImage-blue/supportblue.png'
 
+//sidebar clock in logos===============
+
+import addEmployee_logo  from '/assets/sidebarImage-Black/add-emp-logo.png'
+import call_logo from '/assets/sidebarImage-Black/call-logo.png'
+import hierarcy_logo from '/assets/sidebarImage-Black/hierarcy.png'
+import operation_logo from '/assets/sidebarImage-Black/operations.png'
+
 
 export {
+      addEmployee_logo,call_logo,hierarcy_logo,operation_logo,
       attendance_logo,dashboard_logo,employee_logo,leave_logo,notification_logo,payroll_logo,performance_logo,settings_logo,support_logo, //black
       attendance_logo_blue,dashboard_logo_blue,employee_logo_blue,leave_logo_blue,notification_logo_blue,payroll_logo_blue,performance_logo_blue,settings_logo_blue,support_logo_blue, //blue
       navbarLogo, search, notification, avatar, downArrow, create_company,

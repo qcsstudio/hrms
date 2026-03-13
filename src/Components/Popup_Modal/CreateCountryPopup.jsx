@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FaAngleDown } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 
 const LOCATION_DATA = {
@@ -7,8 +8,83 @@ const LOCATION_DATA = {
   "United Arab Emirates": ["Dubai Office", "Abu Dhabi Office"],
 };
 
-const fieldClassName =
-  "mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+const FormDivSelect = ({
+  options = [],
+  value,
+  onSelect,
+  placeholder = "Select",
+  disabled = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const selectedOption = options.find((option) => option.value === value);
+
+  return (
+    <div ref={selectRef} className="relative w-full">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) setIsOpen((prev) => !prev);
+        }}
+        className={`mt-2 w-full h-[42px] border border-gray-300 rounded-lg bg-white px-4 text-left text-sm text-gray-900 shadow-none outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between ${
+          disabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""
+        }`}
+      >
+        <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
+          {selectedOption?.label || placeholder}
+        </span>
+        <FaAngleDown
+          className={`text-[12px] text-gray-500 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && !disabled && (
+        <div className="absolute left-0 mt-2 w-full overflow-hidden rounded-xl border border-[#D6DDE8] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.10)] z-30">
+          {options.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-gray-500">No options available</div>
+          ) : (
+            options.map((option) => {
+              const isSelected = value === option.value;
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    onSelect(option.value);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full border-none px-4 py-3 text-left text-sm shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${
+                    isSelected
+                      ? "bg-[#E8EDF4] text-[#111827] font-semibold"
+                      : "text-[#1F2937] hover:bg-[#F4F7FB] active:bg-[#EDEFF4]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CreateCountryPopup = ({ onClose, onContinue }) => {
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -17,6 +93,14 @@ const CreateCountryPopup = ({ onClose, onContinue }) => {
 
   const countries = useMemo(() => Object.keys(LOCATION_DATA), []);
   const offices = selectedCountry ? LOCATION_DATA[selectedCountry] || [] : [];
+  const countryOptions = useMemo(
+    () => countries.map((country) => ({ value: country, label: country })),
+    [countries]
+  );
+  const officeOptions = useMemo(
+    () => offices.map((office) => ({ value: office, label: office })),
+    [offices]
+  );
   const isContinueDisabled = !selectedCountry || (!applyAll && !selectedOffice);
 
   useEffect(() => {
@@ -67,21 +151,15 @@ const CreateCountryPopup = ({ onClose, onContinue }) => {
         <div className="space-y-5 px-6 py-5">
           <div>
             <label className="text-sm font-medium text-gray-700">Select Country</label>
-            <select
+            <FormDivSelect
+              options={countryOptions}
               value={selectedCountry}
-              onChange={(e) => {
-                setSelectedCountry(e.target.value);
+              onSelect={(value) => {
+                setSelectedCountry(value);
                 setSelectedOffice("");
               }}
-              className={fieldClassName}
-            >
-              <option value="">Choose country</option>
-              {countries.map((country) => (
-                <option key={country} value={country}>
-                  {country}
-                </option>
-              ))}
-            </select>
+              placeholder="Choose country"
+            />
           </div>
 
           <label className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5 bg-gray-50">
@@ -97,19 +175,13 @@ const CreateCountryPopup = ({ onClose, onContinue }) => {
           {!applyAll && (
             <div>
               <label className="text-sm font-medium text-gray-700">Select Office</label>
-              <select
+              <FormDivSelect
+                options={officeOptions}
                 value={selectedOffice}
-                onChange={(e) => setSelectedOffice(e.target.value)}
+                onSelect={setSelectedOffice}
+                placeholder="Choose office"
                 disabled={!selectedCountry}
-                className={`${fieldClassName} disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              >
-                <option value="">Choose office</option>
-                {offices.map((office) => (
-                  <option key={office} value={office}>
-                    {office}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           )}
         </div>

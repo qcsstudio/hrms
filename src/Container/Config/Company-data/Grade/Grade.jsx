@@ -1,213 +1,270 @@
+import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
+import { FiEdit2 } from "react-icons/fi";
+import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import createAxios from "../../../../utils/axios.config";
-import { useSelector } from "react-redux";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
-import { createPortal } from 'react-dom'
+import createAxios from "../../../../utils/axios.config";
+import AssignedEmployeesDrawer from "../Department/AssignedEmployeesDrawer";
 
+const getInitials = (name = "") =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "--";
+
+const formatDateTime = (value) => {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+
+  return date
+    .toLocaleString("en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(",", "");
+};
+
+const mapAssignedEmployees = (grade) => {
+  const list = Array.isArray(grade?.assignedEmployeeList) ? grade.assignedEmployeeList : [];
+
+  return list
+    .map((employee) => ({
+      name: employee?.employeeName || employee?.fullName || employee?.name || "",
+    }))
+    .filter((employee) => employee.name);
+};
 
 const Grade = () => {
-  const token = localStorage.getItem('authToken')
-  // const { token } = useSelector((state) => state.user);
+  const token = localStorage.getItem("authToken");
   const navigate = useNavigate();
+  const axiosInstance = createAxios(token);
+
   const [openMenu, setOpenMenu] = useState(null);
-
   const [data, setData] = useState([]);
-  const axiosInstance = createAxios(token)
-
   const [showCountryDialog, setShowCountryDialog] = useState(false);
-    
-     const handleCreate = () => {
-      navigate("/config/hris/Company_data/create-grade");
+  const [isAssignedDrawerOpen, setIsAssignedDrawerOpen] = useState(false);
+  const [selectedGrade, setSelectedGrade] = useState(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!event.target.closest("[data-grade-menu]")) {
+        setOpenMenu(null);
+      }
     };
 
-  const handleDelete = async (id) => {
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
-    try {
-      await axiosInstance.delete(`/config/delete-grade/${id}`)
-
-      setOpenMenu(null);
-      setData(data.filter((item) => item._id !== id));
-
-
-    } catch (error) {
-      console.log("error", error)
-
-    }
+  const handleCreate = () => {
+    navigate("/config/hris/Company_data/create-grade");
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await axiosInstance.delete(`/config/delete-grade/${id}`);
+
+      setOpenMenu(null);
+      setData((prev) => prev.filter((item) => item._id !== id));
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const res = await axiosInstance.get("/config/getAll-grade", {
-          meta: { auth: "ADMIN_AUTH" }
-        })
-        console.log(res.data, "get all grade=================")
-        setData(res?.data?.data)
-
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        console.log(res.data, "get all grade=================");
+        setData(res?.data?.data || []);
       } catch (error) {
-        console.log("error", error)
-
+        console.log("error", error);
       }
+    };
 
-    }
-    fetchUsers()
-  }, [token])
+    fetchUsers();
+  }, [token]);
 
+  const openAssignedEmployeesDrawer = (gradeName, employees) => {
+    setSelectedGrade({
+      name: gradeName,
+      assignedEmployees: employees,
+    });
+    setIsAssignedDrawerOpen(true);
+  };
 
-
+  const closeAssignedEmployeesDrawer = () => {
+    setIsAssignedDrawerOpen(false);
+  };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-
-      {/* Header */}
-      <div className="flex justify-between items-start mb-6">
+    <div className="p-8 mx-auto">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Grade</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Grade</h1>
           <p className="text-sm text-gray-500 mt-1">
             Manage employee directory, documents, and role-based actions.
           </p>
         </div>
 
         <button
-          // onClick={() =>
-          //   navigate("/config/hris/Company_data/create-grade")
-          // }
-          onClick={()=>setShowCountryDialog(true)}
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+          type="button"
+          onClick={() => setShowCountryDialog(true)}
+          className="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
         >
           Create +
         </button>
       </div>
 
-      {/* Table Header */}
-      <div className="grid grid-cols-4 text-sm text-gray-500 font-medium px-4 pb-3 border-b">
-        <div>Grade Name</div>
-        <div>Created By</div>
-        <div>Assigned Employee</div>
-        <div className="text-right">Action</div>
+      <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
+        <table className="min-w-full text-sm">
+          <thead className="bg-gray-50 text-gray-500">
+            <tr>
+              <th className="px-5 py-3.5 text-left font-medium">Grade Name</th>
+              <th className="px-5 py-3.5 text-left font-medium">Created By</th>
+              <th className="px-5 py-3.5 text-left font-medium">Assigned Employee</th>
+              <th className="px-5 py-3.5 text-right font-medium">Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {data.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-5 py-8 text-center text-sm text-gray-500">
+                  No grades found.
+                </td>
+              </tr>
+            )}
+
+            {data.map((grade, index) => {
+              const gradeId = grade?._id || grade?.id || String(index);
+              const gradeName = grade?.gradeName || "--";
+              const createdDate = formatDateTime(grade?.createdAt);
+              const createdByName = grade?.addedByName || grade?.createdBy || grade?.addedById || "Admin";
+              const assignedEmployees = mapAssignedEmployees(grade);
+
+              return (
+                <tr key={gradeId} className="border-t border-gray-100 hover:bg-gray-50/70">
+                  <td className="px-5 py-4 align-middle">
+                    <div className="font-medium text-gray-900">{gradeName}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{createdDate}</div>
+                  </td>
+
+                  <td className="px-5 py-4 align-middle">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
+                        {getInitials(createdByName)}
+                      </div>
+                      <span className="text-sm text-gray-700">{createdByName}</span>
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-4 align-middle">
+                    {assignedEmployees.length === 0 ? (
+                      <span className="text-gray-400">No Employee Assigned</span>
+                    ) : (
+                      <div className="flex -space-x-2">
+                        {assignedEmployees.slice(0, 4).map((employee, employeeIndex) => (
+                          <div
+                            key={`${gradeId}-${employee.name}-${employeeIndex}`}
+                            className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 border border-white flex items-center justify-center text-xs font-medium"
+                            title={employee.name}
+                          >
+                            {getInitials(employee.name)}
+                          </div>
+                        ))}
+
+                        {assignedEmployees.length > 4 && (
+                          <button
+                            type="button"
+                            onClick={() => openAssignedEmployeesDrawer(gradeName, assignedEmployees)}
+                            className="w-8 h-8 rounded-full bg-gray-900 text-white border border-white flex items-center justify-center text-xs font-medium hover:bg-black transition outline-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            title="View assigned employees"
+                          >
+                            +{assignedEmployees.length - 4}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </td>
+
+                  <td className="px-5 py-4 align-middle text-right relative" data-grade-menu>
+                    <div className="flex justify-end items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/config/hris/Company_data/create-grade?id=${gradeId}`)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-blue-600 hover:bg-blue-50 transition hover:translate-y-0"
+                        title="Edit grade"
+                      >
+                        <FiEdit2 className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setOpenMenu((prev) => (prev === gradeId ? null : gradeId))}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-gray-900 hover:bg-gray-100 transition hover:translate-y-0"
+                        title="More actions"
+                      >
+                        <HiOutlineDotsVertical className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {openMenu === gradeId && (
+                      <div className="absolute right-5 top-12 w-36 overflow-hidden rounded-md border border-gray-200 bg-white divide-y divide-gray-100 z-20">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigate(`/config/hris/Company_data/view-grade/${gradeId}`, {
+                              state: { grade },
+                            });
+                            setOpenMenu(null);
+                          }}
+                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 bg-white shadow-none hover:shadow-none hover:bg-gray-50 transition hover:translate-y-0"
+                        >
+                          View
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(gradeId)}
+                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 bg-white shadow-none hover:shadow-none hover:bg-red-50 transition hover:translate-y-0"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
-      {/* Rows */}
-      <div className="space-y-4 mt-4">
-        {data?.map((g) => (
-          <div
-            key={g._id}
-            className="grid grid-cols-4 items-center bg-white border rounded-lg px-4 py-4 shadow-sm relative"
-          >
+      {showCountryDialog &&
+        createPortal(
+          <CreateCountryPopup
+            onClose={() => setShowCountryDialog(false)}
+            onContinue={handleCreate}
+          />,
+          document.body
+        )}
 
-            {/* Grade Name */}
-            <div>
-              <div className="font-medium">{g?.gradeName}</div>
-              <div className="text-xs text-gray-400 mt-1"> {new Date(g?.createdAt).toLocaleString("en-US", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true
-              }).replace(",", "")}</div>
-            </div>
-
-            {/* Created By */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center text-sm">
-                {g.addedById}
-              </div>
-            </div>
-
-            {/* Assigned Employees */}
-            <div className="flex -space-x-2">
-              {g?.assignedEmployeeList?.slice(0, 4)?.map((emp, index) => (
-                <div
-                  key={index}
-                  className="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center text-xs border-2 border-white"
-                  title={emp?.name}
-                >
-                  {emp?.name?.charAt(0) || "No Assign Employee"}
-                </div>
-              ))}
-              {g?.assignedEmployeeList?.length > 4 && (
-                <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs border-2 border-white">
-                  +{g?.assignedEmployeeList?.length - 4 || "0"}
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end items-center gap-4 relative">
-
-              {/* ✅ Edit SVG (Outside) */}
-              <button
-                onClick={() =>
-                  navigate(
-                    `/config/hris/Company_data/create-grade?id=${g._id}`
-                    // { state: { grade: g } }
-                  )
-                }
-                className="text-gray-600 hover:text-blue-600"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"
-                  />
-                </svg>
-              </button>
-
-              {/* 3 Dot */}
-              <button
-                onClick={() =>
-                  setOpenMenu((prev) => (prev === g._id ? null : g._id))
-                }
-                className="text-lg"
-              >
-                ⋮
-              </button>
-              {/* Dropdown */}
-              {openMenu === g._id && (
-                <div className="absolute right-0 top-8 w-36 bg-white border rounded-md shadow-md z-10">
-
-                  {/* View */}
-                  <button
-                    onClick={() => {
-                      navigate(
-                        `/config/hris/Company_data/view-grade/${g._id}`,
-                        { state: { grade: g } }
-                      );
-                      setOpenMenu(null);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                  >
-                    👁 View
-                  </button>
-
-                  {/* Delete */}
-                  <button
-                    onClick={() => handleDelete(g._id)}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                  >
-                    🗑 Delete
-                  </button>
-
-                </div>
-              )}
-
-            </div>
-          </div>
-        ))}
-      </div>
-            {showCountryDialog && createPortal( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
-
+      <AssignedEmployeesDrawer
+        isOpen={isAssignedDrawerOpen}
+        onClose={closeAssignedEmployeesDrawer}
+        department={selectedGrade}
+      />
     </div>
   );
 };

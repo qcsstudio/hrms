@@ -1,192 +1,305 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { createPortal } from "react-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FaAngleDown } from "react-icons/fa";
+import { FiEdit2 } from "react-icons/fi";
+import { HiOutlineDotsVertical } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 
-const workflowData = [
+const INITIAL_WORKFLOWS = [
   {
     id: 1,
     name: "General Workflow",
-    date: "12 Jun 2025 11:10 AM",
-    assignedCount: 12,
+    createdBy: "Admin User",
+    createdAt: "2025-06-12T11:10:00.000Z",
+    assignedEmployees: [
+      { name: "A B" },
+      { name: "C D" },
+      { name: "E F" },
+      { name: "G H" },
+      { name: "I J" },
+      { name: "K L" },
+    ],
+  },
+  {
+    id: 2,
+    name: "HRIS Escalation Workflow",
+    createdBy: "Admin User",
+    createdAt: "2025-06-18T09:30:00.000Z",
+    assignedEmployees: [{ name: "M N" }, { name: "O P" }, { name: "Q R" }],
   },
 ];
 
-const ApprovalWorkflowList = () => {
-  const [sort, setSort] = useState("");
-  const [data, setData] = useState(workflowData);
-  const navigate = useNavigate();
-  const [openMenu, setOpenMenu] = useState(false);
+const SORT_OPTIONS = [
+  { value: "name", label: "Name (A-Z)" },
+  { value: "date", label: "Date (Newest)" },
+];
 
+const flatSecondaryButtonClassName =
+  "inline-flex items-center justify-center h-10 px-6 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium shadow-none hover:shadow-none hover:bg-gray-100 transition hover:translate-y-0";
+
+const getInitials = (name = "") =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "--";
+
+const formatDateTime = (value) => {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+
+  return date
+    .toLocaleString("en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(",", "");
+};
+
+const ApprovalWorkflowList = () => {
+  const navigate = useNavigate();
+  const [sort, setSort] = useState("");
+  const [data, setData] = useState(INITIAL_WORKFLOWS);
+  const [openMenu, setOpenMenu] = useState(null);
   const [showCountryDialog, setShowCountryDialog] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      if (!target.closest("[data-approval-menu]")) {
+        setOpenMenu(null);
+      }
+
+      if (sortRef.current && !sortRef.current.contains(target)) {
+        setIsSortOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const handleCreate = () => {
     navigate("/config/hris/Employee-data/approval-workflow/create");
   };
+
   const handleClear = () => {
     setSort("");
-    setData(workflowData);
+    setData(INITIAL_WORKFLOWS);
+    setOpenMenu(null);
+    setIsSortOpen(false);
   };
 
   const handleSort = (value) => {
     setSort(value);
+    setIsSortOpen(false);
 
-    const sorted = [...workflowData].sort((a, b) => {
-      if (value === "name") return a.name.localeCompare(b.name);
-      if (value === "date") return new Date(a.date) - new Date(b.date);
-      return 0;
-    });
+    const sorted = [...data];
+    if (value === "name") {
+      sorted.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (value === "date") {
+      sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
 
     setData(sorted);
   };
 
+  const handleDelete = (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this workflow?");
+    if (!confirmDelete) return;
+
+    setData((prev) => prev.filter((item) => item.id !== id));
+    setOpenMenu(null);
+  };
+
+  const sortLabel = useMemo(
+    () => SORT_OPTIONS.find((option) => option.value === sort)?.label || "Sort by",
+    [sort]
+  );
+
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+    <div className="p-8 mx-auto">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold">Approval Workflow</h2>
+          <h1 className="text-2xl font-semibold text-gray-900">Approval Workflow</h1>
           <p className="text-sm text-gray-500 mt-1">
             Manage employee directory, documents, and role-based actions.
           </p>
         </div>
 
-        {/* <Link to="/config/hris/Employee-data/approval-workflow/create"> */}
-          <button 
-          onClick={()=>setShowCountryDialog(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow">
-            Create
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-        {/* </Link> */}
-      </div>
-
-      {/* Sort & Clear */}
-      <div className="flex items-center justify-between mb-6">
-        <select
-          value={sort}
-          onChange={(e) => handleSort(e.target.value)}
-          className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm"
-        >
-          <option value="">Sort by</option>
-          <option value="name">Name</option>
-          <option value="date">Date</option>
-        </select>
-
         <button
-          onClick={handleClear}
-          className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm"
+          type="button"
+          onClick={() => setShowCountryDialog(true)}
+          className="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
         >
-          Clear
-          <span className="border border-gray-400 rounded-md px-1 text-xs">
-            ✕
-          </span>
+          Create +
         </button>
       </div>
 
-      {/* Table Header */}
-      <div className="grid grid-cols-4 text-sm text-gray-500 font-medium px-6 pb-2">
-        <div>Approval Workflow Name</div>
-        <div>Created By</div>
-        <div>Assigned Employee</div>
-        <div className="text-right">Action</div>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div ref={sortRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setIsSortOpen((prev) => !prev)}
+            className="border flex items-center gap-2 border-gray-300 rounded-lg px-4 py-2 bg-white h-[40px] text-[#334155] shadow-none outline-none focus:outline-none focus:ring-0 transition hover:bg-gray-50 hover:translate-y-0"
+          >
+            {sortLabel}
+            <FaAngleDown className={`${isSortOpen ? "rotate-180" : ""} transition-transform`} />
+          </button>
+
+          {isSortOpen && (
+            <div className="absolute left-0 mt-2 w-[170px] rounded-lg border border-gray-200 bg-white shadow-none z-20 overflow-hidden">
+              {SORT_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleSort(option.value)}
+                  className={`w-full text-left px-4 py-2.5 text-sm border-none shadow-none outline-none focus:outline-none focus:ring-0 transition-colors ${
+                    sort === option.value
+                      ? "bg-blue-50 text-[#111827] font-medium"
+                      : "text-[#334155] hover:bg-gray-50"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button type="button" onClick={handleClear} className={flatSecondaryButtonClassName}>
+          Clear
+        </button>
       </div>
 
-      {/* Card Rows */}
-      {data.map((item) => (
-        <div
-          key={item.id}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-4 grid grid-cols-4 items-center"
-        >
-          {/* Name */}
-          <div>
-            <p className="font-medium text-gray-800">{item.name}</p>
-            <p className="text-xs text-gray-400 mt-1">{item.date}</p>
-          </div>
+      <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
+        <table className="min-w-full text-sm">
+          <thead className="bg-gray-50 text-gray-500">
+            <tr>
+              <th className="px-5 py-3.5 text-left font-medium">Approval Workflow Name</th>
+              <th className="px-5 py-3.5 text-left font-medium">Created By</th>
+              <th className="px-5 py-3.5 text-left font-medium">Assigned Employee</th>
+              <th className="px-5 py-3.5 text-right font-medium">Action</th>
+            </tr>
+          </thead>
 
-          {/* Created By Avatar */}
-          <div>
-            <img
-              src="https://randomuser.me/api/portraits/women/44.jpg"
-              alt="user"
-              className="w-10 h-10 rounded-full"
-            />
-          </div>
-
-          {/* Assigned Employees */}
-          <div className="flex items-center">
-            <div className="flex -space-x-3">
-              <img
-                src="https://randomuser.me/api/portraits/men/32.jpg"
-                className="w-9 h-9 rounded-full border-2 border-white"
-              />
-              <img
-                src="https://randomuser.me/api/portraits/women/65.jpg"
-                className="w-9 h-9 rounded-full border-2 border-white"
-              />
-              <img
-                src="https://randomuser.me/api/portraits/men/11.jpg"
-                className="w-9 h-9 rounded-full border-2 border-white"
-              />
-              <div className="w-9 h-9 bg-black text-white text-xs flex items-center justify-center rounded-full border-2 border-white">
-                +{item.assignedCount}
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="relative flex justify-end gap-3">
-            {/* Edit Button */}
-            <button
-              onClick={() =>
-                navigate(`/config/hris/Employee-data/approval-workflow/edit/${item.id}`)
-              }
-              className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition"
-              title="Edit"
-            >
-              ✏️
-            </button>
-
-            {/* More Button */}
-            <button
-              onClick={() => setOpenMenu((prev) => !prev)}
-              className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition"
-              title="More"
-            >
-              ⋮
-            </button>
-
-            {/* Dropdown Menu */}
-            {openMenu && (
-              <div className="absolute right-0 top-11 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                <button
-                  onClick={() => {
-                    setOpenMenu(false);
-                    onDelete(item.id);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
-                >
-                  🗑 Delete
-                </button>
-              </div>
+          <tbody>
+            {data.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-5 py-8 text-center text-sm text-gray-500">
+                  No approval workflows found.
+                </td>
+              </tr>
             )}
-          </div>
 
-        </div>
-      ))}
+            {data.map((item) => {
+              const assignedEmployees = Array.isArray(item.assignedEmployees)
+                ? item.assignedEmployees
+                : [];
 
-            {showCountryDialog && createPortal ( <CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate}/>,document.body)}
-      
+              return (
+                <tr key={item.id} className="border-t border-gray-100 hover:bg-gray-50/70">
+                  <td className="px-5 py-4 align-middle">
+                    <div className="text-sm font-medium text-gray-900">{item.name || "--"}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{formatDateTime(item.createdAt)}</div>
+                  </td>
+
+                  <td className="px-5 py-4 align-middle">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
+                        {getInitials(item.createdBy)}
+                      </div>
+                      <span className="text-sm text-gray-700">{item.createdBy || "--"}</span>
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-4 align-middle">
+                    {assignedEmployees.length > 0 ? (
+                      <div className="flex -space-x-2">
+                        {assignedEmployees.slice(0, 4).map((employee, index) => (
+                          <div
+                            key={`${item.id}-${employee.name}-${index}`}
+                            className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 border border-white flex items-center justify-center text-xs font-medium"
+                            title={employee.name}
+                          >
+                            {getInitials(employee.name)}
+                          </div>
+                        ))}
+                        {assignedEmployees.length > 4 && (
+                          <div
+                            className="w-8 h-8 rounded-full bg-gray-900 text-white border border-white flex items-center justify-center text-xs font-medium"
+                            title={`${assignedEmployees.length - 4} more employees`}
+                          >
+                            +{assignedEmployees.length - 4}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">No Employee Assigned</span>
+                    )}
+                  </td>
+
+                  <td className="px-5 py-4 align-middle text-right relative" data-approval-menu>
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/config/hris/Employee-data/approval-workflow/edit/${item.id}`)
+                        }
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-blue-600 hover:bg-blue-50 transition hover:translate-y-0"
+                        title="Edit workflow"
+                      >
+                        <FiEdit2 className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setOpenMenu((prev) => (prev === item.id ? null : item.id))}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-gray-900 hover:bg-gray-100 transition hover:translate-y-0"
+                        title="More actions"
+                      >
+                        <HiOutlineDotsVertical className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {openMenu === item.id && (
+                      <div className="absolute right-5 top-12 w-36 overflow-hidden rounded-md border border-gray-200 bg-white divide-y divide-gray-100 z-20">
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(item.id)}
+                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 bg-white shadow-none hover:shadow-none hover:bg-red-50 transition hover:translate-y-0"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {showCountryDialog &&
+        createPortal(
+          <CreateCountryPopup
+            onClose={() => setShowCountryDialog(false)}
+            onContinue={handleCreate}
+          />,
+          document.body
+        )}
     </div>
   );
 };
