@@ -1,5 +1,68 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+const EXIT_POLICY_LIST_ROUTE = "/config/hris/Employee-data/exitPolicy-list";
+
+const fieldClassName =
+  "mt-2 w-full rounded-lg border border-[#D0D5DD] bg-white px-4 py-2.5 text-sm text-[#101828] shadow-none outline-none transition-colors duration-200 focus:border-[#84ADFF] focus:outline-none focus:ring-2 focus:ring-[#DCE9FF]";
+
+const textareaClassName =
+  "mt-2 w-full resize-none rounded-lg border border-[#D0D5DD] bg-white px-4 py-2.5 text-sm text-[#101828] shadow-none outline-none transition-colors duration-200 focus:border-[#84ADFF] focus:outline-none focus:ring-2 focus:ring-[#DCE9FF]";
+
+const secondaryButtonClassName =
+  "inline-flex h-10 items-center justify-center rounded-lg border border-[#D0D5DD] bg-white px-6 text-sm font-medium text-[#344054] shadow-none transition hover:translate-y-0 hover:bg-[#F9FAFB] hover:shadow-none";
+
+const primaryButtonClassName =
+  "inline-flex h-10 items-center justify-center rounded-lg bg-[#0575E6] px-6 text-sm font-medium text-white shadow-none transition hover:translate-y-0 hover:bg-[#0467CA] hover:shadow-none";
+
+const RadioOptionCard = ({
+  name,
+  checked,
+  onChange,
+  label,
+  description,
+  children,
+}) => {
+  return (
+    <div
+      className={`rounded-xl border p-4 transition-colors ${
+        checked
+          ? "border-[#A8CAFF] bg-[#EFF6FF]"
+          : "border-[#E4E7EC] bg-white hover:border-[#CBD5E1]"
+      }`}
+    >
+      <label className="flex cursor-pointer items-start gap-3">
+        <input
+          type="radio"
+          name={name}
+          checked={checked}
+          onChange={onChange}
+          className="mt-0.5 h-4 w-4 accent-[#0575E6]"
+        />
+
+        <div>
+          <p className="text-sm font-medium text-[#101828]">{label}</p>
+          {description && (
+            <p className="mt-1 text-xs leading-5 text-[#667085]">{description}</p>
+          )}
+        </div>
+      </label>
+
+      {children ? (
+        <div className="mt-4 border-t border-[#D6E4FF] pt-4 pl-7">{children}</div>
+      ) : null}
+    </div>
+  );
+};
+
+const InlineInfoCard = ({ title, children }) => {
+  return (
+    <div className="rounded-xl border border-[#E4E7EC] bg-[#FCFCFD] p-4">
+      <p className="text-sm font-medium text-[#101828]">{title}</p>
+      <div className="mt-3 space-y-3">{children}</div>
+    </div>
+  );
+};
 
 const EditExitPolicy = () => {
   const { id } = useParams();
@@ -51,7 +114,7 @@ const EditExitPolicy = () => {
         setFormData(policy);
       }
     }
-  }, [id]);
+  }, [id, isEdit]);
 
   const handleChange = (key, value) => {
     setFormData((prev) => ({
@@ -67,248 +130,212 @@ const EditExitPolicy = () => {
       console.log("Create API call", formData);
     }
 
-    navigate("/config/hris/Employee-data/exitPolicy-list");
+    navigate(EXIT_POLICY_LIST_ROUTE);
+  };
+
+  const handleCancel = () => {
+    navigate(EXIT_POLICY_LIST_ROUTE, { replace: true });
   };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">
-          {isEdit ? "Edit Exit Policy" : "Create Exit Policy"}
-        </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Manage employee directory, documents, and role-based actions.
-        </p>
-      </div>
-
-      {/* Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-6">
-
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Exit Policy Name
-          </label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            className="w-full border rounded-lg px-4 py-2.5"
-          />
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Description
-          </label>
-          <textarea
-            rows={4}
-            value={formData.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            className="w-full border rounded-lg px-4 py-2.5"
-          />
-        </div>
-
-        {/* Notice */}
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Notice Period (Days)
-          </label>
-          <input
-            type="number"
-            value={formData.notice}
-            onChange={(e) => handleChange("notice", e.target.value)}
-            className="w-full border rounded-lg px-4 py-2.5"
-          />
-        </div>
-
-        {/* Self Resign */}
-        <div>
-          <p className="text-sm font-medium mb-3">
-            Can the employee self-resign?
-          </p>
-
-          <div className="flex gap-6">
-            <label>
-              <input
-                type="radio"
-                checked={formData.selfResign === "yes"}
-                onChange={() => {
-                  handleChange("selfResign", "yes");
-                }}
-              />{" "}
-              Yes
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                checked={formData.selfResign === "no"}
-                onChange={() => {
-                  handleChange("selfResign", "no");
-                  handleChange("changeNotice", "no");
-                }}
-              />{" "}
-              No
-            </label>
+    <div className="min-h-screen bg-[#F8F9FA] p-8 card-animate">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-[#101828]">
+              {isEdit ? "Edit Exit Policy" : "Create Exit Policy"}
+            </h1>
+            <p className="mt-1 text-sm text-[#667085]">
+              Review the exit settings and update the policy details using the
+              same config UI style followed across the module.
+            </p>
           </div>
 
-          {/* Show only if Yes */}
-          {formData.selfResign === "yes" && (
-            <div className="mt-4 pl-6 border-l-2 border-gray-200">
-              <p className="text-sm font-medium mb-3">
-                Can the employee request change in notice period?
-              </p>
-
-              <div className="flex gap-6">
-                <label>
-                  <input
-                    type="radio"
-                    checked={formData.changeNotice === "yes"}
-                    onChange={() =>
-                      handleChange("changeNotice", "yes")
-                    }
-                  />{" "}
-                  Yes
-                </label>
-
-                <label>
-                  <input
-                    type="radio"
-                    checked={formData.changeNotice === "no"}
-                    onChange={() =>
-                      handleChange("changeNotice", "no")
-                    }
-                  />{" "}
-                  No
-                </label>
-              </div>
-            </div>
-          )}
+          <div className="rounded-xl border border-[#D9E4F2] bg-[#F5F9FF] px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-[0.08em] text-[#0575E6]">
+              Policy Mode
+            </p>
+            <p className="mt-1 text-sm font-semibold text-[#101828]">
+              {isEdit ? "Editing existing policy" : "Creating new policy"}
+            </p>
+          </div>
         </div>
 
-        {/* Manager Initiate */}
-        <div>
-          <p className="text-sm font-medium mb-3">
-            Can manager initiate separation?
-          </p>
-
-          <div className="flex gap-6">
-            <label>
+        <div className="space-y-6 rounded-2xl border border-[#E4E7EC] bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium text-[#344054]">
+                Exit Policy Name
+              </label>
               <input
-                type="radio"
-                checked={formData.managerInitiate === "yes"}
-                onChange={() =>
-                  handleChange("managerInitiate", "yes")
-                }
-              />{" "}
-              Yes
-            </label>
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                placeholder="Enter exit policy name"
+                className={fieldClassName}
+              />
+            </div>
 
-            <label>
+            <div>
+              <label className="text-sm font-medium text-[#344054]">
+                Notice Period (Days)
+              </label>
               <input
-                type="radio"
-                checked={formData.managerInitiate === "no"}
-                onChange={() => {
-                  handleChange("managerInitiate", "no");
-                  handleChange("managerChangeNotice", "no");
-                }}
-              />{" "}
-              No
-            </label>
+                type="number"
+                value={formData.notice}
+                onChange={(e) => handleChange("notice", e.target.value)}
+                placeholder="Enter notice period in days"
+                className={fieldClassName}
+              />
+            </div>
           </div>
 
-          {/* Show only if Yes */}
-          {formData.managerInitiate === "yes" && (
-            <div className="mt-4 pl-6 border-l-2 border-gray-200">
-              <p className="text-sm font-medium mb-3">
-                Can manager request change in notice period?
+          <div>
+            <label className="text-sm font-medium text-[#344054]">Description</label>
+            <textarea
+              rows={4}
+              value={formData.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              placeholder="Write a short description for this exit policy"
+              className={textareaClassName}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <InlineInfoCard title="Employee Resignation">
+              <p className="text-sm text-[#475467]">
+                Decide whether employees can start the resignation flow on their
+                own and request notice period changes.
               </p>
 
-              <div className="flex gap-6">
-                <label>
-                  <input
-                    type="radio"
-                    checked={formData.managerChangeNotice === "yes"}
-                    onChange={() =>
-                      handleChange(
-                        "managerChangeNotice",
-                        "yes"
-                      )
-                    }
-                  />{" "}
-                  Yes
-                </label>
+              <div className="space-y-3">
+                <RadioOptionCard
+                  name="selfResign"
+                  checked={formData.selfResign === "yes"}
+                  onChange={() => handleChange("selfResign", "yes")}
+                  label="Yes"
+                  description="Employees can initiate their own resignation request."
+                >
+                  <InlineInfoCard title="Notice Period Change Request">
+                    <RadioOptionCard
+                      name="changeNotice"
+                      checked={formData.changeNotice === "yes"}
+                      onChange={() => handleChange("changeNotice", "yes")}
+                      label="Yes"
+                      description="Allow employees to ask for changes in their notice period."
+                    />
+                    <RadioOptionCard
+                      name="changeNotice"
+                      checked={formData.changeNotice === "no"}
+                      onChange={() => handleChange("changeNotice", "no")}
+                      label="No"
+                      description="Keep the original notice period fixed for employee requests."
+                    />
+                  </InlineInfoCard>
+                </RadioOptionCard>
 
-                <label>
-                  <input
-                    type="radio"
-                    checked={formData.managerChangeNotice === "no"}
-                    onChange={() =>
-                      handleChange(
-                        "managerChangeNotice",
-                        "no"
-                      )
-                    }
-                  />{" "}
-                  No
-                </label>
+                <RadioOptionCard
+                  name="selfResign"
+                  checked={formData.selfResign === "no"}
+                  onChange={() => {
+                    handleChange("selfResign", "no");
+                    handleChange("changeNotice", "no");
+                  }}
+                  label="No"
+                  description="Employees cannot start the resignation process themselves."
+                />
               </div>
-            </div>
-          )}
-        </div>
+            </InlineInfoCard>
 
-        {/* Notify */}
-        <div>
-          <p className="text-sm font-medium mb-3">
-            Notify on approval
-          </p>
+            <InlineInfoCard title="Manager-Initiated Separation">
+              <p className="text-sm text-[#475467]">
+                Control whether managers can begin separation and whether they
+                can request changes to the notice duration.
+              </p>
 
-          <div className="flex gap-6">
-            <label>
-              <input
-                type="radio"
+              <div className="space-y-3">
+                <RadioOptionCard
+                  name="managerInitiate"
+                  checked={formData.managerInitiate === "yes"}
+                  onChange={() => handleChange("managerInitiate", "yes")}
+                  label="Yes"
+                  description="Managers can initiate separation for their team members."
+                >
+                  <InlineInfoCard title="Manager Notice Change Request">
+                    <RadioOptionCard
+                      name="managerChangeNotice"
+                      checked={formData.managerChangeNotice === "yes"}
+                      onChange={() => handleChange("managerChangeNotice", "yes")}
+                      label="Yes"
+                      description="Managers can request a change in the notice period."
+                    />
+                    <RadioOptionCard
+                      name="managerChangeNotice"
+                      checked={formData.managerChangeNotice === "no"}
+                      onChange={() => handleChange("managerChangeNotice", "no")}
+                      label="No"
+                      description="Managers must continue with the existing notice period."
+                    />
+                  </InlineInfoCard>
+                </RadioOptionCard>
+
+                <RadioOptionCard
+                  name="managerInitiate"
+                  checked={formData.managerInitiate === "no"}
+                  onChange={() => {
+                    handleChange("managerInitiate", "no");
+                    handleChange("managerChangeNotice", "no");
+                  }}
+                  label="No"
+                  description="Managers cannot start the separation process from this policy."
+                />
+              </div>
+            </InlineInfoCard>
+          </div>
+
+          <InlineInfoCard title="Approval Notification">
+            <p className="text-sm text-[#475467]">
+              Choose who should receive the notification once this exit flow
+              reaches approval.
+            </p>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <RadioOptionCard
+                name="notifyOn"
                 checked={formData.notifyOn === "approvers"}
-                onChange={() =>
-                  handleChange("notifyOn", "approvers")
-                }
-              />{" "}
-              Approvers
-            </label>
+                onChange={() => handleChange("notifyOn", "approvers")}
+                label="Notify Approvers"
+                description="Send approval updates to the approvers in the flow."
+              />
 
-            <label>
-              <input
-                type="radio"
+              <RadioOptionCard
+                name="notifyOn"
                 checked={formData.notifyOn === "employee"}
-                onChange={() =>
-                  handleChange("notifyOn", "employee")
-                }
-              />{" "}
-              Employee
-            </label>
+                onChange={() => handleChange("notifyOn", "employee")}
+                label="Notify Employee"
+                description="Send the approval update directly to the employee."
+              />
+            </div>
+          </InlineInfoCard>
+
+          <div className="flex flex-col gap-3 border-t border-[#EAECF0] pt-6 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className={secondaryButtonClassName}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className={primaryButtonClassName}
+            >
+              {isEdit ? "Update" : "Save"}
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-end gap-4 mt-8">
-        <button
-          onClick={() =>
-            navigate("/config/hris/Employee-data/exitPolicy-list")
-          }
-          className="px-5 py-2.5 border rounded-lg"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={handleSubmit}
-          className="px-5 py-2.5 bg-blue-600 text-white rounded-lg"
-        >
-          {isEdit ? "Update" : "Save"}
-        </button>
       </div>
     </div>
   );
