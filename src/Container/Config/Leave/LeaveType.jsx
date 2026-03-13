@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import createAxios from "../../../utils/axios.config";
+
 
 const leaveCategories = [
+
+
   {
     title: "Select the General types",
     types: ["Custom Leave*", "Hourly Leave", "Medical Leave", "Unpaid Leave*"],
@@ -24,6 +28,7 @@ const leaveCategories = [
 ];
 
 const LeaveType = () => {
+  const token = localStorage.getItem("authToken");
   const [selected, setSelected] = useState([]);
 
   const toggleCheckbox = (type) => {
@@ -33,6 +38,74 @@ const LeaveType = () => {
       setSelected([...selected, type]);
     }
   };
+  const axiosInstance = createAxios(token);
+
+  const buildPayload = () => ({
+    customLeave: selected.includes("Custom Leave*"),
+    hourlyLeave: selected.includes("Hourly Leave"),
+    medicalLeave: selected.includes("Medical Leave"),
+    unpaidLeave: selected.includes("Unpaid Leave*"),
+    birthdayLeave: selected.includes("Birthday Leave"),
+    marriageAnniversaryLeave: selected.includes("Marriage Anniversary Leave"),
+    spouseBirthdayLeave: selected.includes("Spouse Birthday Leave"),
+    sabbaticalLeave: selected.includes("Sabbatical Leave"),
+    vacationLeave: selected.includes("Vacation Leave"),
+    maternityLeave: selected.includes("Maternity Leave"),
+    paternityLeave: selected.includes("Paternity Leave"),
+  });
+
+  const applyPayloadToSelection = (payload) => {
+    if (!payload) return;
+    const mapping = [
+      { key: "customLeave", label: "Custom Leave*" },
+      { key: "hourlyLeave", label: "Hourly Leave" },
+      { key: "medicalLeave", label: "Medical Leave" },
+      { key: "unpaidLeave", label: "Unpaid Leave*" },
+      { key: "birthdayLeave", label: "Birthday Leave" },
+      { key: "marriageAnniversaryLeave", label: "Marriage Anniversary Leave" },
+      { key: "spouseBirthdayLeave", label: "Spouse Birthday Leave" },
+      { key: "sabbaticalLeave", label: "Sabbatical Leave" },
+      { key: "vacationLeave", label: "Vacation Leave" },
+      { key: "maternityLeave", label: "Maternity Leave" },
+      { key: "paternityLeave", label: "Paternity Leave" },
+    ];
+
+    const nextSelected = mapping
+      .filter((item) => payload[item.key] === true)
+      .map((item) => item.label);
+    setSelected(nextSelected);
+  };
+
+  useEffect(() => {
+    const fetchLeaveTypes = async () => {
+      try {
+        const res = await axiosInstance.get("/config/getOne/leaveType", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        applyPayloadToSelection(res?.data?.data);
+      } catch (error) {
+        console.log("leave type get error", error);
+      }
+    };
+
+    fetchLeaveTypes();
+  }, []);
+
+  const handleSubmit = async () => {
+    try {
+      const payload = buildPayload();
+      const res = await axiosInstance.post("/config/create/leaveType", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      setSelected(res?.data?.selected || selected);
+    } catch (error) {
+      console.log("leave type create error", error);
+    }
+  }
+
+
+
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -97,6 +170,16 @@ const LeaveType = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-8">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-6 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+          >
+            Save Leave Types
+          </button>
         </div>
       </div>
     </div>

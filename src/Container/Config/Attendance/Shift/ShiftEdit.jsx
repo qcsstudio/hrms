@@ -1,66 +1,127 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
-const mockShifts = {
-  "1": {
-    name: "Leap Of Faith",
-    description: "Default office shift for all departments",
-    shiftsPerDay: "one",
-    isFlexible: "no",
-    times: [
-      {
-        start: "8:00 AM",
-        end: "6:30 PM",
-        startOffHrs: "0",
-        startOffMins: "15",
-        cutOffHrs: "0",
-        cutOffMins: "30",
-      },
-    ],
-  },
-  "2": {
-    name: "Remote Shift",
-    description: "Remote work shift",
-    shiftsPerDay: "two",
-    isFlexible: "yes",
-    times: [
-      {
-        start: "8:00 AM",
-        end: "12:00 PM",
-        startOffHrs: "0",
-        startOffMins: "10",
-        cutOffHrs: "0",
-        cutOffMins: "15",
-      },
-      {
-        start: "1:00 PM",
-        end: "5:00 PM",
-        startOffHrs: "0",
-        startOffMins: "10",
-        cutOffHrs: "0",
-        cutOffMins: "15",
-      },
-    ],
-  },
-};
+import createAxios from "../../../../utils/axios.config";
+import {
+  buildShiftPayload,
+  getShiftCount,
+  toShiftViewModel,
+  validateRequiredShiftTimes,
+} from "./shiftApiUtils";
 
 export default function ShiftEdit() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
 
-  const shift = mockShifts[id] || mockShifts["1"];
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [shiftCategory, setShiftCategory] = useState("one");
+  const [colorCode, setColorCode] = useState("#00FF00");
+  const [shiftsPerDay, setShiftsPerDay] = useState("one");
+  const [isFlexible, setIsFlexible] = useState("no");
+  const [shiftTimings, setShiftTimings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const [shiftName, setShiftName] = useState(shift.name);
-  const [description, setDescription] = useState(shift.description);
-  const [shiftsPerDay, setShiftsPerDay] = useState(shift.shiftsPerDay);
-  const [isFlexible, setIsFlexible] = useState(shift.isFlexible);
+  const shiftCount = getShiftCount(shiftsPerDay);
 
-  const shiftCount =
-    shiftsPerDay === "two" ? 2 : shiftsPerDay === "three" ? 3 : 1;
+  useEffect(() => {
+    setShiftCategory(shiftsPerDay);
+  }, [shiftsPerDay]);
+
+  useEffect(() => {
+    const fetchShift = async () => {
+      setLoading(true);
+      setErrorMessage("");
+      try {
+        const res = await axiosInstance.get(`/config/getOne-shift/${id}`, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const raw = res?.data?.data || res?.data?.result || res?.data || {};
+        const viewModel = toShiftViewModel(raw);
+
+        setTitle(viewModel.title);
+        setDescription(viewModel.description);
+        setShiftCategory(viewModel.shiftCategory);
+        setColorCode(viewModel.colorCode);
+        setShiftsPerDay(viewModel.shiftsPerDay);
+        setShiftTimings(viewModel.shiftTimings);
+        setIsFlexible("no");
+      } catch (error) {
+        setErrorMessage(error?.response?.data?.message || "Unable to fetch shift details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchShift();
+    }
+  }, [id]);
+
+  const updateShiftTime = (index, field, value) => {
+    setShiftTimings((prev) => {
+      const next = [...prev];
+
+      if (field === "startTime" || field === "endTime") {
+        next[index] = { ...next[index], [field]: value };
+        return next;
+      }
+
+      const [group, key] = field.split(".");
+      next[index] = {
+        ...next[index],
+        [group]: {
+          ...next[index][group],
+          [key]: value,
+        },
+      };
+
+      return next;
+    });
+  };
+
+  const handleUpdate = async (activeState) => {
+    setErrorMessage("");
+    if (!title.trim()) {
+      setErrorMessage("Shift name is required.");
+      return;
+    }
+
+    const timeValidationMessage = validateRequiredShiftTimes(shiftTimings, shiftsPerDay);
+    if (timeValidationMessage) {
+      setErrorMessage(timeValidationMessage);
+      return;
+    }
+
+    const payload = buildShiftPayload({
+      title: title.trim(),
+      description: description.trim(),
+      shiftCategory,
+      colorCode,
+      isActive: activeState,
+      shiftsPerDay,
+      shiftTimings,
+    });
+
+    try {
+      setSaving(true);
+      await axiosInstance.put(`/config/update-shift/${id}`, payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      navigate("/config/track/Attendance/shift/list");
+    } catch (error) {
+      setErrorMessage(error?.response?.data?.message || "Unable to update shift.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen max-w-6xl">
-      {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-2xl font-semibold">Edit Shift</h1>
@@ -68,38 +129,63 @@ export default function ShiftEdit() {
             Manage employee directory, documents, and role-based actions.
           </p>
         </div>
-        <button className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700">
+        <button
+          onClick={() => handleUpdate(true)}
+          disabled={saving}
+          className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 disabled:opacity-60"
+        >
           Save Changes
         </button>
       </div>
 
       <div className="space-y-6">
-        {/* Shift Name */}
+        {loading && <div className="text-sm text-gray-500">Loading shift...</div>}
+        {errorMessage && <div className="text-sm text-red-600">{errorMessage}</div>}
+
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Shift Name
-          </label>
+          <label className="block text-sm font-medium mb-1">Shift Name</label>
           <input
             type="text"
-            value={shiftName}
-            onChange={(e) => setShiftName(e.target.value)}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             className="w-full border rounded-lg px-4 py-2"
           />
         </div>
 
-        {/* Description */}
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Internal description
-          </label>
+          <label className="block text-sm font-medium mb-1">Internal description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full border rounded-lg px-4 py-2 min-h-[80px]"
+            className="w-full border rounded-lg px-4 py-2 min-h-20"
           />
         </div>
 
-        {/* Shift Per Day */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Shift Category</label>
+            <select
+              value={shiftCategory}
+              onChange={(e) => setShiftCategory(e.target.value)}
+              className="w-full border rounded-lg px-4 py-2"
+            >
+              <option value="one">one</option>
+              <option value="two">two</option>
+              <option value="three">three</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Color Code</label>
+            <input
+              type="text"
+              value={colorCode}
+              onChange={(e) => setColorCode(e.target.value)}
+              className="w-full border rounded-lg px-4 py-2"
+            />
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-1">
             How many shifts are there in one day?
@@ -109,18 +195,14 @@ export default function ShiftEdit() {
             onChange={(e) => setShiftsPerDay(e.target.value)}
             className="w-full border rounded-lg px-4 py-2"
           >
-            <option value="">Select</option>
             <option value="one">One Shift</option>
             <option value="two">Two Shifts</option>
             <option value="three">Three Shifts</option>
           </select>
         </div>
 
-        {/* Flexible */}
         <div>
-          <label className="block text-sm font-medium mb-2">
-            Is this shift a flexible-shift?
-          </label>
+          <label className="block text-sm font-medium mb-2">Is this shift a flexible-shift?</label>
 
           <div className="space-y-3">
             <div className="border rounded-lg px-4 py-3 flex items-center gap-2">
@@ -147,87 +229,74 @@ export default function ShiftEdit() {
           </div>
         </div>
 
-        {/* Shift Time Sections */}
         <div
           className={`grid gap-8 ${
-            shiftCount > 1
-              ? `grid-cols-${shiftCount}`
-              : "grid-cols-1 max-w-xl"
+            shiftCount === 1 ? "grid-cols-1 max-w-xl" : shiftCount === 2 ? "grid-cols-2" : "grid-cols-3"
           }`}
         >
           {Array.from({ length: shiftCount }).map((_, i) => {
-            const time = shift.times[i] || {};
+            const time = shiftTimings[i] || {};
 
             return (
               <div key={i} className="space-y-4">
                 <h2 className="text-lg font-semibold">
-                  {i === 0
-                    ? "First Shift Time"
-                    : i === 1
-                    ? "Second Shift Time"
-                    : "Third Shift Time"}
+                  {i === 0 ? "First Shift Time" : i === 1 ? "Second Shift Time" : "Third Shift Time"}
                 </h2>
 
-                {/* Start Time */}
                 <div>
-                  <label className="block text-sm mb-1">
-                    Shift Start Time
-                  </label>
+                  <label className="block text-sm mb-1">Shift Start Time</label>
                   <input
-                    type="text"
-                    defaultValue={time.start}
+                    type="time"
+                    value={time?.startTime || ""}
+                    onChange={(e) => updateShiftTime(i, "startTime", e.target.value)}
                     className="w-full border rounded-lg px-4 py-2"
                   />
                 </div>
 
-                {/* End Time */}
                 <div>
-                  <label className="block text-sm mb-1">
-                    Shift End Time
-                  </label>
+                  <label className="block text-sm mb-1">Shift End Time</label>
                   <input
-                    type="text"
-                    defaultValue={time.end}
+                    type="time"
+                    value={time?.endTime || ""}
+                    onChange={(e) => updateShiftTime(i, "endTime", e.target.value)}
                     className="w-full border rounded-lg px-4 py-2"
                   />
                 </div>
 
-                {/* Start-off */}
                 <div>
-                  <label className="block text-sm mb-1">
-                    Start-off
-                  </label>
+                  <label className="block text-sm mb-1">Start-off</label>
                   <div className="flex items-center gap-2">
                     <input
-                      type="text"
-                      defaultValue={time.startOffHrs}
+                      type="number"
+                      value={time?.startOff?.hours ?? 0}
+                      onChange={(e) => updateShiftTime(i, "startOff.hours", e.target.value)}
                       className="w-24 border rounded-lg px-2 py-2"
                     />
                     <span>Hrs</span>
                     <input
-                      type="text"
-                      defaultValue={time.startOffMins}
+                      type="number"
+                      value={time?.startOff?.minutes ?? 0}
+                      onChange={(e) => updateShiftTime(i, "startOff.minutes", e.target.value)}
                       className="w-24 border rounded-lg px-2 py-2"
                     />
                     <span>Mins</span>
                   </div>
                 </div>
 
-                {/* Cut-off */}
                 <div>
-                  <label className="block text-sm mb-1">
-                    Cut-off
-                  </label>
+                  <label className="block text-sm mb-1">Cut-off</label>
                   <div className="flex items-center gap-2">
                     <input
-                      type="text"
-                      defaultValue={time.cutOffHrs}
+                      type="number"
+                      value={time?.cutOff?.hours ?? 0}
+                      onChange={(e) => updateShiftTime(i, "cutOff.hours", e.target.value)}
                       className="w-24 border rounded-lg px-2 py-2"
                     />
                     <span>Hrs</span>
                     <input
-                      type="text"
-                      defaultValue={time.cutOffMins}
+                      type="number"
+                      value={time?.cutOff?.minutes ?? 0}
+                      onChange={(e) => updateShiftTime(i, "cutOff.minutes", e.target.value)}
                       className="w-24 border rounded-lg px-2 py-2"
                     />
                     <span>Mins</span>
@@ -238,20 +307,27 @@ export default function ShiftEdit() {
           })}
         </div>
 
-        {/* Footer */}
         <div className="flex justify-between pt-6 border-t">
-          <button className="border border-blue-600 text-blue-600 px-6 py-2 rounded-full">
+          <button
+            onClick={() => handleUpdate(false)}
+            disabled={saving}
+            className="border border-blue-600 text-blue-600 px-6 py-2 rounded-full disabled:opacity-60"
+          >
             Save as Draft
           </button>
 
           <div className="flex gap-3">
             <button
-              onClick={() => navigate("/config/track")}
+              onClick={() => navigate("/config/track/Attendance/shift/list")}
               className="px-6 py-2 border rounded-lg"
             >
               Cancel
             </button>
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-full">
+            <button
+              onClick={() => handleUpdate(true)}
+              disabled={saving}
+              className="bg-blue-600 text-white px-6 py-2 rounded-full disabled:opacity-60"
+            >
               Save
             </button>
           </div>
