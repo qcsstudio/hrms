@@ -140,6 +140,16 @@ const Navbar = () => {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchRecords, setSearchRecords] = useState(fallbackSearchRecords);
 
+  const userRole = localStorage.getItem("role");
+console.log(userRole,"5454545455454545")
+  const isSuperAdmin = userRole === "SUPER_ADMIN";
+  const isCompanyAdmin = userRole === "COMPANY_ADMIN";
+  const isEMP = userRole === "EMPLOYEE";
+  const isHR = userRole === "HR";
+  const isTL = userRole === "TL";
+
+  const accessederole = isHR || isCompanyAdmin
+
 
   function handleLogout() {
 
@@ -415,16 +425,23 @@ const slug = getSlug()
 
               {isProfileMenuOpen && (
                 <div className="absolute right-0 top-[calc(100%+10px)] w-[220px] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-none z-[2000]">
+                   {
+                    accessederole && 
+                    <>
+                   
                   <div className="w-full text-left px-4 py-2 text-sm text-[#111827] font-medium bg-blue-50">
                     {isConfig ? "Config" : "Normal"}
                   </div>
-                  <button
+                 <button
                     type="button"
                     onClick={() => handleProfileAction(isConfig ? "normal" : "config")}
                     className="w-full text-left px-4 py-2 text-sm text-[#111827] font-normal border-none shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100 transition-colors"
                   >
                     {isConfig ? "Normal" : "Config"}
                   </button>
+                   </>
+                  }
+                 
                   <button
                     type="button"
                     onClick={() => handleProfileAction("logout")}
