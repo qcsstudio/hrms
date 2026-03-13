@@ -190,13 +190,15 @@ const SideBar = () => {
   //-------------------
 
   const userRole = localStorage.getItem("role");
-
+console.log(userRole,"5454545455454545")
   const isSuperAdmin = userRole === "SUPER_ADMIN";
   const isCompanyAdmin = userRole === "COMPANY_ADMIN";
   const isEMP = userRole === "EMPLOYEE";
   const isHR = userRole === "HR";
   const isTL = userRole === "TL";
 
+  const ddfinerole = isHR || isEMP || isTL
+console.log(ddfinerole,"ddfineroleddfineroleddfinerole")
   useEffect(() => {
     const storageVal = localStorage.getItem("openMenu");
     if (storageVal != null) {
@@ -1511,7 +1513,7 @@ const SideBar = () => {
                 </li>
               </ul>
               {
-                isEMP || isHR || isTL && (
+               ddfinerole && (
                   <div className="  p-2">
                     <button
                       className="bg-[#0575E6] px-4 py-2 w-full rounded-lg text-white disabled:opacity-60"
