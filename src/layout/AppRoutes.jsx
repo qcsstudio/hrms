@@ -298,6 +298,8 @@ const AppRoutes = () => {
   const isEMP = userRole === "EMPLOYEE";
   const isHR = userRole === "HR";
   const isTL = userRole === "TL";
+
+  const isRoleHR_TL = isHR || isTL || isCompanyAdmin
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
@@ -336,26 +338,26 @@ const AppRoutes = () => {
             </PrivateRoute>
           }
         >
-          <Route path="performance" element={<PerformanceDashboard/>}/>
+          <Route path="performance" element={<PerformanceDashboard />} />
           <Route path="Companyadmin-dashboard" element={<Admindashboard />} />
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
           <Route path="employee" element={
             // isEMP ? <Employee /> :
-            //  isHR && isTL ? <EmployeeHrTL /> : <Employee />
-             <EmployeeHrTL /> 
+            isRoleHR_TL ? <EmployeeHrTL /> : <Employee />
+            //  <EmployeeHrTL /> 
           } />
           <Route path="employee/add-Employee" element={<AddEmployee />} />
           <Route path="attendance" element={
-          //  isEMP ?  <AttendanceEmployee /> : <AttendanceHrTL/>
+            //  isEMP ?  <AttendanceEmployee /> : <AttendanceHrTL/>
             // <AttendanceEmployee /> 
-            <AttendanceHrTL/>
-            } />
+            isRoleHR_TL ? <AttendanceHrTL /> : <AttendanceEmployee />
+          } />
           <Route path="attendance-calendar" element={<AttendanceCalendar />} />
           <Route path="leave-management" element={
-          //  isEMP ?  <LeavemanagementEmployee /> : <LeaveManagementTLHr/>
-          // <LeavemanagementEmployee /> 
-         <LeaveManagementTLHr/>
-            } />
+            //  isEMP ?  <LeavemanagementEmployee /> : <LeaveManagementTLHr/>
+            // <LeavemanagementEmployee /> 
+            isRoleHR_TL ? <LeaveManagementTLHr /> : <LeavemanagementEmployee />
+          } />
           {/* <Route path="payroll" element={<DashboardPayroll1 />} /> */}
           <Route path="payroll" element={<PayrollDashboard />} />
           <Route path="run-payroll" element={<PayrollOverviewPage />} />
@@ -370,7 +372,7 @@ const AppRoutes = () => {
           {/* <Route path="payroll" element={<Dashboardpayroll10 />} /> */}
           {/* <Route path="payroll" element={<Dashboardpayroll11 />} /> */}
           {/* <Route path="payroll" element={<Dashboardpayroll12 />} /> */}
-\        </Route>
+          \        </Route>
 
         <Route path="/Addingyourself" element={<Addingyourself />} />
         <Route path="/employee-Profile" element={<EmployeeProfile />} />

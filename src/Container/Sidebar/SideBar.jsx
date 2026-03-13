@@ -1330,7 +1330,7 @@ console.log(ddfinerole,"ddfineroleddfineroleddfinerole")
                 {/* ================= Dashboard ================= */}
                 <li
                   className={`transition-all duration-500 w-[100%] 
-  ${location.pathname.includes("dashboard") ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
+  ${location.pathname === "/dashboard/companyadmin-dashboard"  || location.pathname === '/dashboard/superadmin-dashboard' ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
                   onClick={() => changeTab("home")}
                 >
