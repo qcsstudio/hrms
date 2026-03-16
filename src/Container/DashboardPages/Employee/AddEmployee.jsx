@@ -210,6 +210,17 @@ const AddEmployee = () => {
                 toast.error(error?.response?.data?.message)
             }
         };
+        const fetchalldepartment = async () => {
+            try {
+                const response = await axiosInstance.get("/config/all-department", {
+                    meta: { auth: "ADMIN_AUTH" }
+                });
+                setGetDepartment(response?.data?.data || []);
+            } catch (error) {
+                console.error("Error fetching business units:", error);
+                toast.error(error?.response?.data?.message)
+            }
+        };
         fetchOffices();
         fetchteam();
         fetchgrade();
@@ -220,6 +231,7 @@ const AddEmployee = () => {
         fetchattendancePolicy();
         fetchleavePolicy();
         fetchhodidaypolicy();
+        fetchalldepartment();
     }, [])
 
     const [importOpen, setImportOpen] = useState(false)
