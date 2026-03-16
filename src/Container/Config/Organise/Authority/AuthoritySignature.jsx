@@ -118,7 +118,12 @@ const AuthoritySignature = () => {
       "",
     signatureImage: item?.signatureImage || "",
     status: item?.status ?? true,
-    location: item?.location || "",
+    location:
+      item?.location ||
+      item?.officeName ||
+      item?.companyOffice?.name ||
+      item?.companyOfficeId?.map?.((office) => office?.name).filter(Boolean).join(", ") ||
+      "",
   });
 
   const fetchSignatories = async () => {
@@ -126,7 +131,7 @@ const AuthoritySignature = () => {
       const res = await axiosInstance.get("/config/get-all-authoritySignature", {
         meta: { auth: "ADMIN_AUTH" },
       });
-      const list = res?.data?.data || res?.data || [];
+      const list = res?.data?.data ;
       setSignatories(Array.isArray(list) ? list.map(normalizeSignatory) : []);
     } catch (error) {
       console.log("authority signature list error", error);
@@ -140,8 +145,14 @@ const AuthoritySignature = () => {
   const handleSave = async () => {
     if (!employeeId.trim()) return;
 
+    const selectedEmployee = employees.find((emp) => {
+      const value = emp?._id || emp?.id;
+      return value === employeeId.trim();
+    });
+
     const payload = {
       employeeId: employeeId.trim(),
+      employeeName: getEmployeeLabel(selectedEmployee),
       signatureImage: signaturePreview || "",
     };
 
@@ -174,7 +185,7 @@ const AuthoritySignature = () => {
       await axiosInstance.put(`/config/delete-authoritySignature/${id}`, null, {
         meta: { auth: "ADMIN_AUTH" },
       });
-      await fetchSignatories();
+      setSignatories((prev) => prev.filter((item) => item.id !== id));
       setOpenDropdown(null);
     } catch (error) {
       console.log("authority signature delete error", error);
@@ -201,6 +212,9 @@ const AuthoritySignature = () => {
     if (selectedLocation && s.location !== selectedLocation) return false;
     return true;
   });
+  const getSignatoryName = (signatory) => signatory?.fullName || "-";
+
+  const getSignatoryLocation = (signatory) => signatory?.location || "-";
   const handleCreate = ()=>{
     setShowCountryDialog(false)
         setDrawerMode("add");
@@ -277,7 +291,7 @@ const AuthoritySignature = () => {
               key={s.id}
               className="grid grid-cols-12 items-center px-6 py-4 border-t"
             >
-              <div className="col-span-3">{s.fullName}</div>
+              <div className="col-span-3">{getSignatoryName(s)}</div>
 
               <div className="col-span-3">
                 {s.signatureImage ? (
@@ -287,7 +301,7 @@ const AuthoritySignature = () => {
                 )}
               </div>
 
-              <div className="col-span-2">{s.location}</div>
+              <div className="col-span-2">{getSignatoryLocation(s)}</div>
               <div className="col-span-2">{s.status ? "Active" : "Inactive"}</div>
 
               <div className="col-span-2 flex justify-end gap-2">

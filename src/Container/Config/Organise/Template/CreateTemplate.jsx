@@ -1,12 +1,139 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+
+const getOfficeDisplayName = (office) =>
+  office?.officeName || office?.name || office?.office || office?.title || "";
+
+const getOfficeCountryName = (office) => {
+  if (typeof office?.country === "string") return office.country;
+  return office?.country?.name || office?.countryName || office?.location?.country || "";
+};
+
+const collectOfficeCandidates = (value, bucket) => {
+  if (!value) return;
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectOfficeCandidates(item, bucket));
+    return;
+  }
+
+  if (typeof value !== "object") return;
+
+  const hasId = Boolean(value?._id || value?.id);
+  const hasName = Boolean(getOfficeDisplayName(value));
+
+  if (hasId && hasName) {
+    bucket.push(value);
+  }
+
+  Object.values(value).forEach((child) => collectOfficeCandidates(child, bucket));
+};
+
+const extractCompanyOffices = (payload) => {
+  const collected = [];
+  collectOfficeCandidates(payload, collected);
+
+  const dedupe = new Map();
+  collected.forEach((item) => {
+    const id = item?._id || item?.id;
+    if (!id || dedupe.has(id)) return;
+
+    dedupe.set(id, {
+      id,
+      name: getOfficeDisplayName(item),
+      country: getOfficeCountryName(item),
+    });
+  });
+
+  return Array.from(dedupe.values());
+};
 
 export default function CreateTemplate({ onCancel, onSave }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState("");
   const [templateName, setTemplateName] = useState("");
   const [letterContent, setLetterContent] = useState("");
   const [subject, setSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
+  const [companyOffices, setCompanyOffices] = useState([]);
+
+  const selectedCountry = location.state?.country || "";
+  const selectedOffice = location.state?.office || "";
+
+  useEffect(() => {
+    const fetchOffices = async () => {
+      try {
+        const res = await axiosInstance.get("/config/company-offices-data", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        setCompanyOffices(extractCompanyOffices(res?.data));
+      } catch (error) {
+        setCompanyOffices([]);
+      }
+    };
+
+    fetchOffices();
+  }, []);
+
+  const resolvedCompanyOfficeIds = useMemo(() => {
+    if (!selectedCountry) return [];
+
+    const matched = companyOffices
+      .filter((office) => {
+        const sameCountry =
+          (office.country || "").trim().toLowerCase() ===
+          selectedCountry.trim().toLowerCase();
+
+        if (!sameCountry) return false;
+        if (selectedOffice === "ALL") return true;
+
+        return (
+          (office.name || "").trim().toLowerCase() ===
+          selectedOffice.trim().toLowerCase()
+        );
+      })
+      .map((office) => office.id);
+
+    if (matched.length > 0) return matched;
+
+    if (selectedOffice && /^[a-f\d]{24}$/i.test(selectedOffice)) {
+      return [selectedOffice];
+    }
+
+    return [];
+  }, [companyOffices, selectedCountry, selectedOffice]);
+
+  const handleTemplateSave = async () => {
+    const payload = {
+      category: category.trim(),
+      templateName: templateName.trim(),
+      letterContent: letterContent.trim(),
+      email: {
+        subject: subject.trim(),
+        body: emailBody.trim(),
+      },
+      companyOfficeId: resolvedCompanyOfficeIds,
+    };
+
+    try {
+      await axiosInstance.post("/config/create-template", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      if (typeof onSave === "function") {
+        onSave(payload);
+      } else {
+        navigate("/config/organise/template/list");
+      }
+    } catch (error) {
+      console.log("template create error", error);
+    }
+  };
 
   return (
     <div className="p-8 max-w-4xl">
@@ -133,7 +260,13 @@ export default function CreateTemplate({ onCancel, onSave }) {
 
             <div className="flex gap-3">
               <button
-                onClick={onCancel}
+                onClick={() => {
+                  if (typeof onCancel === "function") {
+                    onCancel();
+                    return;
+                  }
+                  navigate("/config/organise/template");
+                }}
                 className="px-5 py-2 border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary/5 transition-colors"
               >
                 Preview
@@ -253,7 +386,7 @@ export default function CreateTemplate({ onCancel, onSave }) {
               </button>
 
               <button
-                onClick={onSave}
+                onClick={handleTemplateSave}
                 className="bg-blue-600 text-white px-8 py-2 rounded"
               >
                 Save

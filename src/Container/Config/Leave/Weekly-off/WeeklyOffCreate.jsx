@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
 
 const STEPS = ["Describe", "Define", "Accumulation", "Preview"];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -9,6 +11,53 @@ const WEEKS = [
   { label: "Week Ht4", sub: null },
   { label: "Week Ht5", sub: "(Only applies for month with 5 weeks)" },
 ];
+
+const getOfficeDisplayName = (office) =>
+  office?.officeName || office?.name || office?.office || office?.title || "";
+
+const getOfficeCountryName = (office) => {
+  if (typeof office?.country === "string") return office.country;
+  return office?.country?.name || office?.countryName || office?.location?.country || "";
+};
+
+const collectOfficeCandidates = (value, bucket) => {
+  if (!value) return;
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectOfficeCandidates(item, bucket));
+    return;
+  }
+
+  if (typeof value !== "object") return;
+
+  const hasId = Boolean(value?._id || value?.id);
+  const hasName = Boolean(getOfficeDisplayName(value));
+
+  if (hasId && hasName) {
+    bucket.push(value);
+  }
+
+  Object.values(value).forEach((child) => collectOfficeCandidates(child, bucket));
+};
+
+const extractCompanyOffices = (payload) => {
+  const collected = [];
+  collectOfficeCandidates(payload, collected);
+
+  const dedupe = new Map();
+  collected.forEach((item) => {
+    const id = item?._id || item?.id;
+    if (!id || dedupe.has(id)) return;
+
+    dedupe.set(id, {
+      id,
+      name: getOfficeDisplayName(item),
+      country: getOfficeCountryName(item),
+    });
+  });
+
+  return Array.from(dedupe.values());
+};
 
 // Slider-style toggle: off | half | full
 const SliderToggle = ({ state, onClick }) => {
@@ -167,7 +216,12 @@ const RefreshSection = ({
 );
 
 export default function WeeklyOffCreate() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
   const [currentStep, setCurrentStep] = useState(0);
+  const [companyOffices, setCompanyOffices] = useState([]);
 
   // Step 1 - Describe
   const [name, setName] = useState("");
@@ -192,12 +246,103 @@ const [refreshAccLimited, setRefreshAccLimited] = useState(null);
 const [refreshFreqLimited, setRefreshFreqLimited] = useState("");
 
   const [draftSaved, setDraftSaved] = useState(false);
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const selectedCountry = queryParams.get("country") || "";
+  const selectedOffice = queryParams.get("office") || "";
+
+  useEffect(() => {
+    const fetchOffices = async () => {
+      try {
+        const res = await axiosInstance.get("/config/company-offices-data", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        setCompanyOffices(extractCompanyOffices(res?.data));
+      } catch (error) {
+        setCompanyOffices([]);
+      }
+    };
+
+    fetchOffices();
+  }, []);
+
+  const selectedCompanyOfficeIds = useMemo(() => {
+    if (!selectedCountry) return [];
+
+    return companyOffices
+      .filter((office) => {
+        const sameCountry =
+          (office.country || "").trim().toLowerCase() ===
+          selectedCountry.trim().toLowerCase();
+
+        if (!sameCountry) return false;
+        if (selectedOffice === "ALL") return true;
+
+        return (
+          (office.name || "").trim().toLowerCase() ===
+          selectedOffice.trim().toLowerCase()
+        );
+      })
+      .map((office) => office.id);
+  }, [companyOffices, selectedCountry, selectedOffice]);
+
+  const resolvedCompanyOfficeIds = useMemo(() => {
+    if (selectedCompanyOfficeIds.length > 0) return selectedCompanyOfficeIds;
+
+    if (selectedOffice && /^[a-f\d]{24}$/i.test(selectedOffice)) {
+      return [selectedOffice];
+    }
+
+    const storedOfficeId =
+      localStorage.getItem("companyOfficeId") ||
+      localStorage.getItem("officeId");
+
+    if (storedOfficeId && /^[a-f\d]{24}$/i.test(storedOfficeId)) {
+      return [storedOfficeId];
+    }
+
+    return [];
+  }, [selectedCompanyOfficeIds, selectedOffice]);
+
+  const buildPayload = (isDraft) => {
+    const hasAccumulation = accumulation === "yes";
+    const selectedRefreshAcc = accType === "limited" ? refreshAccLimited : refreshAcc;
+    const selectedRefreshType = accType === "limited" ? refreshFreqLimited : refreshFrequency;
+
+    return {
+      name: name.trim(),
+      description: description.trim(),
+      grid,
+      specifyLastWeek: specifyLastWeek === "yes",
+      lastWeekRow,
+      accumulation: hasAccumulation,
+      accType,
+      refreshAcc: hasAccumulation ? selectedRefreshAcc === "yes" : false,
+      refreshType: hasAccumulation && selectedRefreshAcc === "yes" ? selectedRefreshType || "monthly" : "",
+      limitCount: hasAccumulation && accType === "limited" ? Number(limitCount || 0) : 0,
+      isDraft,
+      companyOfficeId: resolvedCompanyOfficeIds,
+    };
+  };
+
+  const saveWeeklyOff = async (isDraft) => {
+    try {
+      const payload = buildPayload(isDraft);
+      await axiosInstance.post("/config/weekOff/create", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      setDraftSaved(true);
+      setTimeout(() => setDraftSaved(false), 2500);
+
+      if (!isDraft) {
+        navigate("/config/track/leave/Weekly-off/list");
+      }
+    } catch (error) {
+      console.log("Weekly off save error:", error);
+    }
+  };
 
   const handleSaveAsDraft = () => {
-    const draft = { name, description, grid, specifyLastWeek, lastWeekRow, accumulation, accType, refreshAcc };
-    console.log("Draft saved:", draft);
-    setDraftSaved(true);
-    setTimeout(() => setDraftSaved(false), 2500);
+    saveWeeklyOff(true);
   };
 
   const cycleGrid = (row, col) => {
@@ -584,7 +729,10 @@ const [refreshFreqLimited, setRefreshFreqLimited] = useState("");
         )}
 
         <div style={{ display: "flex", gap: 12 }}>
-          <button style={{ background: "none", border: "none", fontSize: 13, color: "#64748b", cursor: "pointer" }}>
+          <button
+            onClick={() => navigate("/config/track/leave/Weekly-off/list")}
+            style={{ background: "none", border: "none", fontSize: 13, color: "#64748b", cursor: "pointer" }}
+          >
             Cancel
           </button>
           <button
@@ -617,6 +765,7 @@ const [refreshFreqLimited, setRefreshFreqLimited] = useState("");
             </button>
           ) : (
             <button
+              onClick={() => saveWeeklyOff(false)}
               style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 6, padding: "7px 18px", fontSize: 13, cursor: "pointer" }}
             >
               Submit

@@ -1,37 +1,91 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
+import createAxios from "../../../../utils/axios.config";
 
 export default function ExtraTimeList() {
   const navigate = useNavigate();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
+
   const [activeTab, setActiveTab] = useState("Active");
   const [openMenu, setOpenMenu] = useState(null);
-
+  const [policies, setPolicies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [showCountryDialog, setShowCountryDialog] = useState(false);
 
   const handleCreate = () => {
     navigate("/config/track/Attendance/extra-time/create");
   };
 
-  const policies = [
-    {
-      id: 1,
-      name: "Attendance Policy",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "JD",
-      assigned: ["A", "B", "C"],
-      extraTimeStatus: ["Working Day", "Working Day"],
-    },
-    {
-      id: 2,
-      name: "Attendance Policy",
-      date: "12 Jun 2025  11:10 AM",
-      createdBy: "AK",
-      assigned: ["A", "B", "C"],
-      extraTimeStatus: ["Working Day", "Working Day"],
-    },
-  ];
+  useEffect(() => {
+    const fetchPolicies = async () => {
+      setLoading(true);
+      setErrorMessage("");
+      try {
+        const res = await axiosInstance.get("/config/extra-time-getAll", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        setPolicies(Array.isArray(res?.data?.data) ? res.data.data : []);
+      } catch (error) {
+        setErrorMessage(error?.response?.data?.message || "Unable to fetch extra time policies.");
+        setPolicies([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPolicies();
+  }, []);
+
+  const visiblePolicies = useMemo(
+    () =>
+      policies.filter((item) =>
+        activeTab === "Draft" ? item?.status === "draft" : item?.status !== "draft"
+      ),
+    [activeTab, policies]
+  );
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+    const parsed = new Date(date);
+    if (Number.isNaN(parsed.getTime())) return "-";
+
+    return parsed.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const getInitials = (name) => {
+    const text = (name || "").trim();
+    if (!text) return "NA";
+
+    const parts = text.split(" ").filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+
+    return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+  };
+
+  const getCreatedBy = (policy) => {
+    if (policy?.adminId?.name) return policy.adminId.name;
+    if (policy?.createdBy?.name) return policy.createdBy.name;
+    if (typeof policy?.createdBy === "string") return policy.createdBy;
+    return "NA";
+  };
+
+  const getExtraTimeStatus = (policy) => {
+    const items = [];
+    if (policy?.workingDayBenefits?.benefitEnabled) items.push("Working Day");
+    if (policy?.nonWorkingDayBenefits?.benefitEnabled) items.push("Non-Working Day");
+    return items;
+  };
 
   const handleDelete = (id) => {
     alert("Delete policy id: " + id);
@@ -40,7 +94,6 @@ export default function ExtraTimeList() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      {/* HEADER */}
       <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-xl font-semibold text-gray-800">
@@ -52,37 +105,38 @@ export default function ExtraTimeList() {
         </div>
 
         <button
-          // onClick={() => navigate("/config/track/Attendance/extra-time/create")}
-          onClick={()=>setShowCountryDialog(true)}
+          onClick={() => setShowCountryDialog(true)}
           className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
         >
           Create +
         </button>
       </div>
 
-      {/* TABS */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex bg-gray-200 rounded-lg p-1 w-fit">
           {["Active", "Draft"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 text-sm rounded-md ${activeTab === tab
+              className={`px-4 py-1.5 text-sm rounded-md ${
+                activeTab === tab
                   ? "bg-white shadow text-gray-800"
                   : "text-gray-500"
-                }`}
+              }`}
             >
               {tab}
             </button>
           ))}
         </div>
 
-        <button className="text-sm bg-gray-100 px-4 py-2 rounded-lg text-gray-600">
-          Clear ✕
+        <button
+          onClick={() => setActiveTab("Active")}
+          className="text-sm bg-gray-100 px-4 py-2 rounded-lg text-gray-600"
+        >
+          Clear x
         </button>
       </div>
 
-      {/* TABLE HEADER */}
       <div className="grid grid-cols-[2fr_1fr_2fr_1.5fr_auto] text-xs font-medium text-gray-500 px-4 py-2">
         <span>Policy Name</span>
         <span>Created By</span>
@@ -91,134 +145,107 @@ export default function ExtraTimeList() {
         <span>Action</span>
       </div>
 
-      {/* LIST */}
       <div className="space-y-3">
-        {policies.map((policy) => (
-          <div
-            key={policy.id}
-            className="bg-white border rounded-xl px-4 py-4 grid grid-cols-[2fr_1fr_2fr_1.5fr_auto] items-center"
-          >
-            {/* Policy Name */}
-            <div>
-              <p className="text-sm font-medium text-gray-800">
-                {policy.name}
-              </p>
-              <p className="text-xs text-gray-400">{policy.date}</p>
-            </div>
+        {loading && <div className="text-sm text-gray-500">Loading extra time policies...</div>}
 
-            {/* Created By Avatar */}
-            <div>
-              <div className="h-9 w-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-semibold">
-                {policy.createdBy}
-              </div>
-            </div>
+        {!loading && errorMessage && (
+          <div className="text-sm text-red-600">{errorMessage}</div>
+        )}
 
-            {/* Assigned Employees */}
-            <div className="flex items-center">
-              {policy.assigned.map((emp, index) => (
-                <div
-                  key={index}
-                  className={`h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-white border-2 border-white ${index !== 0 ? "-ml-2" : ""
-                    }`}
-                >
-                  {emp}
-                </div>
-              ))}
-              <div className="-ml-2 h-8 w-8 rounded-full bg-black text-white flex items-center justify-center text-xs border-2 border-white">
-                +12
-              </div>
-            </div>
+        {!loading && !errorMessage && visiblePolicies.length === 0 && (
+          <div className="text-sm text-gray-500">No extra time policy found.</div>
+        )}
 
-            {/* Extra Time Status */}
-            <div className="flex flex-col gap-1">
-              {policy.extraTimeStatus.map((status, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 text-sm text-gray-700"
-                >
-                  <span className="text-blue-600">✔</span>
-                  {status}
-                </div>
-              ))}
-            </div>
+        {!loading &&
+          !errorMessage &&
+          visiblePolicies.map((policy, index) => {
+            const policyId = policy?._id || policy?.id || index;
+            const createdByName = getCreatedBy(policy);
+            const extraTimeStatus = getExtraTimeStatus(policy);
 
-            {/* ACTION SECTION */}
-            <div className="flex items-center justify-end gap-2 relative">
-
-              {/* Edit */}
-              <button
-                onClick={() =>
-                  navigate(`/track/extra-time/edit/${policy.id}`)
-                }
-                className="p-2 rounded-md hover:bg-gray-100"
+            return (
+              <div
+                key={policyId}
+                className="bg-white border rounded-xl px-4 py-4 grid grid-cols-[2fr_1fr_2fr_1.5fr_auto] items-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5 text-gray-500"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"
-                  />
-                </svg>
-              </button>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    {policy?.policyName || "-"}
+                  </p>
+                  <p className="text-xs text-gray-400">{formatDate(policy?.createdAt)}</p>
+                </div>
 
-              {/* 3 Dot */}
-              <button
-                onClick={() =>
-                  setOpenMenu(openMenu === policy.id ? null : policy.id)
-                }
-                className="p-2 rounded-md hover:bg-gray-100"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5 text-gray-500"
-                >
-                  <circle cx="12" cy="5" r="1.5" />
-                  <circle cx="12" cy="12" r="1.5" />
-                  <circle cx="12" cy="19" r="1.5" />
-                </svg>
-              </button>
+                <div>
+                  <div className="h-9 w-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-semibold">
+                    {getInitials(createdByName)}
+                  </div>
+                </div>
 
-              {/* Dropdown */}
-              {openMenu === policy.id && (
-                <div className="absolute right-0 top-10 w-36 bg-white border rounded-md shadow-md z-10">
+                <div className="flex items-center">
+                  <span className="text-xs text-gray-400">No employee assigned</span>
+                </div>
 
-                  {/* View */}
+                <div className="flex flex-col gap-1">
+                  {extraTimeStatus.map((status, itemIndex) => (
+                    <div
+                      key={itemIndex}
+                      className="flex items-center gap-2 text-sm text-gray-700"
+                    >
+                      <span className="text-blue-600">OK</span>
+                      {status}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-end gap-2 relative">
                   <button
-                    onClick={() => {
-                      navigate(`/track/extra-time/view/${policy.id}`);
-                      setOpenMenu(null);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    onClick={() => navigate(`/track/extra-time/edit/${policyId}`)}
+                    className="p-2 rounded-md hover:bg-gray-100"
                   >
-                    👁 View
+                    Edit
                   </button>
 
-                  {/* Delete */}
                   <button
-                    onClick={() => handleDelete(policy.id)}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    onClick={() => setOpenMenu(openMenu === policyId ? null : policyId)}
+                    className="p-2 rounded-md hover:bg-gray-100"
                   >
-                    🗑 Delete
+                    ...
                   </button>
 
-                </div>
-              )}
-            </div>
+                  {openMenu === policyId && (
+                    <div className="absolute right-0 top-10 w-36 bg-white border rounded-md shadow-md z-10">
+                      <button
+                        onClick={() => {
+                          navigate(`/track/extra-time/view/${policyId}`);
+                          setOpenMenu(null);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        View
+                      </button>
 
-          </div>
-        ))}
+                      <button
+                        onClick={() => handleDelete(policyId)}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
       </div>
-      {showCountryDialog && createPortal(<CreateCountryPopup onClose={() => setShowCountryDialog(false)} onContinue={handleCreate} />, document.body)}
 
+      {showCountryDialog &&
+        createPortal(
+          <CreateCountryPopup
+            onClose={() => setShowCountryDialog(false)}
+            onContinue={handleCreate}
+          />,
+          document.body
+        )}
     </div>
   );
 }

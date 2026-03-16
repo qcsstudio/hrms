@@ -6,27 +6,6 @@ import { FaAngleDown } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import createAxios from '../../../utils/axios.config'
 
-const leaveBalanceRows = [
-  {
-    name: 'Aman Raj',
-    email: 'aman.raj@company.com',
-    annual: 10,
-    sick: 7,
-    casual: 7,
-    status: 'History',
-    icon: action
-  },
-  {
-    name: 'Aman Raj',
-    email: 'aman.raj@company.com',
-    annual: 2,
-    sick: 6,
-    casual: 1,
-    status: 'Low',
-    icon: action
-  }
-]
-
 const reports = [
   {
     name: 'Monthly Leave Summary',
@@ -57,7 +36,7 @@ const allowedBulkExtensions = ['csv', 'xls', 'xlsx', 'xlsm', 'ods', 'tsv', 'txt'
 const acceptedBulkFormats = '.csv,.xls,.xlsx,.xlsm,.ods,.tsv,.txt'
 const drawerSlideInStyle = { animation: 'drawerSlideIn 280ms ease-out' }
 
-const LeaveManagementHr1 = ({ holidayData = [] }) => {
+const LeaveManagementHr1 = ({ holidayData = [], leaveBalanceData = [] }) => {
   const token = localStorage.getItem('authToken')
   const axiosInstance = createAxios(token)
 
@@ -212,35 +191,41 @@ const LeaveManagementHr1 = ({ holidayData = [] }) => {
             </div>
 
             <div className='mt-3 space-y-3'>
-              {leaveBalanceRows.map((item, index) => (
-                <div key={index} className='grid grid-cols-12 items-center rounded-lg border border-[#E5E7EB] bg-white px-3 py-3'>
+              {leaveBalanceData.length === 0 && (
+                <div className='rounded-md border border-dashed border-[#D2D8E0] bg-[#F8F9FA] px-4 py-6 text-center text-[14px] text-[#667085]'>
+                  No leave balance data found.
+                </div>
+              )}
+
+              {leaveBalanceData.map((item, index) => (
+                <div key={item?._id || item?.employeeId || index} className='grid grid-cols-12 items-center rounded-lg border border-[#E5E7EB] bg-white px-3 py-3'>
                   <div className='col-span-5 flex items-center gap-3'>
                     <div className='flex h-[36px] w-[36px] items-center justify-center rounded-full bg-[#D9D9D9] text-[12px] font-semibold text-[#344054]'>
-                      {item.name?.[0] || 'U'}
+                      {(item?.name || item?.employeeName || 'U')?.[0] || 'U'}
                     </div>
                     <div>
-                      <p className='text-[14px] font-medium text-[#111827]'>{item.name}</p>
-                      <p className='text-[13px] text-gray-500'>{item.email}</p>
+                      <p className='text-[14px] font-medium text-[#111827]'>{item?.name || item?.employeeName || '-'}</p>
+                      <p className='text-[13px] text-gray-500'>{item?.email || item?.employeeEmail || '-'}</p>
                     </div>
                   </div>
-                  <div className='col-span-1 text-center text-[14px] font-medium text-[#111827]'>{item.annual}</div>
-                  <div className='col-span-1 text-center text-[14px] font-medium text-[#111827]'>{item.sick}</div>
-                  <div className='col-span-1 text-center text-[14px] font-medium text-[#111827]'>{item.casual}</div>
+                  <div className='col-span-1 text-center text-[14px] font-medium text-[#111827]'>{item?.annual ?? item?.annualLeave ?? 0}</div>
+                  <div className='col-span-1 text-center text-[14px] font-medium text-[#111827]'>{item?.sick ?? item?.sickLeave ?? 0}</div>
+                  <div className='col-span-1 text-center text-[14px] font-medium text-[#111827]'>{item?.casual ?? item?.casualLeave ?? 0}</div>
                   <div className='col-span-4 flex items-center justify-end gap-2'>
                     <span   
                       className={`inline-flex h-[28px] min-w-[78px] items-center justify-center rounded-md border px-3 text-[12px] font-medium ${
-                        item.status === 'History'
+                        item?.status === 'History'
                           ? 'border-[#D2D8E0] bg-[#F2F4F6] text-[#334155]'
                           : 'border-[#FAC2C2] bg-[#FDECEC] text-[#B91C1C]'
                       }`}
                     >
-                      {item.status}
+                      {item?.status || 'Low'}
                     </span>
                     <button
                       type='button'
                       className='bg-transparent p-0 border-none shadow-none outline-none focus:outline-none focus:ring-0'
                     >
-                      <img className='h-[20px] w-[20px]' src={item.icon} alt='row action' />
+                      <img className='h-[20px] w-[20px]' src={action} alt='row action' />
                     </button>
                   </div>
                 </div>

@@ -1,6 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
 
 export default function ExtraTimeCreate() {
+  const navigate = useNavigate();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
 
   const [step, setStep] = useState(1);
 
@@ -108,6 +113,65 @@ export default function ExtraTimeCreate() {
   const [pastDays, setPastDays]             = useState("");
 
   const yn = v => v === "yes" ? "Yes" : "No";
+  const toNumber = (value, fallback = 0) => {
+    if (value === "" || value === null || value === undefined) return fallback;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? fallback : parsed;
+  };
+  const toNullableNumber = (value) => {
+    if (value === "" || value === null || value === undefined) return null;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+
+  const buildPayload = (status) => ({
+    policyName: policyName.trim(),
+    policyDescription: policyDesc.trim(),
+    workingDayBenefits: {
+      benefitEnabled: s2benefit === "yes",
+      earnType: s2earnType === "each-hour" ? "each-hour" : s2earnType,
+      minimumHoursRequired: toNumber(s2minHrs, 0),
+      leavesEarnedPerCycle: toNumber(s2earnDays || s2perHrDays, 0),
+      canAccumulateHours: s2canAccum === "yes",
+      accumulationOverMonths: s2canAccum === "yes" ? toNullableNumber(s2accumMonths) : null,
+      compOffLimitPerDay: toNumber(s2limitDay || s2perHrLimit, 0),
+      minimumThresholdEnabled: s2minThresh === "yes",
+      minimumThresholdMinutes: s2minThresh === "yes" ? toNumber(s2threshMins, 0) : 0,
+    },
+    nonWorkingDayBenefits: {
+      benefitEnabled: s3benefit === "yes",
+      earnType: s3earnType === "each-hour" ? "each-hour" : s3earnType,
+      minimumHoursRequired: toNumber(s3minHrs, 0),
+      leavesEarnedPerCycle: toNumber(s3earnDays || s3perHrDays, 0),
+      canAccumulateHours: s3canAccum === "yes",
+      accumulationOverMonths: s3canAccum === "yes" ? toNullableNumber(s3accumMonths) : null,
+      compOffLimitPerDay: toNumber(s3limitDay || s3perHrLimit, 0),
+    },
+    extraTimePolicy: {
+      approvalRequired: approvalReq === "yes",
+      creditApprovalRequired: creditApproval === "yes",
+      unusedBalanceHandling: unusedBalance,
+      lapseDays: unusedBalance === "lapse" ? toNumber(lapseDays, 0) : 0,
+      attachmentsRequired: attachments === "yes",
+      attachmentRequiredIfDaysGreaterThan: attachments === "yes" ? toNumber(attachDays, 0) : 0,
+      attachmentInstructions: attachments === "yes" ? attachDesc.trim() : "",
+      allowPastDateApplications: pastDates === "yes",
+      pastDateApplicationDaysLimit: pastDates === "yes" ? toNumber(pastDays, 0) : 0,
+    },
+    status,
+  });
+
+  const savePolicy = async (status) => {
+    try {
+      const payload = buildPayload(status);
+      await axiosInstance.post("/config/extra-time", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      navigate("/config/track/Attendance/extra-time/list");
+    } catch (error) {
+      console.log("extra time create error", error);
+    }
+  };
 
   const STEPS = [
     { id: 1, label: "Describe" },
@@ -487,10 +551,16 @@ export default function ExtraTimeCreate() {
       {/* ════ BOTTOM BAR ════ */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-8 py-3.5 flex items-center justify-between z-20">
         <div className="flex items-center gap-1">
-          <button className="px-4 py-2.5 bg-transparent text-gray-700 border-none text-sm font-semibold cursor-pointer">
+          <button
+            onClick={() => navigate("/config/track/Attendance/extra-time/list")}
+            className="px-4 py-2.5 bg-transparent text-gray-700 border-none text-sm font-semibold cursor-pointer"
+          >
             Cancel
           </button>
-          <button className="px-4 py-2.5 bg-blue-50 text-blue-600 border-none rounded-md text-sm font-semibold cursor-pointer">
+          <button
+            onClick={() => savePolicy("draft")}
+            className="px-4 py-2.5 bg-blue-50 text-blue-600 border-none rounded-md text-sm font-semibold cursor-pointer"
+          >
             Save As Draft
           </button>
         </div>
@@ -504,7 +574,13 @@ export default function ExtraTimeCreate() {
             </button>
           )}
           <button
-            onClick={() => setStep(s => Math.min(5, s + 1))}
+            onClick={() => {
+              if (step === 5) {
+                savePolicy("active");
+                return;
+              }
+              setStep((s) => Math.min(5, s + 1));
+            }}
             className="px-8 py-2.5 bg-blue-600 text-white border-none rounded-lg text-sm font-semibold cursor-pointer"
           >
             {step === 5 ? "Save Policy" : "Next"}

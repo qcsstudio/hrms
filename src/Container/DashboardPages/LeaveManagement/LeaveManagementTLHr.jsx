@@ -8,36 +8,13 @@ import { toast } from 'react-toastify'
 import createAxios from '../../../utils/axios.config'
 import "react-datepicker/dist/react-datepicker.css";
 
-const days = [
-  {
-    name: "On Leave Today",
-    value: 12,
-    title: "In your team"
-  },
-  {
-    name: "Upcoming (7 days)",
-    value: 31,
-    title: "Plan Coverage"
-  },
-  {
-    name: "Pending approvals",
-    value: 12,
-    title: "Need action"
-  },
-  {
-    name: "Avg Approval Time",
-    value: "9h",
-    title: "SLA indicator"
-  },
-]
-
 const mapStatsToCards = (stats) => {
   if (Array.isArray(stats)) {
     return stats
   }
 
   if (!stats || typeof stats !== 'object') {
-    return days
+    return []
   }
 
   return [
@@ -64,30 +41,56 @@ const mapStatsToCards = (stats) => {
   ]
 }
 
-const ApprovalQueue = [
-  {
-    name: "Neha Mehta - Casual Leave",
-    title: "Apr 12 to Apr 13 - 2 days - Reason: Family function - 2 team members already off",
-    status: ["Approve", "Reject", "Ask Info"]
-  },
-  {
-    name: "Aman Raj - Sick Leave",
-    title: "Apr 10 (Half day) - Attachment required",
-    status: ["Approve", "Reject", "Ask Info"]
-  },
-  {
-    name: "Priya Singh - WFH",
-    title: "Apr 11 - 1 day - Reason: Home maintenance",
-    status: ["Approve", "Reject", "Ask Info"]
-  },
-]
+const getQueueActions = (status) => {
+  const normalizedStatus = (status || "").toString().toLowerCase()
+
+  if (normalizedStatus === "approved") {
+    return ["Approved"]
+  }
+
+  if (normalizedStatus === "rejected") {
+    return ["Rejected"]
+  }
+
+  return ["Approve", "Reject"]
+}
+
+const normalizeApprovalItem = (item, index) => {
+  const employeeName =
+    item?.employeeName ||
+    item?.employee?.name ||
+    item?.user?.name ||
+    item?.name ||
+    `Leave Request ${index + 1}`
+
+  const leaveType = item?.leaveType || item?.type || item?.leaveName || ""
+  const fromDate = item?.fromDate || item?.startDate || item?.dateFrom || item?.appliedDate
+  const toDate = item?.toDate || item?.endDate || item?.dateTo
+  const duration = item?.days || item?.duration || item?.totalDays
+  const reason = item?.reason || item?.description || ""
+  const status = item?.status || "pending"
+
+  const titleParts = [
+    fromDate && toDate ? `${fromDate} to ${toDate}` : fromDate || toDate || "",
+    duration ? `${duration} day${Number(duration) > 1 ? "s" : ""}` : "",
+    reason ? `Reason: ${reason}` : "",
+  ].filter(Boolean)
+
+  return {
+    ...item,
+    displayName: leaveType ? `${employeeName} - ${leaveType}` : employeeName,
+    displayTitle: titleParts.join(" - "),
+    status,
+    actions: getQueueActions(status),
+  }
+}
 
 const quickTemplates = ['Upload DOC', 'Clarify Reason', 'Full/Half-Day', 'Handover Plan', 'Change Dates']
 const responseDueOptions = ['4 Hours', '24 Hours', '48 Hours', '3 Days']
 
 const getApprovalSummary = (item, index) => {
-  const [employeeName = '', leaveType = ''] = (item?.name || '').split(' - ')
-  const titleParts = (item?.title || '').split(' - ')
+  const [employeeName = '', leaveType = ''] = (item?.displayName || item?.name || '').split(' - ')
+  const titleParts = (item?.displayTitle || item?.title || '').split(' - ')
   const reasonPart = titleParts.find((part) => part.toLowerCase().startsWith('reason:'))
   const hasAttachmentRequirement = (item?.title || '').toLowerCase().includes('attachment required')
 
@@ -213,8 +216,9 @@ const LeaveManagementTLHr = () => {
   const [startDate, endDate] = dateRange
   const [rangePreset, setRangePreset] = useState("This Month")
   
-  const [cardsData, setCardsData] = useState(days)
-  const [approvalQueueData, setApprovalQueueData] = useState(ApprovalQueue)
+  const [cardsData, setCardsData] = useState([])
+  const [approvalQueueData, setApprovalQueueData] = useState([])
+  const [leaveBalanceData, setLeaveBalanceData] = useState([])
   const [holidayData, setHolidayData] = useState([])
 
   const formatDate = (date) => {
@@ -280,7 +284,12 @@ const LeaveManagementTLHr = () => {
 
       const apiData = res?.data?.data || res?.data || {}
       setCardsData(mapStatsToCards(apiData?.cards || apiData?.stats))
-      setApprovalQueueData(Array.isArray(apiData?.approvalQueue) ? apiData.approvalQueue : ApprovalQueue)
+      setApprovalQueueData(
+        Array.isArray(apiData?.approvalQueue)
+          ? apiData.approvalQueue.map(normalizeApprovalItem)
+          : []
+      )
+      setLeaveBalanceData(Array.isArray(apiData?.leaveBalanceTable) ? apiData.leaveBalanceTable : [])
       setHolidayData(apiData?.holidays || [])
     } catch (error) {
       console.log(error, "hr dashboard api error")
@@ -436,19 +445,25 @@ const LeaveManagementTLHr = () => {
           <p className='text-gray-300 text-[14px]'>Approve / Reject / Ask for details. Overlap warnings keep staffing safe.</p>
 
           <div className='mt-[20px] bg-[white] list-stagger'>
+            {approvalQueueData.length === 0 && (
+              <div className='rounded-lg border border-dashed border-[#D2D8E0] bg-[#F8F9FA] px-4 py-6 text-center text-[14px] text-[#667085]'>
+                No approval requests found.
+              </div>
+            )}
+
             {approvalQueueData?.map((item, index) => (
               <div key={index} className='mt-[14px] bg-[#F8F9FA] flex justify-between p-3 rounded-lg items-center card-animate' style={{ "--stagger": index }}>
                 <div>
                   <div>
-                    {item?.name}
+                    {item?.displayName || item?.name}
                   </div>
                   <div className='text-gray-300 text-[14px] '>
-                    {item?.title}
+                    {item?.displayTitle || item?.title}
                   </div>
                 </div>
 
                 <div className='flex gap-[10px]'>
-                  {(Array.isArray(item?.status) ? item.status : []).map((status, i) => (
+                  {(Array.isArray(item?.actions) ? item.actions : []).map((status, i) => (
                     <button
                       key={i}
                       type='button'
@@ -458,9 +473,9 @@ const LeaveManagementTLHr = () => {
                         }
                       }}
                       className={`h-[32px] min-w-[90px] px-3 rounded-md text-center text-[13px] font-medium leading-none shadow-none outline-none focus:outline-none focus:ring-0 ${
-                      status === "Approve"
+                      status === "Approve" || status === "Approved"
                         ? "text-white bg-[#0575E6] border border-[#E4E9EE]"
-                        : status === "Reject"
+                        : status === "Reject" || status === "Rejected"
                           ? "text-[#B91C1C] bg-[#FDECEC] border border-[#FAC2C2]"
                           : "text-[#344054] border border-[#D1D5DB] bg-[#EEF2F6]"
                       }`}
@@ -479,7 +494,7 @@ const LeaveManagementTLHr = () => {
 
         {/* ================this part is shown only hr========================== */}
         {/* {isHR && <LeaveManagementHr1 holidayData={holidayData} />} */}
-        <LeaveManagementHr1 holidayData={holidayData} />
+        <LeaveManagementHr1 holidayData={holidayData} leaveBalanceData={leaveBalanceData} />
       </div>
 
       {showAskInfoDrawer &&
