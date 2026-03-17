@@ -1,17 +1,17 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
 
-/* ─────────────────────────────────────────────
-   YES / NO BOX
-───────────────────────────────────────────── */
 function YesNoBox({ label, value, onChange, name }) {
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium text-gray-700">{label}</p>
 
-      {/* YES */}
       <label
         className={`flex items-center justify-between border rounded-lg px-4 py-3 cursor-pointer transition ${
-          value === "yes" ? "bg-blue-50 border-blue-500" : "border-gray-200 hover:border-gray-400"
+          value === "yes"
+            ? "bg-blue-50 border-blue-500"
+            : "border-gray-200 hover:border-gray-400"
         }`}
       >
         <div className="flex items-center">
@@ -25,13 +25,14 @@ function YesNoBox({ label, value, onChange, name }) {
           />
           <span className="text-sm">Yes</span>
         </div>
-        {value === "yes" && <span className="text-green-500 font-semibold">✔</span>}
+        {value === "yes" && <span className="text-green-500 font-semibold">OK</span>}
       </label>
 
-      {/* NO */}
       <label
         className={`flex items-center border rounded-lg px-4 py-3 cursor-pointer transition ${
-          value === "no" ? "bg-blue-50 border-blue-500" : "border-gray-200 hover:border-gray-400"
+          value === "no"
+            ? "bg-blue-50 border-blue-500"
+            : "border-gray-200 hover:border-gray-400"
         }`}
       >
         <input
@@ -48,21 +49,15 @@ function YesNoBox({ label, value, onChange, name }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   INFO BANNER (replaces Yes/No when locked)
-───────────────────────────────────────────── */
 function InfoBanner({ message }) {
   return (
     <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
-      <span className="text-blue-500 mt-0.5 text-base">ℹ️</span>
+      <span className="text-blue-500 mt-0.5 text-base">i</span>
       <p className="text-sm text-blue-700">{message}</p>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────
-   STEPPER
-───────────────────────────────────────────── */
 const STEPS = ["Describe", "Input Type", "Biometric", "Web", "Mobile", "Preview"];
 
 function Stepper({ currentStep }) {
@@ -85,7 +80,7 @@ function Stepper({ currentStep }) {
                     : "border-gray-300 text-gray-400 bg-white"
                 }`}
               >
-                {isDone ? "✓" : stepNum}
+                {isDone ? "OK" : stepNum}
               </div>
               <span
                 className={`text-xs mt-1 whitespace-nowrap ${
@@ -110,11 +105,6 @@ function Stepper({ currentStep }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   STEP PAGES
-───────────────────────────────────────────── */
-
-// Step 1: Describe
 function StepDescribe({ form, setForm, errors }) {
   return (
     <div className="space-y-6">
@@ -122,7 +112,7 @@ function StepDescribe({ form, setForm, errors }) {
         <label className="text-sm font-medium text-blue-600">Device Name</label>
         <input
           type="text"
-          placeholder="Enter Shift Name"
+          placeholder="Enter device name"
           value={form.deviceName}
           onChange={(e) => setForm({ ...form, deviceName: e.target.value })}
           className={`mt-1 w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 ${
@@ -130,7 +120,7 @@ function StepDescribe({ form, setForm, errors }) {
           }`}
         />
         {errors.deviceName && (
-          <p className="text-red-500 text-xs mt-1">name can not be empty</p>
+          <p className="text-red-500 text-xs mt-1">Device name can not be empty</p>
         )}
       </div>
 
@@ -149,12 +139,10 @@ function StepDescribe({ form, setForm, errors }) {
   );
 }
 
-// Step 2: Input Type
 function StepInputType({ form, setForm }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-8">
-        {/* Clock type */}
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-700">
             Do employees need to clock-in and clock-out, or only clock-in is sufficient?
@@ -184,7 +172,6 @@ function StepInputType({ form, setForm }) {
           ))}
         </div>
 
-        {/* Track break */}
         <YesNoBox
           label="Would you like to track break durations between Clock-out and Clock-in times?"
           value={form.trackBreak}
@@ -202,6 +189,9 @@ function StepInputType({ form, setForm }) {
             <div>
               <input
                 type="number"
+                min="0"
+                value={form.breakHrs}
+                onChange={(e) => setForm({ ...form, breakHrs: e.target.value })}
                 className="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm"
                 placeholder="0"
               />
@@ -210,6 +200,9 @@ function StepInputType({ form, setForm }) {
             <div>
               <input
                 type="number"
+                min="0"
+                value={form.breakMins}
+                onChange={(e) => setForm({ ...form, breakMins: e.target.value })}
                 className="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm"
                 placeholder="0"
               />
@@ -229,7 +222,6 @@ function StepInputType({ form, setForm }) {
   );
 }
 
-// Step 3: Biometric
 function StepBiometric({ form, setForm }) {
   return (
     <div className="space-y-6">
@@ -242,7 +234,7 @@ function StepBiometric({ form, setForm }) {
 
       {form.biometric === "yes" && (
         <YesNoBox
-          label="Do you wish to track attendance with separate device for recording in-time and a separate device for recording out-time (use in/out directional devices)?"
+          label="Do you wish to track attendance with separate device for recording in-time and a separate device for recording out-time?"
           value={form.directionalDevice}
           onChange={(v) => setForm({ ...form, directionalDevice: v })}
           name="directional"
@@ -252,9 +244,6 @@ function StepBiometric({ form, setForm }) {
   );
 }
 
-// Step 4: Web
-// - If biometric = yes → hide Yes/No, show info banner (web is not selectable)
-// - If biometric = no → show Yes/No normally
 function StepWeb({ form, setForm }) {
   const biometricEnabled = form.biometric === "yes";
 
@@ -265,7 +254,7 @@ function StepWeb({ form, setForm }) {
       </p>
 
       {biometricEnabled ? (
-        <InfoBanner message="Biometric attendance is already enabled. Web-based attendance Yes/No selection is not available when Biometric is active. Web attendance settings are managed through biometric configuration." />
+        <InfoBanner message="Biometric attendance is already enabled. Web-based attendance selection is not available when biometric is active." />
       ) : (
         <YesNoBox
           label=""
@@ -275,48 +264,31 @@ function StepWeb({ form, setForm }) {
         />
       )}
 
-      {/* IP Restriction — only show if biometric is NOT enabled and web is yes */}
       {!biometricEnabled && (
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-700">
             Would you like to enforce IP Network restrictions as well?
           </p>
-          {biometricEnabled ? (
-            <InfoBanner message="IP restrictions are not configurable when Biometric attendance is active." />
-          ) : (
-            <YesNoBox
-              label=""
-              value={form.ipRestriction}
-              onChange={(v) => setForm({ ...form, ipRestriction: v })}
-              name="ip"
-            />
-          )}
-
-          {form.ipRestriction === "yes" && (
-            <div className="border rounded-lg p-4 bg-blue-50 border-blue-200">
-              <p className="text-blue-600 mt-1 cursor-pointer text-sm">Select IPs</p>
-              <p className="text-red-500 text-xs mt-1">Please select IP</p>
-            </div>
-          )}
+          <YesNoBox
+            label=""
+            value={form.ipRestriction}
+            onChange={(v) => setForm({ ...form, ipRestriction: v })}
+            name="ip"
+          />
         </div>
       )}
     </div>
   );
 }
 
-// Step 5: Mobile
-// Rules:
-//   - biometric = yes → hide Yes/No for mobile, show info banner
-//   - biometric = no, web = no → hide Yes/No for mobile, show info banner
-//   - biometric = no, web = yes → show Yes/No for mobile normally
 function StepMobile({ form, setForm }) {
   const biometricEnabled = form.biometric === "yes";
   const webEnabled = form.webAttendance === "yes";
   const mobileBlocked = biometricEnabled || !webEnabled;
 
   const bannerMessage = biometricEnabled
-    ? "Biometric attendance is already enabled. Mobile attendance Yes/No selection is not available when Biometric is active."
-    : "Web-based attendance must be enabled first before configuring mobile attendance. Please go back and enable Web attendance.";
+    ? "Biometric attendance is already enabled. Mobile attendance selection is not available when biometric is active."
+    : "Web-based attendance must be enabled first before configuring mobile attendance.";
 
   return (
     <div className="space-y-6">
@@ -335,7 +307,6 @@ function StepMobile({ form, setForm }) {
         />
       )}
 
-      {/* GPS — only shown when mobile is NOT blocked */}
       {!mobileBlocked && (
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-700">
@@ -347,35 +318,31 @@ function StepMobile({ form, setForm }) {
             onChange={(v) => setForm({ ...form, gpsAttendance: v })}
             name="gps"
           />
-
-          {form.gpsAttendance === "yes" && (
-            <div className="border rounded-lg p-4 bg-blue-50 border-blue-200">
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-sm">Yes</span>
-                <span className="text-green-500 font-bold">✔</span>
-              </div>
-              <p className="text-blue-600 mt-3 cursor-pointer text-sm">Select GPS</p>
-              <p className="text-red-500 text-xs mt-1">Please select GPS</p>
-            </div>
-          )}
         </div>
       )}
     </div>
   );
 }
 
-// Step 6: Preview
 function StepPreview({ form }) {
   const biometricEnabled = form.biometric === "yes";
 
   const rows = [
-    { label: "Device Name", value: form.deviceName || "—" },
-    { label: "Description", value: form.description || "—" },
+    { label: "Device Name", value: form.deviceName || "-" },
+    { label: "Description", value: form.description || "-" },
     {
       label: "Clock Type",
       value: form.clockType === "both" ? "Clock-in & Clock-out" : "Only Clock-in",
     },
     { label: "Track Break", value: form.trackBreak },
+    ...(form.trackBreak === "yes"
+      ? [
+          {
+            label: "Break Duration",
+            value: `${form.breakHrs || 0}h ${form.breakMins || 0}m`,
+          },
+        ]
+      : []),
     { label: "Hybrid Mode", value: form.hybrid },
     { label: "Biometric", value: form.biometric },
     ...(form.biometric === "yes"
@@ -425,11 +392,12 @@ function StepPreview({ form }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   MAIN COMPONENT
-───────────────────────────────────────────── */
 export default function ClockInMethodCreate() {
+  const navigate = useNavigate();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
   const [form, setForm] = useState({
@@ -437,6 +405,8 @@ export default function ClockInMethodCreate() {
     description: "",
     clockType: "only",
     trackBreak: "no",
+    breakHrs: "0",
+    breakMins: "0",
     hybrid: "no",
     biometric: "no",
     directionalDevice: "no",
@@ -448,12 +418,30 @@ export default function ClockInMethodCreate() {
 
   const validate = () => {
     const errs = {};
+
     if (currentStep === 1 && !form.deviceName.trim()) {
       errs.deviceName = true;
     }
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
+
+  const buildPayload = () => ({
+    deviceName: form.deviceName.trim(),
+    description: form.description.trim(),
+    clockType: form.clockType,
+    trackBreak: form.trackBreak === "yes",
+    breakDuration: {
+      hours: form.trackBreak === "yes" ? Number(form.breakHrs || 0) : 0,
+      minutes: form.trackBreak === "yes" ? Number(form.breakMins || 0) : 0,
+    },
+    hybrid: form.hybrid === "yes",
+    biometric: form.biometric === "yes",
+    directionalDevice:
+      form.biometric === "yes" ? form.directionalDevice === "yes" : false,
+    isActive: true,
+  });
 
   const handleNext = () => {
     if (!validate()) return;
@@ -465,27 +453,44 @@ export default function ClockInMethodCreate() {
     setCurrentStep((s) => Math.max(s - 1, 1));
   };
 
-  const handleSave = () => {
-    console.log("✅ Final Form Data:", form);
+  const handleSave = async () => {
+    if (!validate()) return;
+
+    try {
+      setIsSubmitting(true);
+      await axiosInstance.post("/config/create/clock-In-Mehtod", buildPayload(), {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      navigate("/config/track/Attendance/clock-in-method/list");
+    } catch (error) {
+      console.log("clock in method create error", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {
     switch (currentStep) {
-      case 1: return <StepDescribe form={form} setForm={setForm} errors={errors} />;
-      case 2: return <StepInputType form={form} setForm={setForm} />;
-      case 3: return <StepBiometric form={form} setForm={setForm} />;
-      case 4: return <StepWeb form={form} setForm={setForm} />;
-      case 5: return <StepMobile form={form} setForm={setForm} />;
-      case 6: return <StepPreview form={form} />;
-      default: return null;
+      case 1:
+        return <StepDescribe form={form} setForm={setForm} errors={errors} />;
+      case 2:
+        return <StepInputType form={form} setForm={setForm} />;
+      case 3:
+        return <StepBiometric form={form} setForm={setForm} />;
+      case 4:
+        return <StepWeb form={form} setForm={setForm} />;
+      case 5:
+        return <StepMobile form={form} setForm={setForm} />;
+      case 6:
+        return <StepPreview form={form} />;
+      default:
+        return null;
     }
   };
 
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-5xl mx-auto px-6 py-8">
-
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">Create Clock-in Method</h1>
           <p className="text-sm text-gray-400 mt-1">
@@ -493,19 +498,17 @@ export default function ClockInMethodCreate() {
           </p>
         </div>
 
-        {/* Stepper */}
         <Stepper currentStep={currentStep} />
 
         <hr className="mb-8 border-gray-100" />
 
-        {/* Step Content */}
         <div className="max-w-3xl">{renderStep()}</div>
 
-        {/* Footer */}
         <div className="flex justify-between items-center pt-8 mt-8 border-t border-gray-100">
           <button
             onClick={handleSave}
-            className="border border-blue-500 text-blue-500 px-5 py-2 rounded-full text-sm hover:bg-blue-50 transition"
+            disabled={isSubmitting}
+            className="border border-blue-500 text-blue-500 px-5 py-2 rounded-full text-sm hover:bg-blue-50 transition disabled:opacity-60"
           >
             Save as Draft
           </button>
@@ -520,7 +523,10 @@ export default function ClockInMethodCreate() {
               </button>
             )}
 
-            <button className="px-5 py-2 text-sm text-gray-500 hover:text-gray-700 transition">
+            <button
+              onClick={() => navigate("/config/track/Attendance/clock-in-method/list")}
+              className="px-5 py-2 text-sm text-gray-500 hover:text-gray-700 transition"
+            >
               Cancel
             </button>
 
@@ -534,9 +540,10 @@ export default function ClockInMethodCreate() {
             ) : (
               <button
                 onClick={handleSave}
-                className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm hover:bg-blue-700 transition"
+                disabled={isSubmitting}
+                className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm hover:bg-blue-700 transition disabled:opacity-60"
               >
-                Save
+                {isSubmitting ? "Saving..." : "Save"}
               </button>
             )}
           </div>

@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
 
 const STEPS = ["Select Leave Types", "Usage Policy", "Hourly Leave", "Leave Config", "Preview"];
 const LEAVE_TYPES = ["Hourly Leave", "Medical Leave", "Unpaid Leave*", "Custom Leave*"];
@@ -8,6 +10,47 @@ const SANDWICH_KEYS = [
   { key: "optional",  label: "Deduct if optional holidays occurs" },
   { key: "weeklyoff", label: "Deduct if weekly-offs occurs" },
 ];
+
+const toBool = (value) => value === true || value === "yes";
+const toNumber = (value) => Number(value || 0);
+const normalizeLeaveType = (value) =>
+  String(value || "")
+    .replace(/\*/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+const normalizeUsageLimitType = (value) =>
+  value === "Per Year" ? "yearly" : value === "Per Month" ? "monthly" : String(value || "").trim().toLowerCase();
+const normalizeCalcType = (value) =>
+  value === "prorate" ? "monthly" : value === "noprorate" ? "fixed" : String(value || "").trim().toLowerCase();
+const normalizeProrateFrom = (value) =>
+  value === "joining" ? "joiningDate" : value === "probation" ? "probationEndDate" : String(value || "").trim();
+const normalizeElseCalcFrom = (value) =>
+  value === "Joining Date" ? "joiningDate" : value === "Probation End Date" ? "nextMonth" : String(value || "").trim();
+const normalizeDisbursal = (value) =>
+  value === "credited" ? "monthly" : value === "accrued" ? "annual" : String(value || "").trim().toLowerCase();
+const normalizeAllocation = (value) =>
+  value === "auto" ? "annual" : String(value || "").trim().toLowerCase();
+const normalizeSimple = (value) => String(value || "").trim().toLowerCase();
+const getStoredOfficeIds = () => {
+  const rawValue =
+    localStorage.getItem("companyOfficeId") ||
+    localStorage.getItem("officeId") ||
+    "";
+
+  if (!rawValue) return [];
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((item) => typeof item === "string" && item.trim());
+    }
+  } catch (error) {
+    // Ignore invalid JSON and fall back to plain string handling.
+  }
+
+  return /^[a-f\d]{24}$/i.test(rawValue) ? [rawValue] : [];
+};
 
 // ── UI Atoms ──────────────────────────────────────────────────────────────────
 
@@ -169,7 +212,12 @@ function PreviewRow({ label, value }) {
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 
 export default function CreateLeavePolicy({ onBack }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [s1, setS1] = useState({ policyName:"", description:"", selectedTypes:[] });
 
@@ -230,6 +278,109 @@ export default function CreateLeavePolicy({ onBack }) {
   const u3 = p => setS3(prev=>({...prev,...p}));
   const u4 = p => setS4(prev=>({...prev,...p}));
   const toggleArr = (arr,val) => arr.includes(val)?arr.filter(x=>x!==val):[...arr,val];
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const resolvedCompanyOfficeIds = useMemo(() => {
+    const officeParam = queryParams.get("office") || "";
+
+    if (officeParam && officeParam !== "ALL" && /^[a-f\d]{24}$/i.test(officeParam)) {
+      return [officeParam];
+    }
+
+    return getStoredOfficeIds();
+  }, [queryParams]);
+
+  const buildPayload = (status) => ({
+    policyName: s1.policyName.trim(),
+    description: s1.description.trim(),
+    selectedTypes: s1.selectedTypes.map(normalizeLeaveType),
+    leaveName: s2.leaveName.trim(),
+    usageLimitType: normalizeUsageLimitType(s2.usageLimitType),
+    maxDaysLeave: toNumber(s2.maxDaysLeave),
+    maxConsecutive: toNumber(s2.maxConsecutive),
+    halfDay: toBool(s2.halfDay),
+    limitFuture: toBool(s2.limitFuture),
+    allowPast: toBool(s2.allowPast),
+    sandwiched: toBool(s2.sandwiched),
+    clubbing: toBool(s2.clubbing),
+    futureDuration: toNumber(s2.futureDuration),
+    futureApplyAtLeast: toNumber(s2.futureApplyAtLeast),
+    futureNotEarlier: toNumber(s2.futureNotEarlier),
+    pastDays: toNumber(s2.pastDays),
+    sandwichTypes: s2.sandwichTypes,
+    clubbingTypes: s2.clubbingTypes ? [normalizeLeaveType(s2.clubbingTypes)] : [],
+    hourlyName: s3.hourlyName.trim(),
+    maxHours: toNumber(s3.maxHours),
+    employmentType: normalizeSimple(s3.employmentType),
+    calcType: normalizeCalcType(s3.calcType),
+    prorateFrom: normalizeProrateFrom(s3.prorateFrom),
+    joinMonthCalc: s3.joinMonthCalc === "irrespective",
+    joinAfterDays: toNumber(s3.joinAfterDays),
+    includeExtendedProbation: Boolean(s3.includeExtendedProbation),
+    probationMonthCalc: s3.probationMonthCalc === "full",
+    probationAfterDays: toNumber(s3.probationAfterDays),
+    noProRateType: s3.noProRateType === "conditional" ? "fixed" : normalizeSimple(s3.noProRateType),
+    joinsOnOrBefore: Boolean(s3.joinsOnOrBefore),
+    joinsOnOrBeforeDays: toNumber(s3.joinsOnOrBeforeDays),
+    joinsOnOrBeforeMonth: toNumber(s3.joinsOnOrBeforeMonth),
+    elseCalcFrom: normalizeElseCalcFrom(s3.elseCalcFrom),
+    disbursal: normalizeDisbursal(s3.disbursal),
+    carryForward: s3.carryForward === "carry",
+    carryType: s3.carryType ? normalizeSimple(s3.carryType) : "limited",
+    minHoursPerDay: toNumber(s3.minHoursPerDay),
+    leaveHours: toNumber(s3.leaveHours),
+    approval: s3.approval !== "bypass",
+    allocation: normalizeAllocation(s4.allocation),
+    annualDays: toNumber(s4.annualDays),
+    gender: s4.gender ? normalizeSimple(s4.gender) : "all",
+    empType: s4.empType4 ? normalizeSimple(s4.empType4) : "all",
+    marital: s4.marital ? normalizeSimple(s4.marital) : "all",
+    attachments: toBool(s4.attachments),
+    attachmentDays: toNumber(s4.attachmentDays),
+    attachmentNote: s4.attachmentNote.trim(),
+    overutil: s4.overutil === "allow",
+    overutilType: s4.overutil === "allow" ? normalizeSimple(s4.overutilType) : "",
+    deductFrom: s4.overutilType === "deduct" ? s4.deductFrom : "",
+    carryForwardEnabled: Boolean(s4.carryForward4),
+    carryFwdLimit: toNumber(s4.carryFwdLimit),
+    carryFwdUnused: Boolean(s4.carryFwdUnused),
+    encashEnabled: Boolean(s4.encash4),
+    encashLimit: toNumber(s4.encashLimit),
+    encashUnused: Boolean(s4.encashUnused),
+    giftLeave: toBool(s4.giftLeave),
+    giftLeavesPerYear: toNumber(s4.giftLeavesPerYear),
+    giftReceive: toBool(s4.giftReceive),
+    companyOfficeId: resolvedCompanyOfficeIds,
+    status,
+  });
+
+  const submitPolicy = async (status) => {
+    try {
+      setIsSubmitting(true);
+      await axiosInstance.post("/config/create/leavePolicy", buildPayload(status), {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      navigate("/config/track/leave/leave-policy/list");
+    } catch (error) {
+      console.log("leave policy create error", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDraftSave = () => submitPolicy("draft");
+  const handleFinalSave = () => submitPolicy("active");
+  const handleBackAction = () => {
+    if (step === 1) {
+      if (typeof onBack === "function") {
+        onBack();
+      } else {
+        navigate("/config/track/leave/leave-policy/list");
+      }
+      return;
+    }
+
+    setStep(step - 1);
+  };
 
   return (
     <div style={{ fontFamily:"sans-serif", fontSize:14, color:"#1e293b", background:"#fff", minHeight:"100vh" }}>
@@ -641,21 +792,21 @@ export default function CreateLeavePolicy({ onBack }) {
       {/* Fixed bottom nav */}
       <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"#fff", borderTop:"1px solid #e5e7eb", padding:"14px 24px", display:"flex", justifyContent:"space-between", alignItems:"center", zIndex:100 }}>
         <button
-          onClick={()=>step===1?(onBack&&onBack()):setStep(step-1)}
+          onClick={handleBackAction}
           style={{ display:"flex", alignItems:"center", gap:6, border:"1px solid #d1d5db", background:"#fff", borderRadius:6, padding:"8px 18px", fontSize:13, color:"#374151", cursor:"pointer", fontWeight:500 }}>
           ← {step===1?"Back to List":"Previous"}
         </button>
 
         <div style={{ display:"flex", gap:12 }}>
           <button
-            onClick={()=>{}}
+            onClick={handleDraftSave}
             style={{ border:"1px solid #3b82f6", background:"#fff", color:"#3b82f6", borderRadius:6, padding:"8px 18px", fontSize:13, cursor:"pointer", fontWeight:500 }}>
-            Save as Draft
+            {isSubmitting ? "Saving..." : "Save as Draft"}
           </button>
 
           {step < 5
             ? <button onClick={()=>setStep(step+1)} style={{ background:"#3b82f6", color:"#fff", border:"none", borderRadius:6, padding:"8px 20px", fontSize:13, cursor:"pointer", fontWeight:600 }}>Next →</button>
-            : <button onClick={()=>onBack&&onBack()} style={{ background:"#22c55e", color:"#fff", border:"none", borderRadius:6, padding:"8px 20px", fontSize:13, cursor:"pointer", fontWeight:600 }}>✓ Save Policy</button>
+            : <button onClick={handleFinalSave} disabled={isSubmitting} style={{ background:"#22c55e", color:"#fff", border:"none", borderRadius:6, padding:"8px 20px", fontSize:13, cursor:"pointer", fontWeight:600 }}>{isSubmitting ? "Saving..." : "Save Policy"}</button>
           }
         </div>
       </div>
@@ -663,3 +814,4 @@ export default function CreateLeavePolicy({ onBack }) {
     </div>
   );
 }
+

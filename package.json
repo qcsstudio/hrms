@@ -17,6 +17,8 @@
     "country-flag-icons": "^1.6.12",
     "crypto-js": "^4.2.0",
     "get_input_empty_fields": "^1.0.4",
+    "jodit": "^4.11.14",
+    "jodit-react": "^5.3.21",
     "react": "^19.2.0",
     "react-datepicker": "^9.1.0",
     "react-dom": "^19.2.0",
