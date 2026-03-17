@@ -60,6 +60,29 @@ export default function Template() {
     );
   };
 
+  const handleEdit = (id) => {
+    setMenuOpen(null);
+    navigate(`/config/organise/template/create?id=${id}&mode=edit`);
+  };
+
+  const handleView = (id) => {
+    setMenuOpen(null);
+    navigate(`/config/organise/template/create?id=${id}&mode=view`);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axiosInstance.put(`/config/delete-template/${id}`, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      setTemplates((prev) => prev.filter((item) => item.id !== id));
+      setMenuOpen(null);
+    } catch (error) {
+      console.log("template delete error", error);
+    }
+  };
+
   return (
     <div className="p-8 max-w-5xl">
       <div className="flex items-start justify-between mb-1">
@@ -138,7 +161,10 @@ export default function Template() {
             </div>
 
             <div className="flex justify-end gap-2 relative">
-              <button className="px-3 h-8 flex items-center justify-center border rounded-lg hover:bg-gray-100 text-sm">
+              <button
+                onClick={() => handleEdit(template.id)}
+                className="px-3 h-8 flex items-center justify-center border rounded-lg hover:bg-gray-100 text-sm"
+              >
                 Edit
               </button>
 
@@ -153,10 +179,16 @@ export default function Template() {
 
               {menuOpen === template.id && (
                 <div className="absolute right-0 top-10 w-28 bg-white border rounded-lg shadow-md z-20 overflow-hidden">
-                  <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50">
+                  <button
+                    onClick={() => handleView(template.id)}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                  >
                     View
                   </button>
-                  <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50">
+                  <button
+                    onClick={() => handleDelete(template.id)}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                  >
                     Delete
                   </button>
                 </div>

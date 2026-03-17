@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import JoditEditor from "jodit-react";
+import "jodit/es2021/jodit.min.css";
 import createAxios from "../../../../utils/axios.config";
 
 const getOfficeDisplayName = (office) =>
@@ -7,7 +9,12 @@ const getOfficeDisplayName = (office) =>
 
 const getOfficeCountryName = (office) => {
   if (typeof office?.country === "string") return office.country;
-  return office?.country?.name || office?.countryName || office?.location?.country || "";
+  return (
+    office?.country?.name ||
+    office?.countryName ||
+    office?.location?.country ||
+    ""
+  );
 };
 
 const collectOfficeCandidates = (value, bucket) => {
@@ -27,7 +34,9 @@ const collectOfficeCandidates = (value, bucket) => {
     bucket.push(value);
   }
 
-  Object.values(value).forEach((child) => collectOfficeCandidates(child, bucket));
+  Object.values(value).forEach((child) =>
+    collectOfficeCandidates(child, bucket)
+  );
 };
 
 const extractCompanyOffices = (payload) => {
@@ -52,6 +61,7 @@ const extractCompanyOffices = (payload) => {
 export default function CreateTemplate({ onCancel, onSave }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const token = localStorage.getItem("authToken");
   const axiosInstance = createAxios(token);
   const [step, setStep] = useState(1);
@@ -61,6 +71,13 @@ export default function CreateTemplate({ onCancel, onSave }) {
   const [subject, setSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
   const [companyOffices, setCompanyOffices] = useState([]);
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+  const [templateOfficeIds, setTemplateOfficeIds] = useState([]);
+
+  const templateId = searchParams.get("id") || "";
+  const mode = searchParams.get("mode") || "create";
+  const isEditMode = mode === "edit";
+  const isViewMode = mode === "view";
 
   const selectedCountry = location.state?.country || "";
   const selectedOffice = location.state?.office || "";
@@ -79,6 +96,43 @@ export default function CreateTemplate({ onCancel, onSave }) {
 
     fetchOffices();
   }, []);
+
+  useEffect(() => {
+    if (!templateId || (!isEditMode && !isViewMode)) return;
+
+    const fetchTemplate = async () => {
+      try {
+        setIsLoadingTemplate(true);
+        const res = await axiosInstance.get(
+          `/config/getOne-template/${templateId}`,
+          {
+            meta: { auth: "ADMIN_AUTH" },
+          }
+        );
+
+        const item = res?.data?.data || res?.data || {};
+
+        setCategory(item?.category || "");
+        setTemplateName(item?.templateName || item?.name || "");
+        setLetterContent(item?.letterContent || item?.content || "");
+        setSubject(item?.email?.subject || item?.subject || "");
+        setEmailBody(item?.email?.body || item?.emailBody || item?.body || "");
+        setTemplateOfficeIds(
+          Array.isArray(item?.companyOfficeId)
+            ? item.companyOfficeId
+                .map((office) => office?._id || office?.id || office)
+                .filter(Boolean)
+            : []
+        );
+      } catch (error) {
+        console.log("template detail error", error);
+      } finally {
+        setIsLoadingTemplate(false);
+      }
+    };
+
+    fetchTemplate();
+  }, [isEditMode, isViewMode, templateId]);
 
   const resolvedCompanyOfficeIds = useMemo(() => {
     if (!selectedCountry) return [];
@@ -108,17 +162,56 @@ export default function CreateTemplate({ onCancel, onSave }) {
     return [];
   }, [companyOffices, selectedCountry, selectedOffice]);
 
+  const editorConfig = useMemo(
+    () => ({
+      readonly: isLoadingTemplate || isViewMode,
+      minHeight: 240,
+      toolbarAdaptive: false,
+      showCharsCounter: false,
+      showWordsCounter: false,
+      showXPathInStatusbar: false,
+      askBeforePasteHTML: false,
+      askBeforePasteFromWord: false,
+      buttons: [
+        "bold",
+        "italic",
+        "underline",
+        "|",
+        "ul",
+        "ol",
+        "|",
+        "font",
+        "fontsize",
+        "brush",
+        "|",
+        "align",
+        "|",
+        "link",
+        "table",
+        "|",
+        "undo",
+        "redo",
+      ],
+    }),
+    [isLoadingTemplate, isViewMode]
+  );
+
+  const buildPayload = () => ({
+    category: category.trim(),
+    templateName: templateName.trim(),
+    letterContent: letterContent.trim(),
+    email: {
+      subject: subject.trim(),
+      body: emailBody.trim(),
+    },
+    companyOfficeId:
+      resolvedCompanyOfficeIds.length > 0
+        ? resolvedCompanyOfficeIds
+        : templateOfficeIds,
+  });
+
   const handleTemplateSave = async () => {
-    const payload = {
-      category: category.trim(),
-      templateName: templateName.trim(),
-      letterContent: letterContent.trim(),
-      email: {
-        subject: subject.trim(),
-        body: emailBody.trim(),
-      },
-      companyOfficeId: resolvedCompanyOfficeIds,
-    };
+    const payload = buildPayload();
 
     try {
       await axiosInstance.post("/config/create-template", payload, {
@@ -135,18 +228,34 @@ export default function CreateTemplate({ onCancel, onSave }) {
     }
   };
 
+  const handleTemplateUpdate = async () => {
+    if (!templateId) return;
+
+    const payload = buildPayload();
+
+    try {
+      await axiosInstance.put(`/config/update-template/${templateId}`, payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      navigate("/config/organise/template/list");
+    } catch (error) {
+      console.log("template update error", error);
+    }
+  };
+
   return (
     <div className="p-8 max-w-4xl">
       <h1 className="text-xl font-bold text-foreground mb-8">
-        Template creation
+        {isViewMode
+          ? "View template"
+          : isEditMode
+          ? "Update template"
+          : "Template creation"}
       </h1>
 
-      {/* STEP 1 */}
       <div
         className={`border rounded-xl p-6 mb-4 ${
-          step >= 1
-            ? "border-primary/30 bg-card"
-            : "border-border bg-muted/30"
+          step >= 1 ? "border-primary/30 bg-card" : "border-border bg-muted/30"
         }`}
       >
         <div className="flex items-center gap-3 mb-5">
@@ -176,6 +285,7 @@ export default function CreateTemplate({ onCancel, onSave }) {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
+                  disabled={isLoadingTemplate || isViewMode}
                   className="w-full border border-border rounded-lg px-3 py-2.5 text-sm bg-card text-foreground"
                 >
                   <option value="">Select category</option>
@@ -197,6 +307,7 @@ export default function CreateTemplate({ onCancel, onSave }) {
                   type="text"
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
+                  disabled={isLoadingTemplate || isViewMode}
                   placeholder="Enter name"
                   className="w-full border border-border rounded-lg px-3 py-2.5 text-sm bg-card text-foreground placeholder:text-muted-foreground"
                 />
@@ -211,50 +322,19 @@ export default function CreateTemplate({ onCancel, onSave }) {
               Make a contextual letter by using variables as placeholders.
             </p>
 
-            {/* TEXT EDITOR */}
-            <div className="border border-border rounded-lg overflow-hidden mb-2">
-              
-              {/* CUSTOM TOOLBAR */}
-              <div className="flex flex-wrap gap-2 border-b border-border bg-muted/40 px-3 py-2 text-sm">
-                <button className="px-2 py-1 rounded hover:bg-muted font-bold">
-                  B
-                </button>
-
-                <button className="px-2 py-1 rounded hover:bg-muted italic">
-                  I
-                </button>
-
-                <button className="px-2 py-1 rounded hover:bg-muted underline">
-                  U
-                </button>
-
-                <button className="px-2 py-1 rounded hover:bg-muted">
-                  • List
-                </button>
-
-                <button className="px-2 py-1 rounded hover:bg-muted">
-                  1. List
-                </button>
-
-                <button className="px-2 py-1 rounded hover:bg-muted">
-                  Link
-                </button>
-
-                <button className="px-2 py-1 rounded hover:bg-muted">
-                  Align
-                </button>
-              </div>
-
-              <textarea
+            <div className="border border-red-500 rounded-lg overflow-hidden mb-2 bg-card [&_.jodit-container]:border-0 [&_.jodit-container]:shadow-none [&_.jodit-workplace]:min-h-[240px] [&_.jodit-toolbar__box]:overflow-x-auto [&_.jodit-toolbar__box]:rounded-none [&_.jodit-status-bar]:hidden [&_.jodit-status-bar]:border-0 [&_.jodit-workplace+div]:hidden">
+              <JoditEditor
                 value={letterContent}
-                onChange={(e) => setLetterContent(e.target.value)}
-                className="w-full h-32 px-3 py-3 text-sm bg-card text-foreground resize-y border-0 outline-none"
-                placeholder="Start typing your letter content..."
+                config={{
+                  ...editorConfig,
+                  placeholder: "Start typing your letter content...",
+                }}
+                onBlur={(newContent) => setLetterContent(newContent)}
               />
             </div>
 
             <p className="text-xs text-muted-foreground flex items-center gap-1 mb-5">
-              <span className="text-warning">★</span>
+              <span className="text-warning">*</span>
               {"Press ' { } ' to see a selectable list of all possible placeholder variables."}
             </p>
 
@@ -265,11 +345,11 @@ export default function CreateTemplate({ onCancel, onSave }) {
                     onCancel();
                     return;
                   }
-                  navigate("/config/organise/template");
+                  navigate("/config/organise/template/list");
                 }}
                 className="px-5 py-2 border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary/5 transition-colors"
               >
-                Preview
+                {isViewMode ? "Back" : "Preview"}
               </button>
 
               <button
@@ -283,7 +363,6 @@ export default function CreateTemplate({ onCancel, onSave }) {
         )}
       </div>
 
-      {/* STEP 2 */}
       <div
         className={`border rounded-xl p-6 ${
           step >= 2
@@ -319,6 +398,7 @@ export default function CreateTemplate({ onCancel, onSave }) {
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
+                  disabled={isLoadingTemplate || isViewMode}
                   className="flex-1 border border-border rounded-lg px-3 py-2.5 text-sm bg-card text-foreground"
                 />
 
@@ -328,7 +408,7 @@ export default function CreateTemplate({ onCancel, onSave }) {
               </div>
 
               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1.5">
-                <span className="text-warning">★</span>
+                <span className="text-warning">*</span>
                 This subject will be visible to the employee when the letter is
                 sent.
               </p>
@@ -339,58 +419,38 @@ export default function CreateTemplate({ onCancel, onSave }) {
                 Body
               </label>
 
-              <div className="border border-border rounded-lg overflow-hidden">
-
-                {/* TOOLBAR */}
-                <div className="flex flex-wrap gap-2 border-b border-border bg-muted/40 px-3 py-2 text-sm">
-                  <button className="px-2 py-1 rounded hover:bg-muted font-bold">
-                    B
-                  </button>
-
-                  <button className="px-2 py-1 rounded hover:bg-muted italic">
-                    I
-                  </button>
-
-                  <button className="px-2 py-1 rounded hover:bg-muted underline">
-                    U
-                  </button>
-
-                  <button className="px-2 py-1 rounded hover:bg-muted">
-                    • List
-                  </button>
-
-                  <button className="px-2 py-1 rounded hover:bg-muted">
-                    1. List
-                  </button>
-
-                  <button className="px-2 py-1 rounded hover:bg-muted">
-                    Link
-                  </button>
-                </div>
-
-                <textarea
+              <div className="border border-border rounded-lg overflow-hidden bg-card [&_.jodit-container]:border-0 [&_.jodit-container]:shadow-none [&_.jodit-workplace]:min-h-[240px] [&_.jodit-toolbar__box]:overflow-x-auto [&_.jodit-toolbar__box]:rounded-none [&_.jodit-status-bar]:hidden [&_.jodit-status-bar]:border-0 [&_.jodit-workplace+div]:hidden">
+                <JoditEditor
                   value={emailBody}
-                  onChange={(e) => setEmailBody(e.target.value)}
-                  className="w-full h-32 px-3 py-3 text-sm bg-card text-foreground resize-y border-0 outline-none"
-                  placeholder="Compose email body..."
+                  config={{
+                    ...editorConfig,
+                    placeholder: "Compose email body...",
+                  }}
+                  onBlur={(newContent) => setEmailBody(newContent)}
                 />
               </div>
             </div>
 
             <div className="flex gap-3">
               <button
-                onClick={() => setStep(1)}
+                onClick={() =>
+                  isViewMode
+                    ? navigate("/config/organise/template/list")
+                    : setStep(1)
+                }
                 className="px-5 py-2 border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary/5 transition-colors"
               >
-                Cancel
+                {isViewMode ? "Back" : "Cancel"}
               </button>
 
-              <button
-                onClick={handleTemplateSave}
-                className="bg-blue-600 text-white px-8 py-2 rounded"
-              >
-                Save
-              </button>
+              {!isViewMode && (
+                <button
+                  onClick={isEditMode ? handleTemplateUpdate : handleTemplateSave}
+                  className="bg-blue-600 text-white px-8 py-2 rounded"
+                >
+                  {isEditMode ? "Update" : "Save"}
+                </button>
+              )}
             </div>
           </>
         )}
