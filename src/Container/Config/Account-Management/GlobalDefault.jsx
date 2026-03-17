@@ -347,9 +347,9 @@ const GlobalDefaults = () => {
     }
   };
 
-  if (!globalSettings ) {
-    return <div>Loading...</div>;
-  }
+  // if (!globalSettings ) {
+  //   return <div>Loading...</div>;
+  // }
 
   const CountryOption = ({ data, innerRef, innerProps }) => (
     <div ref={innerRef} {...innerProps} className="flex items-center gap-2 px-2 py-1 cursor-pointer">

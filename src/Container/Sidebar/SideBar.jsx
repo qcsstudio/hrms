@@ -601,8 +601,7 @@ console.log(ddfinerole,"ddfineroleddfineroleddfinerole")
                             Department
                           </h1>
                           <h1
-                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname ===
-                              "/config/hris/Company_data/designation"
+                            className={`px-4 py-2 font-medium text-[14px] ${loacation.pathname.includes('designation')
                               ? "bg-[#E9F4FF] rounded-md text-[#0575E6]"
                               : "text-[#64748B]"
                               }`}

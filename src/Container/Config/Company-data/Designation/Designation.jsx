@@ -5,31 +5,7 @@ import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 import AssignedEmployeesDrawer from "../Department/AssignedEmployeesDrawer";
-
-const INITIAL_DESIGNATIONS = [
-  {
-    id: 1,
-    name: "Leap Of Faith",
-    date: "12 Jun 2025 11:10 AM",
-    linkedDept: "HR",
-    createdBy: "Admin",
-    assignedEmployees: [],
-  },
-  {
-    id: 2,
-    name: "Senior Manager",
-    date: "12 Jun 2025 11:10 AM",
-    linkedDept: "Finance",
-    createdBy: "Admin",
-    assignedEmployees: [
-      { name: "A B" },
-      { name: "C D" },
-      { name: "E F" },
-      { name: "G H" },
-      { name: "I J" },
-    ],
-  },
-];
+import createAxios from "../../../../utils/axios.config";
 
 const getInitials = (name = "") =>
   name
@@ -39,13 +15,68 @@ const getInitials = (name = "") =>
     .map((part) => part[0]?.toUpperCase())
     .join("") || "--";
 
+const formatDesignationDate = (value) => {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+};
+
+const normalizeEmployees = (employees) => {
+  if (!Array.isArray(employees)) return [];
+
+  return employees.map((employee, index) => ({
+    id: employee?._id || employee?.id || index,
+    name:
+      employee?.name ||
+      employee?.fullName ||
+      employee?.employeeName ||
+      employee?.employee?.fullName ||
+      employee?.employee?.name ||
+      "Unknown",
+  }));
+};
+
+const normalizeDesignation = (item, index) => ({
+  ...item,
+  id: item?._id || item?.id || index,
+  name: item?.designationName || item?.name || "--",
+  date: formatDesignationDate(item?.createdAt || item?.updatedAt),
+  linkedDept:
+    item?.departmentName ||
+    item?.linkedDept ||
+    item?.department?.name ||
+    item?.department ||
+    "--",
+  createdBy:
+    item?.createdBy?.fullName ||
+    item?.createdBy?.name ||
+    item?.createdByName ||
+    item?.createdBy ||
+    "Admin",
+  assignedEmployees: normalizeEmployees(
+    item?.assignedEmployees || item?.employees || item?.employeeList
+  ),
+});
+
 const Designation = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem("authToken");
   const [openMenu, setOpenMenu] = useState(null);
   const [showCountryDialog, setShowCountryDialog] = useState(false);
   const [isAssignedDrawerOpen, setIsAssignedDrawerOpen] = useState(false);
   const [selectedDesignation, setSelectedDesignation] = useState(null);
-  const [data, setData] = useState(INITIAL_DESIGNATIONS);
+  const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -57,6 +88,31 @@ const Designation = () => {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
+
+  useEffect(() => {
+    const fetchDesignations = async () => {
+      try {
+        setIsLoading(true);
+        const axiosInstance = createAxios(token);
+        const response = await axiosInstance.get("/config//getAll-designation", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const designationList = Array.isArray(response?.data?.data)
+          ? response.data.data
+          : [];
+
+        setData(designationList.map(normalizeDesignation));
+      } catch (error) {
+        console.error("Error fetching designations:", error);
+        setData([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDesignations();
+  }, [token]);
 
   const handleDelete = (id) => {
     setData((prev) => prev.filter((item) => item.id !== id));
@@ -108,109 +164,122 @@ const Designation = () => {
           </thead>
 
           <tbody>
-            {data.length === 0 && (
+            {isLoading && (
               <tr>
                 <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-500">
-                  No designations found.
+                  Loading designations...
                 </td>
               </tr>
             )}
 
-            {data.map((item) => (
-              <tr key={item.id} className="border-t border-gray-100 hover:bg-gray-50/70">
-                <td className="px-5 py-4 align-middle">
-                  <div className="font-medium text-gray-900">{item.name}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">{item.date}</div>
-                </td>
-
-                <td className="px-5 py-4 align-middle text-gray-700">{item.linkedDept || "--"}</td>
-
-                <td className="px-5 py-4 align-middle">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
-                    {getInitials(item.createdBy)}
-                  </div>
-                </td>
-
-                <td className="px-5 py-4 align-middle">
-                  {item.assignedEmployees?.length === 0 ? (
-                    <span className="text-gray-400">No Employee Assigned</span>
-                  ) : (
-                    <div className="flex -space-x-2">
-                      {item.assignedEmployees.slice(0, 4).map((emp, index) => (
-                        <div
-                          key={`${item.id}-${emp.name}-${index}`}
-                          className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 border border-white flex items-center justify-center text-xs font-medium"
-                          title={emp.name}
-                        >
-                          {getInitials(emp.name)}
-                        </div>
-                      ))}
-                      {item.assignedEmployees.length > 4 && (
-                        <button
-                          type="button"
-                          onClick={() => openAssignedEmployeesDrawer(item)}
-                          className="w-8 h-8 rounded-full bg-gray-900 text-white border border-white flex items-center justify-center text-xs font-medium hover:bg-black transition outline-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          title="View assigned employees"
-                        >
-                          +{item.assignedEmployees.length - 4}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </td>
-
-                <td className="px-5 py-4 align-middle text-right relative" data-designation-menu>
-                  <div className="flex items-center justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        navigate(`/config/hris/Company_data/edit-designation/${item.id}`, {
-                          state: { designation: item },
-                        })
-                      }
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-blue-600 hover:bg-blue-50 transition hover:translate-y-0"
-                      title="Edit designation"
-                    >
-                      <FiEdit2 className="h-4 w-4" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setOpenMenu((prev) => (prev === item.id ? null : item.id))}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-gray-900 hover:bg-gray-100 transition hover:translate-y-0"
-                      title="More actions"
-                    >
-                      <HiOutlineDotsVertical className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  {openMenu === item.id && (
-                    <div className="absolute right-5 top-12 w-36 overflow-hidden rounded-md border border-gray-200 bg-white divide-y divide-gray-100 z-20">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigate(`/config/hris/Company_data/view-designation/${item.id}`, {
-                            state: { designation: item },
-                          });
-                          setOpenMenu(null);
-                        }}
-                        className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 bg-white shadow-none hover:shadow-none hover:bg-gray-50 transition hover:translate-y-0"
-                      >
-                        View
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(item.id)}
-                        className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 bg-white shadow-none hover:shadow-none hover:bg-red-50 transition hover:translate-y-0"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
+            {!isLoading && data.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-500">
+                  designation not found
                 </td>
               </tr>
-            ))}
+            )}
+
+            {!isLoading &&
+              data.map((item) => (
+                <tr key={item.id} className="border-t border-gray-100 hover:bg-gray-50/70">
+                  <td className="px-5 py-4 align-middle">
+                    <div className="font-medium text-gray-900">{item.name}</div>
+                    {item.date ? (
+                      <div className="text-xs text-gray-400 mt-0.5">{item.date}</div>
+                    ) : null}
+                  </td>
+
+                  <td className="px-5 py-4 align-middle text-gray-700">
+                    {item.linkedDept || "--"}
+                  </td>
+
+                  <td className="px-5 py-4 align-middle">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
+                      {getInitials(item.createdBy)}
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-4 align-middle">
+                    {item.assignedEmployees?.length === 0 ? (
+                      <span className="text-gray-400">No Employee Assigned</span>
+                    ) : (
+                      <div className="flex -space-x-2">
+                        {item.assignedEmployees.slice(0, 4).map((emp, index) => (
+                          <div
+                            key={`${item.id}-${emp.id || emp.name}-${index}`}
+                            className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 border border-white flex items-center justify-center text-xs font-medium"
+                            title={emp.name}
+                          >
+                            {getInitials(emp.name)}
+                          </div>
+                        ))}
+                        {item.assignedEmployees.length > 4 && (
+                          <button
+                            type="button"
+                            onClick={() => openAssignedEmployeesDrawer(item)}
+                            className="w-8 h-8 rounded-full bg-gray-900 text-white border border-white flex items-center justify-center text-xs font-medium hover:bg-black transition outline-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            title="View assigned employees"
+                          >
+                            +{item.assignedEmployees.length - 4}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </td>
+
+                  <td className="px-5 py-4 align-middle text-right relative" data-designation-menu>
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/config/hris/Company_data/edit-designation/${item.id}`, {
+                            state: { designation: item },
+                          })
+                        }
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-blue-600 hover:bg-blue-50 transition hover:translate-y-0"
+                        title="Edit designation"
+                      >
+                        <FiEdit2 className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setOpenMenu((prev) => (prev === item.id ? null : item.id))}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-gray-900 hover:bg-gray-100 transition hover:translate-y-0"
+                        title="More actions"
+                      >
+                        <HiOutlineDotsVertical className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {openMenu === item.id && (
+                      <div className="absolute right-5 top-12 w-36 overflow-hidden rounded-md border border-gray-200 bg-white divide-y divide-gray-100 z-20">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigate(`/config/hris/Company_data/view-designation/${item.id}`, {
+                              state: { designation: item },
+                            });
+                            setOpenMenu(null);
+                          }}
+                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 bg-white shadow-none hover:shadow-none hover:bg-gray-50 transition hover:translate-y-0"
+                        >
+                          View
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(item.id)}
+                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 bg-white shadow-none hover:shadow-none hover:bg-red-50 transition hover:translate-y-0"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
