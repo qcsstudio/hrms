@@ -339,24 +339,27 @@ const AppRoutes = () => {
           }
         >
           <Route path="performance" element={<PerformanceDashboard />} />
-          <Route path="Companyadmin-dashboard" element={<Admindashboard />} />
-          <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
+          <Route path="Companyadmin-dashboard" element={
+            userRole === "COMPANY_ADMIN" && <Admindashboard />}
+          />
+          <Route path="superadmin-dashboard" element={
+        userRole === "SUPER_ADMIN" &&    <SuperAdminDashboard />} />
           <Route path="employee" element={
-            // isEMP ? <Employee /> :
-            isRoleHR_TL_companyAdmin ? <EmployeeHrTL /> : <Employee />
+            // isRoleHR_TL_companyAdmin ? <EmployeeHrTL /> : <Employee />
+            userRole === "EMPLOYEE" ? <Employee /> : <EmployeeHrTL />
             //  <EmployeeHrTL /> 
           } />
           <Route path="employee/add-Employee" element={<AddEmployee />} />
           <Route path="attendance" element={
             //  isEMP ?  <AttendanceEmployee /> : <AttendanceHrTL/>
             // <AttendanceEmployee /> 
-            isRoleHR_TL_companyAdmin ? <AttendanceHrTL /> : <AttendanceEmployee />
+            userRole === "EMPLOYEE" ? <AttendanceEmployee /> : <AttendanceHrTL />
           } />
           <Route path="attendance-calendar" element={<AttendanceCalendar />} />
           <Route path="leave-management" element={
             //  isEMP ?  <LeavemanagementEmployee /> : <LeaveManagementTLHr/>
             // <LeavemanagementEmployee /> 
-            isRoleHR_TL_companyAdmin ? <LeaveManagementTLHr /> : <LeavemanagementEmployee />
+            userRole === "EMPLOYEE" ? <LeavemanagementEmployee /> : <LeaveManagementTLHr />
           } />
           {/* <Route path="payroll" element={<DashboardPayroll1 />} /> */}
           <Route path="payroll" element={<PayrollDashboard />} />
