@@ -108,6 +108,12 @@ const CustomDataList = () => {
       </div>
 
       {/* ================= LIST ================= */}
+      {data.length === 0 && (
+        <div className="bg-white rounded-xl px-4 py-10 mb-3 text-center text-sm text-gray-500 shadow-sm">
+          custom data not found
+        </div>
+      )}
+
       {data.map((item, index) => (
         <div
           key={item._id}

@@ -214,7 +214,7 @@ const CreateTeam = ({ onCancel }) => {
       console.log("team payload", payload);
 
       if (isEdit) {
-        await axiosInstance.patch(`/config/update-team/${teamId}`, payload, {
+        await axiosInstance.put(`/config/update-team/${teamId}`, payload, {
           meta: { auth: "ADMIN_AUTH" },
         });
       } else {

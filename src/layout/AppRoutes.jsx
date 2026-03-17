@@ -339,43 +339,30 @@ const AppRoutes = () => {
           }
         >
           <Route path="performance" element={<PerformanceDashboard />} />
-          <Route path="Companyadmin-dashboard" element={
-            userRole === "COMPANY_ADMIN" && <Admindashboard />}
-          />
-          <Route path="superadmin-dashboard" element={
-        userRole === "SUPER_ADMIN" &&    <SuperAdminDashboard />} />
+          <Route path="Companyadmin-dashboard" element={<Admindashboard />} />
+          <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
           <Route path="employee" element={
             // isRoleHR_TL_companyAdmin ? <EmployeeHrTL /> : <Employee />
-            userRole === "EMPLOYEE" ? <Employee /> : <EmployeeHrTL />
+            userRole === "EMPLOYEE" ? <Employee /> : <EmployeeHrTL /> 
             //  <EmployeeHrTL /> 
           } />
           <Route path="employee/add-Employee" element={<AddEmployee />} />
           <Route path="attendance" element={
             //  isEMP ?  <AttendanceEmployee /> : <AttendanceHrTL/>
             // <AttendanceEmployee /> 
-            userRole === "EMPLOYEE" ? <AttendanceEmployee /> : <AttendanceHrTL />
+             userRole === "EMPLOYEE" ? <AttendanceEmployee /> : <AttendanceHrTL /> 
           } />
           <Route path="attendance-calendar" element={<AttendanceCalendar />} />
           <Route path="leave-management" element={
             //  isEMP ?  <LeavemanagementEmployee /> : <LeaveManagementTLHr/>
             // <LeavemanagementEmployee /> 
-            userRole === "EMPLOYEE" ? <LeavemanagementEmployee /> : <LeaveManagementTLHr />
+             userRole === "EMPLOYEE" ?<LeavemanagementEmployee /> :  <LeaveManagementTLHr /> 
           } />
           {/* <Route path="payroll" element={<DashboardPayroll1 />} /> */}
           <Route path="payroll" element={<PayrollDashboard />} />
           <Route path="run-payroll" element={<PayrollOverviewPage />} />
-          {/* <Route path="payroll" element={<DashboardPayroll2 />} /> */}
-          {/* <Route path="payroll" element={<Dashboardpayroll3 />} /> */}
-          {/* <Route path="payroll" element={<Dashboardpayroll4 />} /> */}
-          {/* <Route path="payroll" element={<DashboardPayroll5 />} /> */}
-          {/* <Route path="payroll" element={<Dashboardpayroll6 />} /> */}
-          {/* <Route path="payroll" element={<Dashboardpayroll7 />} /> */}
-          {/* <Route path="payroll" element={<Dashboardpayroll8 />} /> */}
-          {/* <Route path="payroll" element={<Dashboardpayroll9 />} /> */}
-          {/* <Route path="payroll" element={<Dashboardpayroll10 />} /> */}
-          {/* <Route path="payroll" element={<Dashboardpayroll11 />} /> */}
-          {/* <Route path="payroll" element={<Dashboardpayroll12 />} /> */}
-          \        </Route>
+        
+                  </Route>
 
         <Route path="/Addingyourself" element={<Addingyourself />} />
         <Route path="/employee-Profile" element={<EmployeeProfile />} />
