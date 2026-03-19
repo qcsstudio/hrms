@@ -1,12 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaAngleDown } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
-
-const LOCATION_DATA = {
-  India: ["Mohali Office", "Delhi Office", "Mumbai Office"],
-  "United States": ["New York Office", "San Francisco Office", "Chicago Office"],
-  "United Arab Emirates": ["Dubai Office", "Abu Dhabi Office"],
-};
+import createAxios from "../../utils/axios.config";
 
 const FormDivSelect = ({
   options = [],
@@ -87,21 +82,81 @@ const FormDivSelect = ({
 };
 
 const CreateCountryPopup = ({ onClose, onContinue }) => {
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedOffice, setSelectedOffice] = useState("");
   const [applyAll, setApplyAll] = useState(false);
+  const [countryList, setCountryList] = useState([]);
+  const [officeOptions, setOfficeOptions] = useState([]);
+  const [isLoadingCountries, setIsLoadingCountries] = useState(false);
+  const [isLoadingOffices, setIsLoadingOffices] = useState(false);
 
-  const countries = useMemo(() => Object.keys(LOCATION_DATA), []);
-  const offices = selectedCountry ? LOCATION_DATA[selectedCountry] || [] : [];
   const countryOptions = useMemo(
-    () => countries.map((country) => ({ value: country, label: country })),
-    [countries]
-  );
-  const officeOptions = useMemo(
-    () => offices.map((office) => ({ value: office, label: office })),
-    [offices]
+    () => countryList,
+    [countryList]
   );
   const isContinueDisabled = !selectedCountry || (!applyAll && !selectedOffice);
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        setIsLoadingCountries(true);
+        const response = await axiosInstance.get("/config/company-offices-data?country=", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        const countries = Array.isArray(response?.data?.countries)
+          ? response.data.countries
+          : [];
+
+        setCountryList(
+          countries.map((country) => ({
+            value: country,
+            label: country,
+          }))
+        );
+      } catch (error) {
+        setCountryList([]);
+      } finally {
+        setIsLoadingCountries(false);
+      }
+    };
+
+    fetchCountries();
+  }, [axiosInstance]);
+
+  useEffect(() => {
+    const fetchOffices = async () => {
+      if (!selectedCountry) {
+        setOfficeOptions([]);
+        return;
+      }
+
+      try {
+        setIsLoadingOffices(true);
+        const response = await axiosInstance.get(
+          `/config/company-offices-data?country=${encodeURIComponent(selectedCountry)}`,
+          {
+            meta: { auth: "ADMIN_AUTH" },
+          }
+        );
+        const offices = Array.isArray(response?.data?.offices) ? response.data.offices : [];
+        setOfficeOptions(
+          offices.map((office) => ({
+            value: office?._id || office?.id || "",
+            label: office?.locationName || office?.officeName || office?.name || "Unnamed office",
+            id: office?._id || office?.id || "",
+          }))
+        );
+      } catch (error) {
+        setOfficeOptions([]);
+      } finally {
+        setIsLoadingOffices(false);
+      }
+    };
+
+    fetchOffices();
+  }, [axiosInstance, selectedCountry]);
 
   useEffect(() => {
     const handleEsc = (event) => {
@@ -112,11 +167,36 @@ const CreateCountryPopup = ({ onClose, onContinue }) => {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
+  useEffect(() => {
+    const allOfficeIds = officeOptions.map((option) => option.id).filter(Boolean);
+    const selectedOfficeOption = officeOptions.find((option) => option.value === selectedOffice);
+
+    if (applyAll) {
+      localStorage.setItem("companyOfficeId", JSON.stringify(allOfficeIds));
+      return;
+    }
+
+    if (selectedOfficeOption?.id) {
+      localStorage.setItem("companyOfficeId", JSON.stringify([selectedOfficeOption.id]));
+    }
+  }, [applyAll, officeOptions, selectedOffice]);
+
   const handleContinue = () => {
+    const selectedOfficeOption = officeOptions.find((option) => option.value === selectedOffice);
+    const selectedOfficeId = selectedOfficeOption?.id || "";
+    const allOfficeIds = officeOptions.map((option) => option.id).filter(Boolean);
+
+    if (applyAll) {
+      localStorage.setItem("companyOfficeId", JSON.stringify(allOfficeIds));
+    } else if (selectedOfficeId) {
+      localStorage.setItem("companyOfficeId", JSON.stringify([selectedOfficeId]));
+    }
+
     onContinue?.({
       country: selectedCountry,
-      office: applyAll ? null : selectedOffice,
+      office: applyAll ? null : selectedOfficeOption?.label || "",
       applyAll,
+      officeId: selectedOfficeId,
     });
   };
 
@@ -160,6 +240,9 @@ const CreateCountryPopup = ({ onClose, onContinue }) => {
               }}
               placeholder="Choose country"
             />
+            {isLoadingCountries && (
+              <p className="mt-2 text-xs text-gray-500">Loading countries...</p>
+            )}
           </div>
 
           <label className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5 bg-gray-50">
@@ -178,10 +261,19 @@ const CreateCountryPopup = ({ onClose, onContinue }) => {
               <FormDivSelect
                 options={officeOptions}
                 value={selectedOffice}
-                onSelect={setSelectedOffice}
+                onSelect={(value) => {
+                  const selectedOption = officeOptions.find((option) => option.value === value);
+                  setSelectedOffice(value);
+                  if (selectedOption?.id) {
+                    localStorage.setItem("companyOfficeId", JSON.stringify([selectedOption.id]));
+                  }
+                }}
                 placeholder="Choose office"
-                disabled={!selectedCountry}
+                disabled={!selectedCountry || isLoadingOffices}
               />
+              {isLoadingOffices && (
+                <p className="mt-2 text-xs text-gray-500">Loading offices...</p>
+              )}
             </div>
           )}
         </div>
