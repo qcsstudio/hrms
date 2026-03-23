@@ -140,10 +140,28 @@ const BooleanSection = ({ title, name, value, onChange }) => {
 };
 
 export default function CreateProbation() {
-  const { token } = useSelector((state) => state.user);
+const token = localStorage.getItem("authToken");
+const axiosInstance = createAxios(token);
   const navigate = useNavigate();
-  const axiosInstance = createAxios(token);
   const dispatch = useDispatch();
+
+  // ── companyOfficeId: read from localStorage on mount, then remove it
+  const [companyOfficeId, setCompanyOfficeId] = useState([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("companyOfficeId");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setCompanyOfficeId(Array.isArray(parsed) ? parsed : [parsed]);
+      }
+    } catch (e) {
+      console.error("Failed to parse companyOfficeId from localStorage:", e);
+    }
+
+    // ── Remove from localStorage after reading
+  
+  }, []);
 
   const [formData, setFormData] = useState({
     policyName: "",
@@ -185,14 +203,20 @@ export default function CreateProbation() {
 
   const handleSave = async () => {
     try {
-      const res = await axiosInstance.post("/config/create-probation", formData, {
+      // ── Include companyOfficeId in the payload
+      const payload = {
+        ...formData,
+        companyOfficeId,
+      };
+
+      const res = await axiosInstance.post("/config/create-probation", payload, {
         meta: { auth: "ADMIN_AUTH" },
       });
-
+  localStorage.removeItem("companyOfficeId");
       console.log(res?.data);
       dispatch(getprobitiondata(res?.data?.data));
 
-      navigate(PROBATION_LIST_ROUTE);
+      navigate("/config/hris/Employee-data/probation-list");
     } catch (error) {
       console.error("API Error:", error);
     }
