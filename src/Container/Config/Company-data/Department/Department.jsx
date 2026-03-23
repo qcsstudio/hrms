@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 import AssignedEmployeesDrawer from "./AssignedEmployeesDrawer";
 import createAxios from "../../../../utils/axios.config";
-
+import { toast } from "react-toastify";
 const getInitials = (name = "") =>
   name
     .split(" ")
@@ -108,7 +108,7 @@ const Department = () => {
       try {
         setIsLoading(true);
         const axiosInstance = createAxios(token);
-        const response = await axiosInstance.get("/config//all-department", {
+        const response = await axiosInstance.get("/config/all-department", {
           meta: { auth: "ADMIN_AUTH" },
         });
 
@@ -128,10 +128,26 @@ const Department = () => {
     fetchDepartments();
   }, [token]);
 
-  const handleDelete = (id) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
-    setOpenMenu(null);
+ const handleDelete = async (id) => {
+    const department = data.find((item) => item.id === id);
+    const departmentName = department?.name || "Department";
+ 
+    try {
+      const axiosInstance = createAxios(token);
+      await axiosInstance.delete(`/config/delete-department/${id}`);
+ 
+      // Remove from local state
+      setData((prev) => prev.filter((item) => item.id !== id));
+      setOpenMenu(null);
+ 
+      // Toast with department name
+      toast.success(`"${departmentName}" deleted successfully`);
+    } catch (error) {
+      console.error("Error deleting department:", error);
+      toast.error(`Failed to delete "${departmentName}"`);
+    }
   };
+ 
 
   const handleCreate = () => {
     navigate("/config/hris/Company_data/department/create");

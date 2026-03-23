@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss()
   ],
    build: {
-    chunkSizeWarningLimit: 1000, // increase limit
+    chunkSizeWarningLimit: 3000, // increase limit
 
     rollupOptions: {
       output: {

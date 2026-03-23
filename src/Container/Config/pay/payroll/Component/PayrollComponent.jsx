@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import createAxios from "../../../../../utils/axios.config";
+import { createPortal } from "react-dom";
 
 /* ───── India Payroll Component Data ───── */
 const componentCards = [
@@ -83,6 +86,7 @@ const componentCards = [
     ], journal: "-",
   },
 ];
+void componentCards;
 
 /* Readymade component options (shown in dropdown when "Use readymade" is checked) */
 const readymadeOptions = [
@@ -334,10 +338,17 @@ const Card = ({ card, selectable, selected, onSelect }) => (
    MAIN PAGE
 ══════════════════════════════════════ */
 const PayrollComponent = () => {
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
+
   const [activeTab, setActiveTab]          = useState("all");
   const [newOpen, setNewOpen]              = useState(false);
   const [statutoryView, setStatutoryView]  = useState(false);
   const [selectedStatutory, setSelectedSt] = useState({});
+  const [statutory, setStatutory]          = useState([]);
+  const [saving, setSaving]                = useState(false);
+  const [loading, setLoading]              = useState(false);
+  const [components, setComponents]        = useState([]);
 
   /* panel form */
   const [useReadymade, setUseReadymade]   = useState(false);
@@ -352,22 +363,187 @@ const PayrollComponent = () => {
   const [accrual, setAccrual]             = useState("");
   const [journal, setJournal]             = useState("");
 
+  const getStoredOfficeIds = () => {
+    const rawValue =
+      localStorage.getItem("companyOfficeId") ||
+      localStorage.getItem("officeId") ||
+      "";
+
+    if (!rawValue) return [];
+
+    try {
+      const parsed = JSON.parse(rawValue);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item) => typeof item === "string" && item.trim());
+      }
+      if (typeof parsed === "string" && parsed.trim()) {
+        return [parsed.trim()];
+      }
+    } catch (error) {
+      if (typeof rawValue === "string" && rawValue.trim()) {
+        return [rawValue.trim()];
+      }
+    }
+
+    return [];
+  };
+
+  const generateComponentCode = (value) => {
+    const base = (value || "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, "")
+      .slice(0, 10);
+
+    if (!base) {
+      return `COMP${Date.now().toString().slice(-4)}`;
+    }
+
+    return `${base}${Date.now().toString().slice(-3)}`;
+  };
+
+  const mapApiComponentToCard = (item = {}) => {
+    const type = item?.Income
+      ? "Income"
+      : item?.employeeDeduction || item?.employerDeduction
+      ? "Deduction"
+      : "Deduction";
+
+    return {
+      id: item?._id || item?.id || item?.componentCode || item?.componentName,
+      type,
+      name: item?.componentName || "-",
+      code: item?.componentCode || item?._id || item?.id,
+      attributes: [
+        { label: "Income", ok: Boolean(item?.Income) },
+        { label: "CTC", ok: Boolean(item?.CTC) },
+        { label: "Taxed", ok: Boolean(item?.isTaxable) },
+        { label: "Variable", ok: Boolean(item?.isVariable) },
+        { label: "Accrual", ok: Boolean(item?.willAccrue) },
+        { label: "Statutory", ok: Boolean(item?.isStatutory) },
+        { label: "Statutory Deduction", ok: Boolean(item?.isStatutoryDeduction) },
+      ],
+      journal: item?.journalVoucher ? "Enabled" : "-",
+    };
+  };
+
+  const fetchComponents = async (tab = activeTab) => {
+    const endpoint =
+      tab === "income"
+        ? "/config/get-all/component?status=1"
+        : tab === "deduction"
+        ? "/config/get-all/component?status=2"
+        : "/config/get-all/component";
+
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get(endpoint, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      const list = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response?.data?.data)
+        ? response.data.data
+        : Array.isArray(response?.data?.components)
+        ? response.data.components
+        : [];
+
+      setComponents(list.map(mapApiComponentToCard));
+    } catch (error) {
+      console.error("Error fetching payroll components:", error);
+      setComponents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const reset = () => {
     setUseReadymade(false); setReadymadeComp(""); setCompName(""); setCompType("");
     setSubType(""); setIsVariable(""); setExtraPay(""); setIsTaxable("");
     setTaxGroup(""); setAccrual(""); setJournal("");
   };
 
+  useEffect(() => {
+    fetchComponents(activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    setStatutory(components);
+  }, [components]);
+
+  const handleOpenStatutoryView = async () => {
+    setStatutory(
+      componentCards.filter(
+        (c) =>
+          c.type === "Deduction" &&
+          c.attributes.some((a) => a.label === "Statutory" && a.ok)
+      )
+    );
+    setStatutoryView(true);
+  };
+
+  const handleCreateComponent = async () => {
+    const componentName = compName.trim() || readymadeComp.trim();
+    const companyOfficeId = getStoredOfficeIds();
+
+    if (!componentName) {
+      toast.error("Component name is required.");
+      return;
+    }
+
+    if (!compType) {
+      toast.error("Please select component type.");
+      return;
+    }
+
+    const payload = {
+      componentName,
+      componentCode: generateComponentCode(componentName),
+      useReadymade,
+      readymadeComponent: useReadymade ? readymadeComp : "",
+      Income: compType === "income",
+      employeeDeduction: compType === "employee-deduction",
+      employerDeduction: compType === "employer-deduction",
+      CTC: subType === "ctc",
+      Non_Ctc: subType === "non-ctc",
+      isVariable: isVariable === "yes",
+      isExtraPayment: extraPay === "yes",
+      isTaxable: isTaxable === "yes",
+      taxGroup: taxGroup || "General",
+      willAccrue: accrual === "yes",
+      recoverExtraDeduction:
+        (compType === "employee-deduction" || compType === "employer-deduction") &&
+        extraPay === "yes",
+      isStatutory: false,
+      isStatutoryDeduction: false,
+      journalVoucher: Boolean(journal.trim()),
+      isActive: true,
+      companyOfficeId,
+    };
+
+    try {
+      setSaving(true);
+      await axiosInstance.post("/config/create/component", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      toast.success("Component created successfully!");
+      reset();
+      setNewOpen(false);
+      fetchComponents(activeTab);
+    } catch (error) {
+      console.error("Error creating payroll component:", error);
+      toast.error(
+        error?.response?.data?.message || "Failed to create component. Please try again."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const tabs     = ["all", "income", "deduction"];
   const tabLabel = { all: "All", income: "Income", deduction: "Deduction" };
 
-  const filtered = componentCards.filter((c) =>
-    activeTab === "all" ? true : activeTab === "income" ? c.type === "Income" : c.type === "Deduction"
-  );
-
-  const statutory = componentCards.filter((c) =>
-    c.attributes.some((a) => a.label === "Statutory" && a.ok)
-  );
 
   /* ── Statutory chooser view ── */
   if (statutoryView) return (
@@ -378,6 +554,8 @@ const PayrollComponent = () => {
           <IcoBack />
         </button>
         <h1 className="text-xl font-bold text-gray-900">Choose Statutory Components</h1>
+
+        
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {statutory.map((c) => (
@@ -405,7 +583,7 @@ const PayrollComponent = () => {
           <p className="text-sm text-gray-500 mt-0.5">Your payslips, salary structure, tax documents, and payroll support.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setStatutoryView(true)}
+          <button type="button" onClick={handleOpenStatutoryView}
             className="px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors">
             Choose Statutory Component
           </button>
@@ -434,17 +612,29 @@ const PayrollComponent = () => {
 
       {/* Card grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {filtered.map((c) => <Card key={c.code} card={c} />)}
+        {loading && (
+          <div className="col-span-full py-10 text-center text-sm text-gray-500">
+            Loading...
+          </div>
+        )}
+        {!loading && components.length === 0 && (
+          <div className="col-span-full py-10 text-center text-sm text-gray-500">
+            No data found
+          </div>
+        )}
+        {!loading && components.map((c) => (
+          <Card key={c.id || c.code} card={c} />
+        ))}
       </div>
 
       {/* ══ NEW COMPONENT PANEL ══ */}
-      {newOpen && (
+      {newOpen && createPortal(
         <>
           {/* Backdrop */}
-          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setNewOpen(false)} />
+          <div className="fixed inset-0 bg-black/40 z-4000" onClick={() => setNewOpen(false)} />
 
           {/* Slide-over */}
-          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl flex flex-col">
+          <div className="fixed inset-y-0 right-0 z-5000 w-full max-w-md bg-white shadow-2xl flex flex-col">
 
             {/* Panel header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
@@ -555,13 +745,14 @@ const PayrollComponent = () => {
 
             {/* Footer — Create Component button */}
             <div className="px-5 py-4 border-t border-gray-100">
-              <button type="button" onClick={() => setNewOpen(false)}
-                className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">
-                Create Component
+              <button type="button" onClick={handleCreateComponent} disabled={saving}
+                className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                {saving ? "Creating..." : "Create Component"}
               </button>
             </div>
           </div>
-        </>
+        </>,
+          document.body
       )}
     </div>
   );

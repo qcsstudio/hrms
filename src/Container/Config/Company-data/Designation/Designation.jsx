@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 import AssignedEmployeesDrawer from "../Department/AssignedEmployeesDrawer";
 import createAxios from "../../../../utils/axios.config";
-
+import { toast } from "react-toastify";
 const getInitials = (name = "") =>
   name
     .split(" ")
@@ -77,7 +77,7 @@ const Designation = () => {
   const [selectedDesignation, setSelectedDesignation] = useState(null);
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
+ const [deletingId, setDeletingId] = useState(null);
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (!event.target.closest("[data-designation-menu]")) {
@@ -94,7 +94,7 @@ const Designation = () => {
       try {
         setIsLoading(true);
         const axiosInstance = createAxios(token);
-        const response = await axiosInstance.get("/config//getAll-designation", {
+        const response = await axiosInstance.get("/config/getAll-designation", {
           meta: { auth: "ADMIN_AUTH" },
         });
 
@@ -114,10 +114,35 @@ const Designation = () => {
     fetchDesignations();
   }, [token]);
 
-  const handleDelete = (id) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
+ const handleDelete = async (id, name) => {
     setOpenMenu(null);
+ 
+    try {
+      setDeletingId(id);
+      const axiosInstance = createAxios(token);
+ 
+      await axiosInstance.delete(`/config/delete-designation/${id}`, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+ 
+      // Remove from local state
+      setData((prev) => prev.filter((item) => item.id !== id));
+ 
+      toast.success(`"${name}" deleted successfully`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      console.error("Error deleting designation:", error);
+      toast.error(`Failed to delete "${name}". Please try again.`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } finally {
+      setDeletingId(null);
+    }
   };
+ 
 
   const handleCreate = () => {
     navigate("/config/hris/Company_data/create-designation");
@@ -267,13 +292,13 @@ const Designation = () => {
                         >
                           View
                         </button>
-
-                        <button
+ <button
                           type="button"
-                          onClick={() => handleDelete(item.id)}
-                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 bg-white shadow-none hover:shadow-none hover:bg-red-50 transition hover:translate-y-0"
+                          onClick={() => handleDelete(item.id, item.name)}
+                          disabled={deletingId === item.id}
+                          className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 bg-white shadow-none hover:shadow-none hover:bg-red-50 transition hover:translate-y-0 disabled:opacity-50"
                         >
-                          Delete
+                          {deletingId === item.id ? "Deleting..." : "Delete"}
                         </button>
                       </div>
                     )}
