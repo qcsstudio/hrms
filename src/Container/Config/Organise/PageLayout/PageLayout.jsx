@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import createAxios from "../../../../utils/axios.config";
 
 const defaultMargins = {
   narrow: { top: "1.27", bottom: "1.27", left: "1.27", right: "1.27" },
@@ -7,21 +8,45 @@ const defaultMargins = {
 };
 
 const PageLayout = () => {
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
+
   const [headerImage, setHeaderImage] = useState(null);
   const [footerImage, setFooterImage] = useState(null);
+  const [headerFile, setHeaderFile] = useState(null);
+  const [footerFile, setFooterFile] = useState(null);
+  const [headerChanged, setHeaderChanged] = useState(false);
+  const [footerChanged, setFooterChanged] = useState(false);
   const [selectedMargin, setSelectedMargin] = useState("narrow");
   const [margins, setMargins] = useState(defaultMargins.narrow);
   const [showPreview, setShowPreview] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const headerRef = useRef(null);
   const footerRef = useRef(null);
 
-  const handleImageUpload = (e, setter) => {
+  const toMarginString = (value, fallback = "0") => {
+    if (value === null || value === undefined || value === "") return fallback;
+    return String(value);
+  };
+
+  const toPreviewMarginCm = (value) => {
+    const parsedValue = Number(value);
+    if (!Number.isFinite(parsedValue)) return 0;
+
+    // Keep preview stable even if backend contains unusually large margin values.
+    return Math.min(Math.max(parsedValue, 0), 2.5);
+  };
+
+  const handleImageUpload = (e, previewSetter, fileSetter, markChanged) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    fileSetter(file);
+    markChanged(true);
+
     const reader = new FileReader();
-    reader.onload = (ev) => setter(ev.target.result);
+    reader.onload = (ev) => previewSetter(ev.target.result);
     reader.readAsDataURL(file);
   };
 
@@ -32,6 +57,95 @@ const PageLayout = () => {
 
   const handleMarginChange = (side, value) => {
     setMargins((prev) => ({ ...prev, [side]: value }));
+  };
+
+  useEffect(() => {
+    const fetchPageLayout = async () => {
+      try {
+        const res = await axiosInstance.get("/config/page-layout-getOne", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const data = res?.data?.data || {};
+
+        const layoutType = ["narrow", "moderate", "wide"].includes(data?.pageMargins?.type)
+          ? data.pageMargins.type
+          : "narrow";
+
+        setSelectedMargin(layoutType);
+        setMargins({
+          top: toMarginString(data?.pageMargins?.top, defaultMargins[layoutType].top),
+          bottom: toMarginString(data?.pageMargins?.bottom, defaultMargins[layoutType].bottom),
+          left: toMarginString(data?.pageMargins?.left, defaultMargins[layoutType].left),
+          right: toMarginString(data?.pageMargins?.right, defaultMargins[layoutType].right),
+        });
+
+        setShowPreview(Boolean(data?.previewEnabled));
+        setHeaderImage(data?.headerImage?.url || null);
+        setFooterImage(data?.footerImage?.url || null);
+        setHeaderFile(null);
+        setFooterFile(null);
+        setHeaderChanged(false);
+        setFooterChanged(false);
+      } catch (error) {
+        // Keep defaults when no record exists or request fails.
+      }
+    };
+
+    fetchPageLayout();
+  }, []);
+
+  const handleSave = async () => {
+    if (isSaving) return;
+
+    try {
+      setIsSaving(true);
+
+      const formData = new FormData();
+      formData.append("previewEnabled", String(showPreview));
+
+      formData.append(
+        "pageMargins",
+        JSON.stringify({
+          type: selectedMargin,
+          top: Number(margins.top || 0),
+          bottom: Number(margins.bottom || 0),
+          left: Number(margins.left || 0),
+          right: Number(margins.right || 0),
+        })
+      );
+
+      if (headerChanged && headerFile) {
+        formData.append("headerImage", headerFile);
+      }
+
+      if (footerChanged && footerFile) {
+        formData.append("footerImage", footerFile);
+      }
+
+      await axiosInstance.post("/config/page-layout", formData, {
+        meta: { auth: "ADMIN_AUTH" },
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setHeaderFile(null);
+      setFooterFile(null);
+      setHeaderChanged(false);
+      setFooterChanged(false);
+
+      alert("Page layout saved successfully");
+    } catch (error) {
+      alert(error?.response?.data?.message || "Failed to save page layout");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const previewMargins = {
+    top: toPreviewMarginCm(margins.top),
+    bottom: toPreviewMarginCm(margins.bottom),
+    left: toPreviewMarginCm(margins.left),
+    right: toPreviewMarginCm(margins.right),
   };
 
   return (
@@ -73,7 +187,9 @@ const PageLayout = () => {
                 type="file"
                 accept=".png,.jpg,.jpeg,.svg"
                 className="hidden"
-                onChange={(e) => handleImageUpload(e, setHeaderImage)}
+                onChange={(e) =>
+                  handleImageUpload(e, setHeaderImage, setHeaderFile, setHeaderChanged)
+                }
               />
             </div>
 
@@ -101,7 +217,9 @@ const PageLayout = () => {
                 type="file"
                 accept=".png,.jpg,.jpeg,.svg"
                 className="hidden"
-                onChange={(e) => handleImageUpload(e, setFooterImage)}
+                onChange={(e) =>
+                  handleImageUpload(e, setFooterImage, setFooterFile, setFooterChanged)
+                }
               />
             </div>
           </div>
@@ -184,7 +302,10 @@ const PageLayout = () => {
 
           {/* Save */}
           <div className="flex justify-end mt-10">
-            <button className="bg-blue-600 text-white px-8 py-2 rounded-lg hover:opacity-90">
+            <button
+              onClick={handleSave}
+              className="bg-blue-600 text-white px-8 py-2 rounded-lg hover:opacity-90"
+            >
               Save
             </button>
           </div>
@@ -198,10 +319,10 @@ const PageLayout = () => {
             <div
               className="absolute border border-dashed border-blue-400"
               style={{
-                top: `${margins.top}cm`,
-                bottom: `${margins.bottom}cm`,
-                left: `${margins.left}cm`,
-                right: `${margins.right}cm`,
+                top: `${previewMargins.top}cm`,
+                bottom: `${previewMargins.bottom}cm`,
+                left: `${previewMargins.left}cm`,
+                right: `${previewMargins.right}cm`,
               }}
             />
 
@@ -210,9 +331,9 @@ const PageLayout = () => {
               <div
                 className="absolute"
                 style={{
-                  top: `calc(${margins.top}cm + 4px)`,
-                  left: `${margins.left}cm`,
-                  right: `${margins.right}cm`,
+                  top: `calc(${previewMargins.top}cm + 4px)`,
+                  left: `${previewMargins.left}cm`,
+                  right: `${previewMargins.right}cm`,
                 }}
               >
                 <img
@@ -228,9 +349,9 @@ const PageLayout = () => {
               <div
                 className="absolute"
                 style={{
-                  bottom: `calc(${margins.bottom}cm + 4px)`,
-                  left: `${margins.left}cm`,
-                  right: `${margins.right}cm`,
+                  bottom: `calc(${previewMargins.bottom}cm + 4px)`,
+                  left: `${previewMargins.left}cm`,
+                  right: `${previewMargins.right}cm`,
                 }}
               >
                 <img

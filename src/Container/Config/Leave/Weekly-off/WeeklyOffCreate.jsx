@@ -220,8 +220,14 @@ export default function WeeklyOffCreate() {
   const location = useLocation();
   const token = localStorage.getItem("authToken");
   const axiosInstance = createAxios(token);
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const mode = queryParams.get("mode") || "create";
+  const editingId = queryParams.get("id") || "";
+  const isEditMode = mode === "edit" && Boolean(editingId);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [companyOffices, setCompanyOffices] = useState([]);
+  const [isEditLoading, setIsEditLoading] = useState(false);
 
   // Step 1 - Describe
   const [name, setName] = useState("");
@@ -246,7 +252,6 @@ const [refreshAccLimited, setRefreshAccLimited] = useState(null);
 const [refreshFreqLimited, setRefreshFreqLimited] = useState("");
 
   const [draftSaved, setDraftSaved] = useState(false);
-  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const selectedCountry = queryParams.get("country") || "";
   const selectedOffice = queryParams.get("office") || "";
 
@@ -264,6 +269,83 @@ const [refreshFreqLimited, setRefreshFreqLimited] = useState("");
 
     fetchOffices();
   }, []);
+
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    const normalizeGrid = (incomingGrid) => {
+      if (!Array.isArray(incomingGrid) || incomingGrid.length !== 5) {
+        return Array.from({ length: 5 }, () => Array(7).fill("off"));
+      }
+
+      return incomingGrid.map((row) => {
+        if (!Array.isArray(row) || row.length !== 7) return Array(7).fill("off");
+        return row.map((cell) => (cell === "full" || cell === "half" ? cell : "off"));
+      });
+    };
+
+    const normalizeLastWeek = (incomingRow) => {
+      if (!Array.isArray(incomingRow) || incomingRow.length !== 7) {
+        return Array(7).fill("off");
+      }
+
+      return incomingRow.map((cell) => (cell === "full" || cell === "half" ? cell : "off"));
+    };
+
+    const prefillWeeklyOff = (payload) => {
+      if (!payload || typeof payload !== "object") return;
+
+      setName(payload?.name || "");
+      setDescription(payload?.description || "");
+      setGrid(normalizeGrid(payload?.grid));
+
+      const shouldSpecifyLastWeek = Boolean(payload?.specifyLastWeek);
+      setSpecifyLastWeek(shouldSpecifyLastWeek ? "yes" : "no");
+      setLastWeekRow(normalizeLastWeek(payload?.lastWeekRow));
+
+      const hasAccumulation = Boolean(payload?.accumulation);
+      setAccumulation(hasAccumulation ? "yes" : "no");
+
+      const normalizedAccType = payload?.accType === "limited" ? "limited" : "unlimited";
+      setAccType(normalizedAccType);
+
+      const shouldRefresh = Boolean(payload?.refreshAcc);
+      const refreshValue = shouldRefresh ? "yes" : "no";
+      const refreshTypeValue = payload?.refreshType || "monthly";
+
+      if (normalizedAccType === "limited") {
+        setLimitCount(payload?.limitCount ? String(payload.limitCount) : "");
+        setRefreshAccLimited(refreshValue);
+        setRefreshFreqLimited(shouldRefresh ? refreshTypeValue : "");
+        setRefreshAcc(null);
+        setRefreshFrequency("");
+      } else {
+        setRefreshAcc(refreshValue);
+        setRefreshFrequency(shouldRefresh ? refreshTypeValue : "");
+        setLimitCount("");
+        setRefreshAccLimited(null);
+        setRefreshFreqLimited("");
+      }
+    };
+
+    const fetchOneWeeklyOff = async () => {
+      try {
+        setIsEditLoading(true);
+        const res = await axiosInstance.get(`/config/getOne/weekoff/${editingId}`, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const payload = res?.data?.data || res?.data || {};
+        prefillWeeklyOff(payload);
+      } catch (error) {
+        console.log("weekly off getOne error", error);
+      } finally {
+        setIsEditLoading(false);
+      }
+    };
+
+    fetchOneWeeklyOff();
+  }, [isEditMode, editingId]);
 
   const selectedCompanyOfficeIds = useMemo(() => {
     if (!selectedCountry) return [];
@@ -327,9 +409,17 @@ const [refreshFreqLimited, setRefreshFreqLimited] = useState("");
   const saveWeeklyOff = async (isDraft) => {
     try {
       const payload = buildPayload(isDraft);
-      await axiosInstance.post("/config/weekOff/create", payload, {
-        meta: { auth: "ADMIN_AUTH" },
-      });
+
+      if (isEditMode) {
+        await axiosInstance.put(`/config/weekly-off-update/${editingId}`, payload, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+      } else {
+        await axiosInstance.post("/config/weekOff/create", payload, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+      }
+
       setDraftSaved(true);
       setTimeout(() => setDraftSaved(false), 2500);
 
@@ -391,6 +481,12 @@ const [refreshFreqLimited, setRefreshFreqLimited] = useState("");
       </div>
 
       <div style={{ flex: 1,  margin: "0 auto", width: "100%", padding: "0 32px" }}>
+
+        {isEditLoading && (
+          <div style={{ marginBottom: 16, color: "#64748b", fontSize: 13 }}>
+            Loading weekly off details...
+          </div>
+        )}
 
         {/* STEP 1 - Describe */}
         {currentStep === 0 && (
@@ -768,7 +864,7 @@ const [refreshFreqLimited, setRefreshFreqLimited] = useState("");
               onClick={() => saveWeeklyOff(false)}
               style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 6, padding: "7px 18px", fontSize: 13, cursor: "pointer" }}
             >
-              Submit
+              {isEditMode ? "Update" : "Submit"}
             </button>
           )}
         </div>
