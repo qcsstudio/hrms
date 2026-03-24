@@ -8,7 +8,6 @@ const createAxios = (token,inviteToken) => {
     // baseURL: "http://192.168.1.16:7001",
     // baseURL: "http://192.168.1.14:7001",
     // baseURL: "http://192.168.1.16:6001",
-
     withCredentials: true,
   });
 
