@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import createAxios from "../../../../../utils/axios.config";
 
 /* ------------------ HELPERS ------------------ */
 
@@ -15,6 +17,25 @@ const defaultBifurcation = () => ({
   endHours: "",
   endMin: "",
   paymentCalc: "",
+});
+
+const mapBifurcations = (bifurcations = []) =>
+  Array.isArray(bifurcations) && bifurcations.length > 0
+    ? bifurcations.map((item, index) => ({
+        id: Date.now() + index + Math.random(),
+        startHours: item?.startHours != null ? String(item.startHours).padStart(2, "0") : "",
+        startMin: item?.startMin != null ? String(item.startMin).padStart(2, "0") : "",
+        endHours: item?.endHours != null ? String(item.endHours).padStart(2, "0") : "",
+        endMin: item?.endMin != null ? String(item.endMin).padStart(2, "0") : "",
+        paymentCalc: item?.paymentCalc || "",
+      }))
+    : [defaultBifurcation()];
+
+const mapSectionState = (section = {}) => ({
+  enabled: Boolean(section?.enabled),
+  minHours: section?.minHours != null ? String(section.minHours).padStart(2, "0") : "",
+  minMin: section?.minMin != null ? String(section.minMin).padStart(2, "0") : "",
+  bifurcations: mapBifurcations(section?.bifurcations),
 });
 
 const SelectInput = ({
@@ -211,8 +232,11 @@ const OvertimeSectionBlock = ({ title, section, onChange }) => {
 /* ------------------ MAIN COMPONENT ------------------ */
 
 export default function OvertimePaymentPolicy() {
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
 
   const [policyName, setPolicyName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const [workDay, setWorkDay] = useState({
     enabled: true,
@@ -230,6 +254,89 @@ export default function OvertimePaymentPolicy() {
 
   const [calcMethod, setCalcMethod] = useState("");
   const [approval, setApproval] = useState("");
+
+  useEffect(() => {
+    const fetchOvertimePolicy = async () => {
+      try {
+        const response = await axiosInstance.get("/config/get-overtime-policy", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const policy =
+          response?.data?.data || response?.data?.policy || response?.data || {};
+
+        if (!policy || Object.keys(policy).length === 0) {
+          return;
+        }
+
+        setPolicyName(policy?.policyName || "");
+        setWorkDay(mapSectionState(policy?.workDay));
+        setNonWorkDay(mapSectionState(policy?.nonWorkDay));
+        setCalcMethod(policy?.calcMethod || "");
+        setApproval(policy?.approval || "");
+      } catch (error) {
+        console.error("Error fetching overtime payment policy:", error);
+      }
+    };
+
+    fetchOvertimePolicy();
+  }, [axiosInstance]);
+
+  const normalizeSection = (section) => ({
+    enabled: Boolean(section.enabled),
+    minHours: Number(section.minHours) || 0,
+    minMin: Number(section.minMin) || 0,
+    bifurcations: Array.isArray(section.bifurcations)
+      ? section.bifurcations.map((item) => ({
+          startHours: Number(item.startHours) || 0,
+          startMin: Number(item.startMin) || 0,
+          endHours: Number(item.endHours) || 0,
+          endMin: Number(item.endMin) || 0,
+          paymentCalc: item.paymentCalc || "",
+        }))
+      : [],
+  });
+
+  const handleSavePolicy = async () => {
+    if (!policyName.trim()) {
+      toast.error("Please enter policy name");
+      return;
+    }
+
+    if (!calcMethod) {
+      toast.error("Please select calculation method");
+      return;
+    }
+
+    if (!approval) {
+      toast.error("Please select approval option");
+      return;
+    }
+
+    const payload = {
+      policyName: policyName.trim(),
+      workDay: normalizeSection(workDay),
+      nonWorkDay: normalizeSection(nonWorkDay),
+      calcMethod,
+      approval,
+    };
+
+    try {
+      setIsSaving(true);
+      await axiosInstance.post("/config/create-update-overtime-policy", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      toast.success("Overtime payment policy saved successfully");
+    } catch (error) {
+      console.error("Error saving overtime payment policy:", error);
+      toast.error(
+        error?.response?.data?.message || "Failed to save overtime payment policy"
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -290,8 +397,13 @@ export default function OvertimePaymentPolicy() {
           />
         </div>
 
-        <button className="bg-blue-600 text-white px-6 py-2 rounded">
-          Save Policy
+        <button
+          type="button"
+          onClick={handleSavePolicy}
+          disabled={isSaving}
+          className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-60"
+        >
+          {isSaving ? "Saving..." : "Save Policy"}
         </button>
 
       </div>

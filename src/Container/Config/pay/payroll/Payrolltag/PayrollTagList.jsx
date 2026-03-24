@@ -171,7 +171,7 @@ const PayrollTagList = () => {
         <div>Value Type</div>
         <div>Created By</div>
         <div>Assigned Employee</div>
-        <div className="text-right">Action</div>
+        {/* <div className="text-right">Action</div> */}
       </div>
 
       <div className="space-y-4 mt-4">
@@ -198,7 +198,7 @@ const PayrollTagList = () => {
               <div>{tag.createdBy}</div>
               <div>{tag.assignedCount} Employees</div>
 
-              <div className="flex justify-end" ref={dropdownRef}>
+              {/* <div className="flex justify-end" ref={dropdownRef}>
                 <button
                   type="button"
                   onClick={() => setOpenMenu((prev) => (prev === tag.id ? null : tag.id))}
@@ -206,7 +206,7 @@ const PayrollTagList = () => {
                 >
                   ...
                 </button>
-              </div>
+              </div> */}
             </div>
           ))}
       </div>

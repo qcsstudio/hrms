@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { FiEdit2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 import createAxios from "../../../../utils/axios.config";
@@ -14,6 +15,7 @@ export default function WeeklyOffList() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showCountryDialog, setShowCountryDialog] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState("");
 
   const handleCreate = () => {
     setShowCountryDialog(false);
@@ -98,6 +100,35 @@ export default function WeeklyOffList() {
     return [];
   };
 
+  const getPolicyId = (policy) => policy?._id || policy?.id;
+
+  const handleEdit = (policyId) => {
+    if (!policyId) return;
+    navigate(`/config/track/leave/Weekly-off/create?mode=edit&id=${policyId}`);
+  };
+
+  const handleDelete = async (policyId, policyName) => {
+    if (!policyId) return;
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${policyName || "this weekly off"}"?`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      setActionLoadingId(policyId);
+      await axiosInstance.delete(`/config/weekly-off-delete/${policyId}`, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      setPolicies((prev) => prev.filter((item) => getPolicyId(item) !== policyId));
+    } catch (error) {
+      setErrorMessage(error?.response?.data?.message || "Unable to delete weekly off policy.");
+    } finally {
+      setActionLoadingId("");
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between">
@@ -139,11 +170,12 @@ export default function WeeklyOffList() {
         </button>
       </div>
 
-      <div className="grid grid-cols-[2fr_1fr_2fr_1fr] gap-4 px-4 py-3 mt-6 text-sm text-gray-500 font-medium border-b">
+      <div className="grid grid-cols-[2fr_1fr_2fr_1fr_auto] gap-4 px-4 py-3 mt-6 text-sm text-gray-500 font-medium border-b">
         <span>Weekly-off Name</span>
         <span>Created By</span>
         <span>Assigned Employee</span>
         <span className="text-center">Version</span>
+        <span className="text-right">Action</span>
       </div>
 
       <div className="space-y-4 mt-4">
@@ -165,10 +197,12 @@ export default function WeeklyOffList() {
             const assignedEmployees = getAssignedEmployees(policy);
             const createdByName = getCreatedBy(policy);
 
+            const policyId = getPolicyId(policy);
+
             return (
               <div
-                key={policy?._id || policy?.id}
-                className="grid grid-cols-[2fr_1fr_2fr_1fr] gap-4 items-center bg-white border rounded-xl px-4 py-4"
+                key={policyId}
+                className="grid grid-cols-[2fr_1fr_2fr_1fr_auto] gap-4 items-center bg-white border rounded-xl px-4 py-4"
               >
                 <div>
                   <p className="text-sm font-medium">{policy?.name || "-"}</p>
@@ -212,6 +246,27 @@ export default function WeeklyOffList() {
 
                 <div className="text-center text-sm font-medium text-gray-700">
                   {policy?.version ?? 0}
+                </div>
+
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(policyId)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition"
+                    title="Edit weekly off"
+                  >
+                    <FiEdit2 className="h-4 w-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(policyId, policy?.name)}
+                    disabled={actionLoadingId === policyId}
+                    className="px-3 py-1.5 text-xs font-medium rounded-md text-red-600 hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                    title="Delete weekly off"
+                  >
+                    {actionLoadingId === policyId ? "Deleting..." : "Delete"}
+                  </button>
                 </div>
               </div>
             );
