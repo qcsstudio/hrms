@@ -5,7 +5,7 @@ import { getSlug } from "../Components/CompanySlug";
 const createAxios = (token,inviteToken) => {
   const instance = axios.create({
     baseURL: "https://api.qcsstudios.com",
-    // baseURL: "http://192.168.1.16:7001",
+    // baseURL: "http://192.168.1.9:7001",
     // baseURL: "http://192.168.1.14:7001",
     // baseURL: "http://192.168.1.16:6001",
     withCredentials: true,
@@ -14,7 +14,6 @@ const createAxios = (token,inviteToken) => {
   instance.interceptors.request.use((config) => {
     const slug = getSlug();
     const auth = config.meta?.auth; // 👈 component se aata hai
-
     switch (auth) {
       case "TENANT_AUTH":
         if (token) {

@@ -1,15 +1,66 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import createAxios from "../../../../../utils/axios.config";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
-  "Allowance", "Travel", "Personal Vehicle Expense", "Stay",
-  "Skill Development", "Meals and Entertainment", "Utilities", "Office Expenses", "Commute",
+  "Allowance",
+  "Travel",
+  "Personal Vehicle Expense",
+  "Stay",
+  "Skill Development",
+  "Meals and Entertainment",
+  "Utilities",
+  "Office Expenses",
+  "Commute",
 ];
 
-const trainClasses = ["All", "AC Seater", "AC Semi sleeper", "AC Sleeper", "Non-AC Seater", "Non-AC Semi-Sleeper", "Non AC Sleeper"];
-const busClasses = ["All", "AC Seater", "AC Semi sleeper", "AC Sleeper", "Non-AC Seater", "Non-AC Semi-Sleeper", "Non AC Sleeper"];
-const airClasses = ["All", "Business Class", "Economy Class", "First Class", "Premium Class"];
-const fuelTypes = ["All", "Diesel", "Electricity", "Natural Gas (CNG)", "Petrol"];
-const consumptionTypes = ["All", "Volume", "Distance"];
+const trainClasses = [
+  "1A - First class AC",
+  "2A - AC two tier",
+  "2S - Seater class",
+  "3A - AC three tier",
+  "CC - AC chair car",
+  "General",
+  "SL - Sleeper class",
+];
+const busClasses = [
+  "AC Seater",
+  "AC-Semi sleeper",
+  "AC Sleeper",
+  "Non-AC Seater",
+  "Non-AC Semi-Sleeper",
+  "Non AC Sleeper",
+];
+const airClasses = [
+  "All",
+  "Business Class",
+  "Economy Class",
+  "First Class",
+  "Premium Class",
+];
+const fuelTypes = ["Diesel", "Electricity", "Natural Gas (CNG)", "Petrol"];
+const consumptionTypes = ["Volume", "Distance"];
+
+const getStoredOfficeIds = () => {
+  const rawValue =
+    localStorage.getItem("companyOfficeId") ||
+    localStorage.getItem("officeId") ||
+    "";
+
+  if (!rawValue) return [];
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((item) => typeof item === "string" && item.trim());
+    }
+  } catch (error) {
+    // Ignore invalid JSON and use string fallback.
+  }
+
+  return /^[a-f\d]{24}$/i.test(rawValue) ? [rawValue] : [];
+};
 
 const steps = [
   { id: 1, label: "Policy Details" },
@@ -17,51 +68,126 @@ const steps = [
   { id: 3, label: "Advance Settings" },
 ];
 
-// Blue shared styles
 const blue = {
   activeCircle: {
-    width: 36, height: 36, borderRadius: "50%",
-    backgroundColor: "#2563EB", color: "#fff",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    fontWeight: "bold", fontSize: 14, border: "2px solid #2563EB", flexShrink: 0,
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    backgroundColor: "#2563EB",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+    fontSize: 14,
+    border: "2px solid #2563EB",
+    flexShrink: 0,
   },
   completedCircle: {
-    width: 36, height: 36, borderRadius: "50%",
-    backgroundColor: "#DBEAFE", color: "#2563EB",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    fontWeight: "bold", fontSize: 14, border: "2px solid #2563EB", flexShrink: 0,
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    backgroundColor: "#DBEAFE",
+    color: "#2563EB",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+    fontSize: 14,
+    border: "2px solid #2563EB",
+    flexShrink: 0,
   },
   inactiveCircle: {
-    width: 36, height: 36, borderRadius: "50%",
-    backgroundColor: "#fff", color: "#9CA3AF",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    fontWeight: "bold", fontSize: 14, border: "2px solid #D1D5DB", flexShrink: 0,
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    backgroundColor: "#fff",
+    color: "#9CA3AF",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+    fontSize: 14,
+    border: "2px solid #D1D5DB",
+    flexShrink: 0,
   },
-  activeLine: { flex: 1, height: 2, backgroundColor: "#2563EB", margin: "0 8px", marginBottom: 16 },
-  inactiveLine: { flex: 1, height: 2, backgroundColor: "#D1D5DB", margin: "0 8px", marginBottom: 16 },
-  activeLabel: { marginTop: 4, fontSize: 12, fontWeight: 600, color: "#2563EB", whiteSpace: "nowrap" },
-  inactiveLabel: { marginTop: 4, fontSize: 12, fontWeight: 500, color: "#9CA3AF", whiteSpace: "nowrap" },
+  activeLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: "#2563EB",
+    margin: "0 8px",
+    marginBottom: 16,
+  },
+  inactiveLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: "#D1D5DB",
+    margin: "0 8px",
+    marginBottom: 16,
+  },
+  activeLabel: {
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#2563EB",
+    whiteSpace: "nowrap",
+  },
+  inactiveLabel: {
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: 500,
+    color: "#9CA3AF",
+    whiteSpace: "nowrap",
+  },
   primaryBtn: {
-    backgroundColor: "#2563EB", color: "#fff", border: "none",
-    padding: "10px 24px", borderRadius: 6, fontSize: 14, fontWeight: 500, cursor: "pointer",
+    backgroundColor: "#2563EB",
+    color: "#fff",
+    border: "none",
+    padding: "10px 24px",
+    borderRadius: 6,
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: "pointer",
   },
   outlineBtn: {
-    backgroundColor: "#fff", color: "#374151", border: "1px solid #D1D5DB",
-    padding: "10px 24px", borderRadius: 6, fontSize: 14, fontWeight: 500, cursor: "pointer",
+    backgroundColor: "#fff",
+    color: "#374151",
+    border: "1px solid #D1D5DB",
+    padding: "10px 24px",
+    borderRadius: 6,
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: "pointer",
   },
   input: {
-    height: 40, borderRadius: 6, border: "1px solid #D1D5DB",
-    backgroundColor: "#fff", padding: "0 12px", fontSize: 14, outline: "none",
-    width: "100%", boxSizing: "border-box",
+    height: 40,
+    borderRadius: 8,
+    border: "1px solid #DCE3EE",
+    backgroundColor: "#fff",
+    padding: "0 12px",
+    fontSize: 14,
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
   },
   select: {
-    height: 40, borderRadius: 6, border: "1px solid #D1D5DB",
-    backgroundColor: "#fff", padding: "0 12px", fontSize: 14, outline: "none",
-    width: "100%", boxSizing: "border-box",
+    height: 40,
+    borderRadius: 8,
+    border: "1px solid #DCE3EE",
+    backgroundColor: "#fff",
+    padding: "0 12px",
+    fontSize: 14,
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  faintLabel: {
+    fontSize: 12,
+    color: "#7B8794",
+    fontWeight: 500,
   },
 };
 
-// Fixed Toggle Component — thumb stays inside using overflow:hidden + left positioning
 const Toggle = ({ value, onChange }) => (
   <div
     onClick={() => onChange(!value)}
@@ -94,6 +220,9 @@ const Toggle = ({ value, onChange }) => (
 );
 
 const CreateExpensePolicy = () => {
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
   const [policyName, setPolicyName] = useState("");
@@ -113,32 +242,111 @@ const CreateExpensePolicy = () => {
   const [advanceRequest, setAdvanceRequest] = useState(true);
   const [maxAdvance, setMaxAdvance] = useState("");
   const [lowerLimit, setLowerLimit] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const updateCatLimit = (cat, field, val) => {
     setCatLimits((prev) => ({ ...prev, [cat]: { ...prev[cat], [field]: val } }));
   };
 
-  const handleSubmit = () => {
-    alert("Expense policy created!");
+  const handleSubmit = async () => {
+    if (!policyName.trim()) {
+      toast.error("Please enter policy name");
+      return;
+    }
+
+    const companyOfficeId = getStoredOfficeIds();
+
+    const payload = {
+      policyName: policyName.trim(),
+      companyOfficeId,
+      description: description.trim(),
+      monthlyLimit: Number(monthlyLimit) || 0,
+      allowance: categorySelections["Allowance"] === "enabled",
+      travel: categorySelections["Travel"] === "enabled",
+      personalVehicle: categorySelections["Personal Vehicle Expense"] === "enabled",
+      stay: categorySelections["Stay"] === "enabled",
+      skillDevelopment: categorySelections["Skill Development"] === "enabled",
+      mealsEntertainment: categorySelections["Meals and Entertainment"] === "enabled",
+      utilities: categorySelections["Utilities"] === "enabled",
+      officeExpenses: categorySelections["Office Expenses"] === "enabled",
+      commute: categorySelections["Commute"] === "enabled",
+      allowanceLimit: Number(catLimits["Allowance"]?.limit) || 0,
+      allowanceAmount: Number(catLimits["Allowance"]?.amount) || 0,
+      travelLimit: Number(catLimits["Travel"]?.limit) || 0,
+      travelAmount: Number(catLimits["Travel"]?.amount) || 0,
+      personalVehicleLimit: Number(catLimits["Personal Vehicle Expense"]?.limit) || 0,
+      personalVehicleAmount: Number(catLimits["Personal Vehicle Expense"]?.amount) || 0,
+      stayLimit: Number(catLimits["Stay"]?.limit) || 0,
+      stayAmount: Number(catLimits["Stay"]?.amount) || 0,
+      skillDevelopmentLimit: Number(catLimits["Skill Development"]?.limit) || 0,
+      skillDevelopmentAmount: Number(catLimits["Skill Development"]?.amount) || 0,
+      mealsEntertainmentLimit: Number(catLimits["Meals and Entertainment"]?.limit) || 0,
+      mealsEntertainmentAmount: Number(catLimits["Meals and Entertainment"]?.amount) || 0,
+      utilitiesLimit: Number(catLimits["Utilities"]?.limit) || 0,
+      utilitiesAmount: Number(catLimits["Utilities"]?.amount) || 0,
+      officeExpensesLimit: Number(catLimits["Office Expenses"]?.limit) || 0,
+      officeExpensesAmount: Number(catLimits["Office Expenses"]?.amount) || 0,
+      commuteLimit: Number(catLimits["Commute"]?.limit) || 0,
+      commuteAmount: Number(catLimits["Commute"]?.amount) || 0,
+      trainClass: trainClass ? [trainClass] : [],
+      busClass: busClass ? [busClass] : [],
+      airClass: airClass ? [airClass] : [],
+      fuelType: fuelType ? [fuelType] : [],
+      consumptionType: consumptionType ? [consumptionType] : [],
+      advancePayment,
+      maxWithoutReceipt: Number(maxWithoutReceipt) || 0,
+      advanceRequest,
+      maxAdvance: Number(maxAdvance) || 0,
+      lowerLimit: Number(lowerLimit) || 0,
+    };
+
+    try {
+      setIsSaving(true);
+      await axiosInstance.post("/config/create-expensePolicy", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      toast.success("Expense policy created successfully");
+      navigate("/config/pay/expensive/expense-policy/list");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to create expense policy");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <div style={{ maxWidth: 820, padding: "24px 32px" }}>
+    <div style={{ padding: "24px 32px" }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Create Expense Policy</h1>
       <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4, marginBottom: 24 }}>
         Manage employee directory, documents, and role-based actions.
       </p>
 
-      {/* ── Stepper ── */}
-      <div style={{ backgroundColor: "#EFF6FF", borderRadius: 8, padding: "16px 24px", marginBottom: 32 }}>
+      <div
+        style={{
+          backgroundColor: "#EFF6FF",
+          borderRadius: 8,
+          padding: "16px 24px",
+          marginBottom: 32,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "flex-start" }}>
           {steps.map((s, idx) => (
             <div key={s.id} style={{ display: "flex", alignItems: "center", flex: 1 }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <div style={step === s.id ? blue.activeCircle : step > s.id ? blue.completedCircle : blue.inactiveCircle}>
+                <div
+                  style={
+                    step === s.id
+                      ? blue.activeCircle
+                      : step > s.id
+                      ? blue.completedCircle
+                      : blue.inactiveCircle
+                  }
+                >
                   {step > s.id ? "✓" : s.id}
                 </div>
-                <span style={step === s.id ? blue.activeLabel : blue.inactiveLabel}>{s.label}</span>
+                <span style={step === s.id ? blue.activeLabel : blue.inactiveLabel}>
+                  {s.label}
+                </span>
               </div>
               {idx < steps.length - 1 && (
                 <div style={step > s.id ? blue.activeLine : blue.inactiveLine} />
@@ -148,12 +356,18 @@ const CreateExpensePolicy = () => {
         </div>
       </div>
 
-      {/* ── Step 1 ── */}
       {step === 1 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div>
-            <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Lets give this policy a name</p>
-            <input style={blue.input} value={policyName} onChange={(e) => setPolicyName(e.target.value)} placeholder="Enter policy name" />
+            <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+              Lets give this policy a name
+            </p>
+            <input
+              style={blue.input}
+              value={policyName}
+              onChange={(e) => setPolicyName(e.target.value)}
+              placeholder="Enter policy name"
+            />
           </div>
           <div>
             <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Description</p>
@@ -166,19 +380,32 @@ const CreateExpensePolicy = () => {
             />
           </div>
           <div>
-            <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Select the categories and types to be assigned</p>
+            <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>
+              Select the categories and types to be assigned
+            </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               {categories.map((cat) => (
                 <div key={cat}>
                   <p style={{ fontSize: 13, marginBottom: 4, color: "#374151" }}>{cat}</p>
-                  <div style={{
-                    border: categorySelections[cat] === "enabled" ? "2px solid #2563EB" : "1px solid #D1D5DB",
-                    borderRadius: 6, overflow: "hidden",
-                    boxShadow: categorySelections[cat] === "enabled" ? "0 0 0 2px #DBEAFE" : "none",
-                  }}>
+                  <div
+                    style={{
+                      border:
+                        categorySelections[cat] === "enabled"
+                          ? "2px solid #2563EB"
+                          : "1px solid #D1D5DB",
+                      borderRadius: 6,
+                      overflow: "hidden",
+                      boxShadow:
+                        categorySelections[cat] === "enabled"
+                          ? "0 0 0 2px #DBEAFE"
+                          : "none",
+                    }}
+                  >
                     <select
                       value={categorySelections[cat] || ""}
-                      onChange={(e) => setCategorySelections((prev) => ({ ...prev, [cat]: e.target.value }))}
+                      onChange={(e) =>
+                        setCategorySelections((prev) => ({ ...prev, [cat]: e.target.value }))
+                      }
                       style={{ ...blue.select, border: "none", outline: "none" }}
                     >
                       <option value="">Choose Account</option>
@@ -191,70 +418,190 @@ const CreateExpensePolicy = () => {
             </div>
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, paddingTop: 8 }}>
-            <button style={blue.outlineBtn}>Cancel</button>
-            <button style={blue.primaryBtn} onClick={() => setStep(2)}>Next</button>
+            <button
+              style={blue.outlineBtn}
+              onClick={() => navigate("/config/pay/expensive/expense-policy/list")}
+            >
+              Cancel
+            </button>
+            <button style={blue.primaryBtn} onClick={() => setStep(2)}>
+              Next
+            </button>
           </div>
         </div>
       )}
 
-      {/* ── Step 2 ── */}
       {step === 2 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div>
             <p style={{ fontSize: 13, color: "#374151", marginBottom: 8 }}>
               Assign monthly expense limit to <strong>{policyName || "this"}</strong> Policy
             </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input style={{ ...blue.input, width: 160 }} value={monthlyLimit} onChange={(e) => setMonthlyLimit(e.target.value)} placeholder="Enter amount" />
-              <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                style={{ ...blue.input, width: 154, fontSize: 12 }}
+                value={monthlyLimit}
+                onChange={(e) => setMonthlyLimit(e.target.value)}
+                placeholder="Choose Account"
+              />
+              <span style={{ fontSize: 13, color: "#6B7280" }}>₹</span>
             </div>
           </div>
 
-          <div style={{ borderTop: "1px solid #E5E7EB" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 180px 180px", gap: 16, padding: "12px 0", fontSize: 13, color: "#6B7280", fontWeight: 600 }}>
-              <span>Categories</span><span>Limit</span><span>Amount</span>
+          <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: 8 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "170px 238px 238px",
+                columnGap: 24,
+                padding: "8px 0 4px",
+                borderBottom: "1px solid #E5E7EB",
+              }}
+            >
+              <span style={{ ...blue.faintLabel, paddingLeft: 18 }}>categories</span>
+              <span style={blue.faintLabel}>Limit</span>
+              <span style={blue.faintLabel}>Amount</span>
             </div>
+
             {categories.map((cat) => (
               <div key={cat}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 180px 180px", gap: 16, padding: "12px 0", borderTop: "1px solid #E5E7EB", alignItems: "center" }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{cat}</span>
-                  <input style={blue.input} value={catLimits[cat]?.limit || ""} onChange={(e) => updateCatLimit(cat, "limit", e.target.value)} placeholder="Enter limit" />
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "170px 238px 238px",
+                    columnGap: 24,
+                    padding: "12px 0",
+                    alignItems: "start",
+                  }}
+                >
+                  <span style={{ fontSize: 13, color: "#111827", paddingTop: 8, paddingLeft: 18 }}>
+                    {cat}
+                  </span>
+                  <input
+                    style={{ ...blue.input, width: 155, fontSize: 12 }}
+                    value={catLimits[cat]?.limit || ""}
+                    onChange={(e) => updateCatLimit(cat, "limit", e.target.value)}
+                    placeholder="Choose Account"
+                  />
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <input style={blue.input} value={catLimits[cat]?.amount || ""} onChange={(e) => updateCatLimit(cat, "amount", e.target.value)} placeholder="Enter amount" />
-                    <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
+                    <input
+                      style={{ ...blue.input, width: 155, fontSize: 12 }}
+                      value={catLimits[cat]?.amount || ""}
+                      onChange={(e) => updateCatLimit(cat, "amount", e.target.value)}
+                      placeholder="Choose Account"
+                    />
+                    <span style={{ fontSize: 13, color: "#6B7280" }}>₹</span>
                   </div>
                 </div>
+
                 {cat === "Travel" && (
-                  <div style={{ marginLeft: 32, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 12 }}>
+                  <div
+                    style={{
+                      marginLeft: 194,
+                      width: 336,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                      paddingBottom: 12,
+                    }}
+                  >
                     {[
-                      { label: "Train", value: trainClass, onChange: setTrainClass, options: trainClasses },
-                      { label: "Bus", value: busClass, onChange: setBusClass, options: busClasses },
-                      { label: "Air", value: airClass, onChange: setAirClass, options: airClasses },
+                      {
+                        label: "Train",
+                        value: trainClass,
+                        onChange: setTrainClass,
+                        options: trainClasses,
+                      },
+                      {
+                        label: "Bus",
+                        value: busClass,
+                        onChange: setBusClass,
+                        options: busClasses,
+                      },
+                      {
+                        label: "Air",
+                        value: airClass,
+                        onChange: setAirClass,
+                        options: airClasses,
+                      },
                     ].map((field) => (
                       <div key={field.label}>
-                        <p style={{ fontSize: 13, color: "#374151", marginBottom: 4 }}>{field.label}</p>
-                        <select value={field.value} onChange={(e) => field.onChange(e.target.value)} style={{ ...blue.select, width: 300 }}>
+                        <p style={{ fontSize: 13, color: "#111827", marginBottom: 4 }}>
+                          {field.label}
+                        </p>
+                        <select
+                          value={field.value}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          style={{
+                            ...blue.select,
+                            width: "100%",
+                            fontSize: 12,
+                            color: field.value ? "#111827" : "#9CA3AF",
+                          }}
+                        >
                           <option value="">Enter Class</option>
-                          {field.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                          {field.options.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     ))}
                   </div>
                 )}
+
                 {cat === "Personal Vehicle Expense" && (
-                  <div style={{ marginLeft: 32, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 12 }}>
+                  <div
+                    style={{
+                      marginLeft: 194,
+                      width: 336,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                      paddingBottom: 12,
+                    }}
+                  >
                     <div>
-                      <p style={{ fontSize: 13, color: "#374151", marginBottom: 4 }}>Fuel</p>
-                      <select value={fuelType} onChange={(e) => setFuelType(e.target.value)} style={{ ...blue.select, width: 300 }}>
-                        <option value="">Enter Fuel Type</option>
-                        {fuelTypes.map((o) => <option key={o} value={o}>{o}</option>)}
+                      <p style={{ fontSize: 13, color: "#111827", marginBottom: 4 }}>Fuel</p>
+                      <select
+                        value={fuelType}
+                        onChange={(e) => setFuelType(e.target.value)}
+                        style={{
+                          ...blue.select,
+                          width: "100%",
+                          fontSize: 12,
+                          color: fuelType ? "#111827" : "#9CA3AF",
+                        }}
+                      >
+                        <option value="">Enter Class</option>
+                        {fuelTypes.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
-                      <p style={{ fontSize: 13, color: "#374151", marginBottom: 4 }}>Consumption type</p>
-                      <select value={consumptionType} onChange={(e) => setConsumptionType(e.target.value)} style={{ ...blue.select, width: 300 }}>
-                        <option value="">Enter Consumption Type</option>
-                        {consumptionTypes.map((o) => <option key={o} value={o}>{o}</option>)}
+                      <p style={{ fontSize: 13, color: "#111827", marginBottom: 4 }}>
+                        Consumption type
+                      </p>
+                      <select
+                        value={consumptionType}
+                        onChange={(e) => setConsumptionType(e.target.value)}
+                        style={{
+                          ...blue.select,
+                          width: "100%",
+                          fontSize: 12,
+                          color: consumptionType ? "#111827" : "#9CA3AF",
+                        }}
+                      >
+                        <option value="">Enter Class</option>
+                        {consumptionTypes.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -264,68 +611,113 @@ const CreateExpensePolicy = () => {
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8 }}>
-            <button style={blue.outlineBtn} onClick={() => setStep(1)}>Back</button>
-            <button style={blue.primaryBtn} onClick={() => setStep(3)}>Next</button>
+            <button style={blue.outlineBtn} onClick={() => setStep(1)}>
+              Back
+            </button>
+            <button style={blue.primaryBtn} onClick={() => setStep(3)}>
+              Next
+            </button>
           </div>
         </div>
       )}
 
-      {/* ── Step 3 ── */}
       {step === 3 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-
-          {/* Toggle 1 */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            border: "1px solid #D1D5DB", borderRadius: 8, padding: "16px",
-            backgroundColor: advancePayment ? "#EFF6FF" : "#fff",
-          }}>
-            <span style={{ fontSize: 13, color: "#374151" }}>Allow employee to request for advance payment</span>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              border: "1px solid #D1D5DB",
+              borderRadius: 8,
+              padding: "16px",
+              backgroundColor: advancePayment ? "#EFF6FF" : "#fff",
+            }}
+          >
+            <span style={{ fontSize: 13, color: "#374151" }}>
+              Allow employee to request for advance payment
+            </span>
             <Toggle value={advancePayment} onChange={setAdvancePayment} />
           </div>
 
           {advancePayment && (
             <div>
-              <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Maximum amount without receipt</p>
+              <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                Maximum amount without receipt
+              </p>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <input style={{ ...blue.input, width: 160 }} value={maxWithoutReceipt} onChange={(e) => setMaxWithoutReceipt(e.target.value)} placeholder="Enter amount" />
-                <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
+                <input
+                  style={{ ...blue.input, width: 160 }}
+                  value={maxWithoutReceipt}
+                  onChange={(e) => setMaxWithoutReceipt(e.target.value)}
+                  placeholder="Enter amount"
+                />
+                <span style={{ fontSize: 14, color: "#6B7280" }}>Rs</span>
               </div>
             </div>
           )}
 
-          {/* Toggle 2 */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            border: "1px solid #D1D5DB", borderRadius: 8, padding: "16px",
-            backgroundColor: advanceRequest ? "#EFF6FF" : "#fff",
-          }}>
-            <span style={{ fontSize: 13, color: "#374151" }}>Allow employee to request for advance amount</span>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              border: "1px solid #D1D5DB",
+              borderRadius: 8,
+              padding: "16px",
+              backgroundColor: advanceRequest ? "#EFF6FF" : "#fff",
+            }}
+          >
+            <span style={{ fontSize: 13, color: "#374151" }}>
+              Allow employee to request for advance amount
+            </span>
             <Toggle value={advanceRequest} onChange={setAdvanceRequest} />
           </div>
 
           {advanceRequest && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Maximum amount for advance</p>
+                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                  Maximum amount for advance
+                </p>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input style={{ ...blue.input, width: 160 }} value={maxAdvance} onChange={(e) => setMaxAdvance(e.target.value)} placeholder="Enter amount" />
-                  <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
+                  <input
+                    style={{ ...blue.input, width: 160 }}
+                    value={maxAdvance}
+                    onChange={(e) => setMaxAdvance(e.target.value)}
+                    placeholder="Enter amount"
+                  />
+                  <span style={{ fontSize: 14, color: "#6B7280" }}>Rs</span>
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Lower limit of balance for new advance request</p>
+                <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                  Lower limit of balance for new advance request
+                </p>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input style={{ ...blue.input, width: 160 }} value={lowerLimit} onChange={(e) => setLowerLimit(e.target.value)} placeholder="Enter amount" />
-                  <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
+                  <input
+                    style={{ ...blue.input, width: 160 }}
+                    value={lowerLimit}
+                    onChange={(e) => setLowerLimit(e.target.value)}
+                    placeholder="Enter amount"
+                  />
+                  <span style={{ fontSize: 14, color: "#6B7280" }}>Rs</span>
                 </div>
               </div>
             </div>
           )}
 
           <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8 }}>
-            <button style={blue.outlineBtn} onClick={() => setStep(2)}>Back</button>
-            <button style={blue.primaryBtn} onClick={handleSubmit}>Submit</button>
+            <button style={blue.outlineBtn} onClick={() => setStep(2)}>
+              Back
+            </button>
+            <button
+              style={{ ...blue.primaryBtn, opacity: isSaving ? 0.7 : 1, cursor: isSaving ? "not-allowed" : "pointer" }}
+              onClick={handleSubmit}
+              disabled={isSaving}
+            >
+              {isSaving ? "Submitting..." : "Submit"}
+            </button>
           </div>
         </div>
       )}

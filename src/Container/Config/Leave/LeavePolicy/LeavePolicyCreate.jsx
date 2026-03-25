@@ -31,7 +31,11 @@ const normalizeDisbursal = (value) =>
   value === "credited" ? "monthly" : value === "accrued" ? "annual" : String(value || "").trim().toLowerCase();
 const normalizeAllocation = (value) =>
   value === "auto" ? "annual" : String(value || "").trim().toLowerCase();
-const normalizeSimple = (value) => String(value || "").trim().toLowerCase();
+const normalizeSimple = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "");
 const getStoredOfficeIds = () => {
   const rawValue =
     localStorage.getItem("companyOfficeId") ||
@@ -61,6 +65,43 @@ const Inp = ({ placeholder, value, onChange, suffix, style }) => (
     {suffix && <span style={{ padding:"0 10px", fontSize:12, color:"#94a3b8", borderLeft:"1px solid #e5e7eb", whiteSpace:"nowrap" }}>{suffix}</span>}
   </div>
 );
+
+const CounterInp = ({ value, onChange, suffix, min = 0, style }) => {
+  const numericValue = Number(value || 0);
+
+  const updateValue = (nextValue) => {
+    onChange({
+      target: {
+        value: String(Math.max(min, nextValue)),
+      },
+    });
+  };
+
+  return (
+    <div style={{ display:"flex", alignItems:"center", border:"1px solid #d1d5db", borderRadius:6, background:"#fff", overflow:"hidden", ...style }}>
+      <button
+        type="button"
+        onClick={() => updateValue(numericValue - 1)}
+        style={{ border:"none", background:"#f8fafc", padding:"8px 12px", cursor:"pointer", fontSize:16, color:"#475569" }}
+      >
+        -
+      </button>
+      <input
+        value={value || "0"}
+        onChange={onChange}
+        style={{ width:60, textAlign:"center", border:"none", outline:"none", padding:"8px 6px", fontSize:13, color:"#374151", background:"transparent" }}
+      />
+      <button
+        type="button"
+        onClick={() => updateValue(numericValue + 1)}
+        style={{ border:"none", background:"#f8fafc", padding:"8px 12px", cursor:"pointer", fontSize:16, color:"#475569" }}
+      >
+        +
+      </button>
+      {suffix && <span style={{ padding:"0 10px", fontSize:12, color:"#94a3b8", borderLeft:"1px solid #e5e7eb", whiteSpace:"nowrap" }}>{suffix}</span>}
+    </div>
+  );
+};
 
 const Sel = ({ placeholder, value, onChange, options=[], style }) => (
   <select value={value||""} onChange={onChange}
@@ -117,26 +158,42 @@ const CR = ({ label, checked, onChange, children, indent=0 }) => (
   </div>
 );
 
-const SubOpts = () => (
+const SubOpts = ({ selected = [], onToggle }) => (
   <div style={{ display:"flex", flexDirection:"column", gap:4, marginTop:6 }}>
     {SANDWICH_SUB.map(sub=>(
-      <div key={sub} style={{ border:"1px solid #e5e7eb", borderRadius:6, padding:"8px 12px", background:"#f9fafb", display:"flex", alignItems:"center", gap:8 }}>
-        <div style={{ width:14, height:14, borderRadius:"50%", border:"2px solid #3b82f6", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-          <div style={{ width:6, height:6, borderRadius:"50%", background:"#3b82f6" }}/>
-        </div>
+      <label
+        key={sub}
+        style={{ border:"1px solid #e5e7eb", borderRadius:6, padding:"8px 12px", background:"#f9fafb", display:"flex", alignItems:"center", gap:8, cursor:"pointer" }}
+      >
+        <input
+          type="checkbox"
+          checked={selected.includes(sub)}
+          onChange={() => onToggle(sub)}
+          style={{ width:14, height:14, accentColor:"#3b82f6", cursor:"pointer" }}
+        />
         <span style={{ fontSize:12, color:"#374151" }}>{sub}</span>
-      </div>
+      </label>
     ))}
   </div>
 );
 
-const SandwichSection = ({ sandwiched, onSandwich, sandwichTypes, onToggleType }) => (
+const SandwichSection = ({
+  sandwiched,
+  onSandwich,
+  sandwichTypes,
+  onToggleType,
+  sandwichSubTypes,
+  onToggleSubType,
+}) => (
   <>
     <RR label="Yes, deduct leaves for applied dates and additional leaves in the following manner"
       checked={sandwiched==="yes"} onChange={()=>onSandwich("yes")}>
       {SANDWICH_KEYS.map(({key,label})=>(
         <CR key={key} label={label} checked={sandwichTypes.includes(key)} onChange={()=>onToggleType(key)}>
-          <SubOpts/>
+          <SubOpts
+            selected={sandwichSubTypes?.[key] || []}
+            onToggle={(sub) => onToggleSubType(key, sub)}
+          />
         </CR>
       ))}
     </RR>
@@ -227,6 +284,11 @@ export default function CreateLeavePolicy({ onBack }) {
     limitFuture:"yes", futureDuration:"", futureApplyAtLeast:"", futureNotEarlier:"",
     allowPast:"yes", pastDays:"",
     sandwiched:"yes", sandwichTypes:["mandatory","optional","weeklyoff"],
+    sandwichSubTypes:{
+      mandatory:[],
+      optional:[],
+      weeklyoff:[],
+    },
     clubbing:"yes", clubbingTypes:"",
   });
 
@@ -265,6 +327,11 @@ export default function CreateLeavePolicy({ onBack }) {
     limitFuture4:"yes", futureDuration4:"", futureApplyAtLeast4:"", futureNotEarlier4:"",
     allowPast4:"yes", pastDays4:"",
     sandwiched4:"yes", sandwichTypes4:["mandatory","optional","weeklyoff"],
+    sandwichSubTypes4:{
+      mandatory:[],
+      optional:[],
+      weeklyoff:[],
+    },
     clubbing4:"yes", clubbingTypes4:"",
     overutil:"allow", overutilType:"deduct", deductFrom:"",
     carryForward4:true, carryFwdLimit:"", carryFwdUnused:"",
@@ -278,6 +345,12 @@ export default function CreateLeavePolicy({ onBack }) {
   const u3 = p => setS3(prev=>({...prev,...p}));
   const u4 = p => setS4(prev=>({...prev,...p}));
   const toggleArr = (arr,val) => arr.includes(val)?arr.filter(x=>x!==val):[...arr,val];
+  const toggleNestedArr = (source, groupKey, value) => ({
+    ...source,
+    [groupKey]: Array.isArray(source?.[groupKey]) && source[groupKey].includes(value)
+      ? source[groupKey].filter((item) => item !== value)
+      : [...(source?.[groupKey] || []), value],
+  });
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const resolvedCompanyOfficeIds = useMemo(() => {
     const officeParam = queryParams.get("office") || "";
@@ -474,7 +547,16 @@ export default function CreateLeavePolicy({ onBack }) {
 
             <SecHead title="Sandwiched/Intervening Leaves"/>
             <Lbl>If leaves are applied next to or in-between holidays/weekly-offs, should there be additional leave deductions?</Lbl>
-            <SandwichSection sandwiched={s2.sandwiched} onSandwich={v=>u2({sandwiched:v})} sandwichTypes={s2.sandwichTypes} onToggleType={k=>u2({sandwichTypes:toggleArr(s2.sandwichTypes,k)})}/>
+            <SandwichSection
+              sandwiched={s2.sandwiched}
+              onSandwich={v=>u2({sandwiched:v})}
+              sandwichTypes={s2.sandwichTypes}
+              onToggleType={k=>u2({sandwichTypes:toggleArr(s2.sandwichTypes,k)})}
+              sandwichSubTypes={s2.sandwichSubTypes}
+              onToggleSubType={(groupKey, sub) =>
+                u2({ sandwichSubTypes: toggleNestedArr(s2.sandwichSubTypes, groupKey, sub) })
+              }
+            />
 
             <SecHead title="Leave Clubbing"/>
             <Lbl>Allow employees to apply for different types of leaves, adjacent to each other</Lbl>
@@ -541,10 +623,16 @@ export default function CreateLeavePolicy({ onBack }) {
               <RR label="Carry forward only a limited amount" checked={s3.carryType==="limited"} onChange={()=>u3({carryType:"limited"})} indent={1}>
                 <Lbl sm>Allow only a minimum hours leave in a day</Lbl>
                 <FRow>
-                  <div style={{ flex:1 }}><Sel value={s3.minHoursPerDay} onChange={e=>u3({minHoursPerDay:e.target.value})}/></div>
+                  <div style={{ flex:1 }}>
+                    <Sel
+                      value={s3.minHoursPerDay}
+                      onChange={e=>u3({minHoursPerDay:e.target.value})}
+                      options={["Fixed number", "Percentage"]}
+                    />
+                  </div>
                   <div style={{ flex:1 }}>
                     <Lbl sm>Leave Hours</Lbl>
-                    <Inp value={s3.leaveHours} onChange={e=>u3({leaveHours:e.target.value})} suffix="HRS"/>
+                    <CounterInp value={s3.leaveHours} onChange={e=>u3({leaveHours:e.target.value})} suffix="HRS"/>
                   </div>
                 </FRow>
                 <p style={{ fontSize:11, color:"#e57373", marginTop:6 }}>Note: Remaining leaves will be discarded/lapsed, if any</p>
@@ -679,7 +767,16 @@ export default function CreateLeavePolicy({ onBack }) {
 
             <SecHead title="Sandwiched/Intervening Leaves"/>
             <Lbl>If leaves are applied next to or in-between holidays/weekly-offs, should there be additional leave deductions?</Lbl>
-            <SandwichSection sandwiched={s4.sandwiched4} onSandwich={v=>u4({sandwiched4:v})} sandwichTypes={s4.sandwichTypes4} onToggleType={k=>u4({sandwichTypes4:toggleArr(s4.sandwichTypes4,k)})}/>
+            <SandwichSection
+              sandwiched={s4.sandwiched4}
+              onSandwich={v=>u4({sandwiched4:v})}
+              sandwichTypes={s4.sandwichTypes4}
+              onToggleType={k=>u4({sandwichTypes4:toggleArr(s4.sandwichTypes4,k)})}
+              sandwichSubTypes={s4.sandwichSubTypes4}
+              onToggleSubType={(groupKey, sub) =>
+                u4({ sandwichSubTypes4: toggleNestedArr(s4.sandwichSubTypes4, groupKey, sub) })
+              }
+            />
 
             <SecHead title="Leave Clubbing"/>
             <Lbl>Allow employees to apply for different types of leaves, adjacent to each other</Lbl>

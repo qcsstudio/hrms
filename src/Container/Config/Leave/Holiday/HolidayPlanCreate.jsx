@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import createAxios from "../../../../utils/axios.config";
+import { useNavigate, useParams } from "react-router-dom";
 
 const STEPS = ["Describe", "Preferences", "Plan", "Approval", "Preview"];
 
@@ -9,9 +10,8 @@ const STEPS = ["Describe", "Preferences", "Plan", "Approval", "Preview"];
 function Toast({ message, type, onClose }) {
   if (!message) return null;
   return (
-    <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all ${
-      type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-    }`}>
+    <div className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all ${type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+      }`}>
       <span>{type === "success" ? "✔" : "✖"}</span>
       <span>{message}</span>
       <button onClick={onClose} className="ml-2 text-white opacity-70 hover:opacity-100 text-base">✕</button>
@@ -28,15 +28,14 @@ function Stepper({ currentStep }) {
       {STEPS.map((label, idx) => {
         const stepNum = idx + 1;
         const isActive = stepNum === currentStep;
-        const isDone   = stepNum < currentStep;
+        const isDone = stepNum < currentStep;
         return (
           <div key={label} className="flex items-center">
             <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all ${
-                isActive ? "border-blue-500 text-blue-500 bg-white"
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all ${isActive ? "border-blue-500 text-blue-500 bg-white"
                   : isDone ? "border-blue-500 bg-blue-500 text-white"
-                  : "border-gray-300 text-gray-400 bg-white"
-              }`}>
+                    : "border-gray-300 text-gray-400 bg-white"
+                }`}>
                 {isDone ? "✓" : stepNum}
               </div>
               <span className={`text-xs mt-1 whitespace-nowrap ${isActive ? "text-blue-500 font-semibold" : "text-gray-400"}`}>
@@ -130,7 +129,7 @@ function StepPreferences({ form, setForm }) {
         </select>
       </div>
       <YesNoBox label="Employees get mandatory holidays" value={form.mandatoryHolidays} onChange={(v) => setForm({ ...form, mandatoryHolidays: v })} name="mandatory" />
-      <YesNoBox label="Employees get optional holidays"  value={form.optionalHolidays}  onChange={(v) => setForm({ ...form, optionalHolidays: v })}  name="optional" />
+      <YesNoBox label="Employees get optional holidays" value={form.optionalHolidays} onChange={(v) => setForm({ ...form, optionalHolidays: v })} name="optional" />
     </div>
   );
 }
@@ -138,12 +137,12 @@ function StepPreferences({ form, setForm }) {
 /* ─────────────────────────────────────────────
    MINI CALENDAR
 ───────────────────────────────────────────── */
-const WEEK_DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 function MiniCalendar({ holidays, selectedDate, onSelectDate }) {
   const today = new Date();
-  const [viewYear, setViewYear]   = useState(today.getFullYear());
+  const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
 
   const prevMonth = () => {
@@ -155,9 +154,9 @@ function MiniCalendar({ holidays, selectedDate, onSelectDate }) {
     else setViewMonth(m => m + 1);
   };
 
-  const firstDay    = new Date(viewYear, viewMonth, 1).getDay();
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const daysInPrev  = new Date(viewYear, viewMonth, 0).getDate();
+  const daysInPrev = new Date(viewYear, viewMonth, 0).getDate();
 
   const cells = [];
   for (let i = firstDay - 1; i >= 0; i--) cells.push({ day: daysInPrev - i, current: false });
@@ -165,7 +164,7 @@ function MiniCalendar({ holidays, selectedDate, onSelectDate }) {
   const remaining = 42 - cells.length;
   for (let d = 1; d <= remaining; d++)    cells.push({ day: d, current: false });
 
-  const dateKey    = (d) => `${viewYear}-${String(viewMonth + 1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  const dateKey = (d) => `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   const getHoliday = (d) => (holidays || []).find(h => h.date === dateKey(d)) || null;
 
   return (
@@ -187,10 +186,10 @@ function MiniCalendar({ holidays, selectedDate, onSelectDate }) {
       {/* Date cells */}
       <div className="grid grid-cols-7">
         {cells.map((cell, idx) => {
-          const holiday    = cell.current ? getHoliday(cell.day) : null;
-          const key        = cell.current ? dateKey(cell.day) : null;
+          const holiday = cell.current ? getHoliday(cell.day) : null;
+          const key = cell.current ? dateKey(cell.day) : null;
           const isSelected = key === selectedDate;
-          const isToday    = cell.current && cell.day === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
+          const isToday = cell.current && cell.day === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
 
           return (
             <div
@@ -350,9 +349,8 @@ function StepPlan({ form, setForm }) {
                 <div key={idx} className="flex items-center justify-between py-3">
                   <div className="flex items-center gap-3">
                     {/* M / O badge */}
-                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${
-                      h.type === "mandatory" ? "bg-blue-500" : "bg-orange-400"
-                    }`}>
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${h.type === "mandatory" ? "bg-blue-500" : "bg-orange-400"
+                      }`}>
                       {h.type === "mandatory" ? "M" : "O"}
                     </span>
                     <div>
@@ -388,9 +386,8 @@ function EmailRow({ checked, onChange }) {
   return (
     <div
       onClick={onChange}
-      className={`flex items-center justify-between border rounded-lg px-4 py-3 cursor-pointer transition ${
-        checked ? "bg-blue-50 border-blue-200" : "border-gray-200 hover:border-gray-300"
-      }`}
+      className={`flex items-center justify-between border rounded-lg px-4 py-3 cursor-pointer transition ${checked ? "bg-blue-50 border-blue-200" : "border-gray-200 hover:border-gray-300"
+        }`}
     >
       <span className="text-sm text-gray-700">Send email notification to manager</span>
       {checked && (
@@ -447,7 +444,7 @@ function DateSelectionBlock({ title, dateValue, onDateChange, emailChecked, onEm
 ───────────────────────────────────────────── */
 function StepApproval({ form, setForm }) {
   const hasMandatory = form.mandatoryHolidays === "yes";
-  const hasOptional  = form.optionalHolidays  === "yes";
+  const hasOptional = form.optionalHolidays === "yes";
 
   return (
     <div className="space-y-8 max-w-2xl">
@@ -515,11 +512,11 @@ function StepPreview({ form }) {
   };
 
   const rows = [
-    { label: "Plan Name",            value: form.name || "—" },
-    { label: "Description",          value: form.description || "—" },
-    { label: "Year",                 value: form.year || "—" },
-    { label: "Mandatory Holidays",   value: form.mandatoryHolidays },
-    { label: "Optional Holidays",    value: form.optionalHolidays },
+    { label: "Plan Name", value: form.name || "—" },
+    { label: "Description", value: form.description || "—" },
+    { label: "Year", value: form.year || "—" },
+    { label: "Mandatory Holidays", value: form.mandatoryHolidays },
+    { label: "Optional Holidays", value: form.optionalHolidays },
     { label: "Total Holidays Added", value: String((form.holidays || []).length) },
     ...(form.mandatoryHolidays === "yes" ? [
       { label: "Existing Employee Date (Mandatory)", value: formatDate(form.existingEmployeeDate) },
@@ -576,10 +573,16 @@ function StepPreview({ form }) {
    MAIN COMPONENT
 ───────────────────────────────────────────── */
 export default function HolidayPlanCreate() {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
   const [currentStep, setCurrentStep] = useState(1);
-  const [errors, setErrors]           = useState({});
-  const [loading, setLoading]         = useState(false);
-  const [toast, setToast]             = useState({ message: "", type: "success" });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [toast, setToast] = useState({ message: "", type: "success" });
+
+  const [companyOfficeId,setCompanyOfficeId] = useState([])
 
   const [form, setForm] = useState({
     name: "", description: "",
@@ -592,8 +595,84 @@ export default function HolidayPlanCreate() {
     maxOptionalHolidays: "",
   });
 
-  const token        = localStorage.getItem("authToken");
-  const axiosInstance = createAxios(token);
+  const token = localStorage.getItem("authToken");
+  const companyId = localStorage.getItem("companyId") || "";
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
+
+    useEffect(() => {
+    try {
+      const raw = localStorage.getItem("companyOfficeId");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Could be array or single string — normalise to array
+        const ids = Array.isArray(parsed) ? parsed : [parsed];
+        setCompanyOfficeId(ids);
+      }
+    } catch (e) {
+      console.error("Failed to parse companyOfficeId from localStorage:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchHolidayPlan = async () => {
+      if (!isEditMode || !id) return;
+
+      try {
+        setIsFetching(true);
+        const { data } = await axiosInstance.get(`/config/getOne/holidayPlan/${id}`, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const holidayPlan = data?.data || data?.holidayPlan || data || {};
+
+        setForm((prev) => ({
+          ...prev,
+          name: holidayPlan?.name || holidayPlan?.holidayPlanName || "",
+          description: holidayPlan?.description || "",
+          year: holidayPlan?.year != null ? String(holidayPlan.year) : "",
+          mandatoryHolidays: holidayPlan?.mandatoryHolidays || "yes",
+          optionalHolidays: holidayPlan?.optionalHolidays || "no",
+          holidays: Array.isArray(holidayPlan?.holidays)
+            ? holidayPlan.holidays.map((item) => ({
+              name: item?.name || "",
+              date: item?.date || "",
+              type: item?.type || "mandatory",
+            }))
+            : [],
+          existingEmployeeDate: holidayPlan?.existingEmployeeDate || "",
+          sendEmailExisting:
+            typeof holidayPlan?.sendEmailExisting === "boolean"
+              ? holidayPlan.sendEmailExisting
+              : true,
+          newEmployeeDays:
+            holidayPlan?.newEmployeeDays != null ? String(holidayPlan.newEmployeeDays) : "",
+          sendEmailNew:
+            typeof holidayPlan?.sendEmailNew === "boolean" ? holidayPlan.sendEmailNew : true,
+          existingOptionalDate: holidayPlan?.existingOptionalDate || "",
+          sendEmailExistingOptional:
+            typeof holidayPlan?.sendEmailExistingOptional === "boolean"
+              ? holidayPlan.sendEmailExistingOptional
+              : true,
+          newOptionalDays:
+            holidayPlan?.newOptionalDays != null ? String(holidayPlan.newOptionalDays) : "",
+          sendEmailNewOptional:
+            typeof holidayPlan?.sendEmailNewOptional === "boolean"
+              ? holidayPlan.sendEmailNewOptional
+              : true,
+          maxOptionalHolidays:
+            holidayPlan?.maxOptionalHolidays != null
+              ? String(holidayPlan.maxOptionalHolidays)
+              : "",
+        }));
+      } catch (err) {
+        showToast(err?.response?.data?.message || "Failed to load holiday plan", "error");
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    fetchHolidayPlan();
+  }, [axiosInstance, id, isEditMode]);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -612,35 +691,45 @@ export default function HolidayPlanCreate() {
 
   /* ── Build API payload ── */
   const buildPayload = (isDraft = false) => ({
-    name:              form.name.trim(),
-    description:       form.description,
-    year:              Number(form.year),
+    name: form.name.trim(),
+    companyId,
+    description: form.description,
+    year: Number(form.year),
     mandatoryHolidays: form.mandatoryHolidays,
-    optionalHolidays:  form.optionalHolidays,
+    optionalHolidays: form.optionalHolidays,
     holidays: (form.holidays || []).map(h => ({ name: h.name, date: h.date, type: h.type })),
     // Mandatory
     existingEmployeeDate: form.existingEmployeeDate || null,
-    sendEmailExisting:    form.sendEmailExisting,
-    newEmployeeDays:      form.newEmployeeDays !== "" ? Number(form.newEmployeeDays) : null,
-    sendEmailNew:         form.sendEmailNew,
+    sendEmailExisting: form.sendEmailExisting,
+    newEmployeeDays: form.newEmployeeDays !== "" ? Number(form.newEmployeeDays) : null,
+    sendEmailNew: form.sendEmailNew,
     // Optional
-    existingOptionalDate:      form.existingOptionalDate || null,
+    existingOptionalDate: form.existingOptionalDate || null,
     sendEmailExistingOptional: form.sendEmailExistingOptional,
-    newOptionalDays:           form.newOptionalDays !== "" ? Number(form.newOptionalDays) : null,
-    sendEmailNewOptional:      form.sendEmailNewOptional,
-    maxOptionalHolidays:       form.maxOptionalHolidays !== "" ? Number(form.maxOptionalHolidays) : null,
+    newOptionalDays: form.newOptionalDays !== "" ? Number(form.newOptionalDays) : null,
+    sendEmailNewOptional: form.sendEmailNewOptional,
+    maxOptionalHolidays: form.maxOptionalHolidays !== "" ? Number(form.maxOptionalHolidays) : null,
     status: isDraft ? "draft" : "active",
+    companyOfficeId
   });
+
 
   /* ── Save as Draft ── */
   const handleSaveDraft = async () => {
     if (!form.name.trim()) { setErrors({ name: true }); setCurrentStep(1); return; }
     try {
       setLoading(true);
-      const { data } = await axiosInstance.post("/config/create/holidayplan", buildPayload(true), {
-        meta: { auth: "ADMIN_AUTH" },
-      });
-      if (data.success) showToast("Draft saved successfully!");
+      const request = isEditMode
+        ? axiosInstance.put(`/config/update/holidayPlan/${id}`, buildPayload(true), {
+          meta: { auth: "ADMIN_AUTH" },
+        })
+        : axiosInstance.post("/config/create/holidayplan", buildPayload(true), {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+      const { data } = await request;
+      if (data.success) {
+        showToast(isEditMode ? "Draft updated successfully!" : "Draft saved successfully!");
+      }
     } catch (err) {
       showToast(err?.response?.data?.message || "Something went wrong. Please try again.", "error");
     } finally {
@@ -652,12 +741,18 @@ export default function HolidayPlanCreate() {
   const handleFinalSave = async () => {
     try {
       setLoading(true);
-      const { data } = await axiosInstance.post("/config/create/holidayplan", buildPayload(false), {
-        meta: { auth: "ADMIN_AUTH" },
-      });
+      const request = isEditMode
+        ? axiosInstance.put(`/config/update/holidayPlan/${id}`, buildPayload(false), {
+          meta: { auth: "ADMIN_AUTH" },
+        })
+        : axiosInstance.post("/config/create/holidayplan", buildPayload(false), {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+      const { data } = await request;
+      localStorage.removeItem("companyOfficeId");
       if (data.success) {
-        showToast("Holiday Plan created successfully!");
-        // TODO: navigate("/holiday-plans")
+        showToast(isEditMode ? "Holiday Plan updated successfully!" : "Holiday Plan created successfully!");
+        navigate("/config/track/leave/holiday-plan/list");
       }
     } catch (err) {
       showToast(err?.response?.data?.message || "Something went wrong. Please try again.", "error");
@@ -668,11 +763,11 @@ export default function HolidayPlanCreate() {
 
   const renderStep = () => {
     switch (currentStep) {
-      case 1: return <StepDescribe    form={form} setForm={setForm} errors={errors} />;
+      case 1: return <StepDescribe form={form} setForm={setForm} errors={errors} />;
       case 2: return <StepPreferences form={form} setForm={setForm} />;
-      case 3: return <StepPlan        form={form} setForm={setForm} />;
-      case 4: return <StepApproval    form={form} setForm={setForm} />;
-      case 5: return <StepPreview     form={form} />;
+      case 3: return <StepPlan form={form} setForm={setForm} />;
+      case 4: return <StepApproval form={form} setForm={setForm} />;
+      case 5: return <StepPreview form={form} />;
       default: return null;
     }
   };
@@ -684,9 +779,15 @@ export default function HolidayPlanCreate() {
 
       <div className="mx-auto px-6 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">Create Holiday Plan</h1>
+          <h1 className="text-2xl font-semibold text-gray-800">
+            {isEditMode ? "Edit Holiday Plan" : "Create Holiday Plan"}
+          </h1>
           <p className="text-sm text-gray-400 mt-1">Manage employee directory, documents, and role-based actions.</p>
         </div>
+
+        {isFetching && (
+          <p className="mb-4 text-sm text-gray-500">Loading holiday plan...</p>
+        )}
 
         <Stepper currentStep={currentStep} />
         <hr className="mb-8 border-gray-100" />
@@ -709,7 +810,12 @@ export default function HolidayPlanCreate() {
                 Back
               </button>
             )}
-            <button className="px-5 py-2 text-sm text-gray-500 hover:text-gray-700 transition">Cancel</button>
+            <button
+              onClick={() => navigate("/config/track/leave/holiday-plan/list")}
+              className="px-5 py-2 text-sm text-gray-500 hover:text-gray-700 transition"
+            >
+              Cancel
+            </button>
             {currentStep < STEPS.length ? (
               <button
                 onClick={handleNext}
@@ -724,7 +830,7 @@ export default function HolidayPlanCreate() {
                 disabled={loading}
                 className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm hover:bg-blue-700 transition disabled:opacity-50"
               >
-                {loading ? "Saving..." : "Save"}
+                {loading ? (isEditMode ? "Updating..." : "Saving...") : isEditMode ? "Update" : "Save"}
               </button>
             )}
           </div>

@@ -14,35 +14,26 @@ const mapOptions = (list, labelKeys) =>
 const mapCompensator = (item = {}, employeeMap = {}) => ({
   id: item?._id || item?.id || item?.employeeId || item?.employee?._id,
   name:
+    item?.employeeDetails?.employeeName ||
     employeeMap[item?.employeeId]?.fullName ||
-    item?.employee?.fullName ||
-    item?.fullName ||
-    item?.employeeName ||
-    item?.adminName ||
-    item?.name ||
     "-",
   empId:
+    item?.employeeDetails?.employeeCode ||
     employeeMap[item?.employeeId]?.employeeId ||
-    item?.employee?.employeeId ||
-    item?.employeeCode ||
-    item?.empId ||
-    item?.employeeId ||
     "-",
-  role: item?.role || item?.compensatorType || "Primary",
+  role:
+    item?.employeeDetails?.systemRole || "-",
   assignedCount:
-    item?.assignedEmployeeCount ??
-    item?.assignedEmployeeList?.length ??
-    item?.employees?.length ??
-    0,
+    item?.assignedEmployeeList?.length ?? 0,
   location:
-    item?.locationId?.map?.((loc) => loc?.locationName).filter(Boolean).join(", ") ||
-    item?.locationName ||
-    item?.location?.locationName ||
-    item?.companyOffice?.locationName ||
-    item?.companyOfficeId?.[0]?.locationName ||
+    item?.locationId?.[0]?.address?.country ||
     "-",
   status:
-    item?.status === true || item?.status === "active" || item?.isActive
+    item?.status === true ||
+    item?.status === "active" ||
+    item?.isActive ||
+    item?.isDeleted === false ||
+    typeof item?.status === "undefined"
       ? "Active"
       : "Draft",
 });
@@ -157,19 +148,22 @@ export default function Compensator() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [
-          compensatorResponse,
-          employeeResponse,
-          businessUnitResponse,
-          departmentResponse,
-          locationResponse,
-        ] = await Promise.all([
+        const results = await Promise.allSettled([
           axiosInstance.get("/config/getAll-compensatore", { meta: { auth: "ADMIN_AUTH" } }),
           axiosInstance.get("/employees/all", { meta: { auth: "ADMIN_AUTH" } }),
           axiosInstance.get("/config/all-buinessUnit", { meta: { auth: "ADMIN_AUTH" } }),
           axiosInstance.get("/config/all-department", { meta: { auth: "ADMIN_AUTH" } }),
           axiosInstance.get("/config/company-offices-getAll", { meta: { auth: "ADMIN_AUTH" } }),
         ]);
+
+        const compensatorResponse =
+          results[0].status === "fulfilled" ? results[0].value : null;
+        const employeeResponse = results[1].status === "fulfilled" ? results[1].value : null;
+        const businessUnitResponse =
+          results[2].status === "fulfilled" ? results[2].value : null;
+        const departmentResponse =
+          results[3].status === "fulfilled" ? results[3].value : null;
+        const locationResponse = results[4].status === "fulfilled" ? results[4].value : null;
 
         const compensators = Array.isArray(compensatorResponse?.data?.data)
           ? compensatorResponse.data.data
@@ -231,6 +225,10 @@ export default function Compensator() {
             ["locationName", "officeName", "name"]
           )
         );
+
+        if (!compensatorResponse) {
+          throw new Error("Failed to load compensator list");
+        }
       } catch (error) {
         console.error("Error fetching compensator data:", error);
         toast.error(error?.response?.data?.message || "Failed to load compensator data");
@@ -281,7 +279,7 @@ export default function Compensator() {
         : Array.isArray(response?.data)
         ? response.data
         : [];
-      setTableRows(compensators.map(mapCompensator));
+      setTableRows(compensators.map((item) => mapCompensator(item)));
     } catch (error) {
       console.error("Error saving compensator:", error);
       toast.error(error?.response?.data?.message || "Failed to save compensator");
@@ -290,13 +288,7 @@ export default function Compensator() {
     }
   };
 
-  const filteredRows = useMemo(() => {
-    return tableRows.filter((row) => {
-      const statusMatch = row.status === statusFilter;
-      const locationMatch = selectedLocation ? row.location === selectedLocation : true;
-      return statusMatch && locationMatch;
-    });
-  }, [tableRows, statusFilter, selectedLocation]);
+  const filteredRows = useMemo(() => tableRows, [tableRows]);
 
   return (
     <div className="min-h-screen bg-[#F8F9FB] p-6">

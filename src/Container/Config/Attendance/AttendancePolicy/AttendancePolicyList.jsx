@@ -4,6 +4,27 @@ import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 import createAxios from "../../../../utils/axios.config";
 
+// Attendance Policy API helpers
+const getAttendancePolicy = async (axiosInstance, id) => {
+  const res = await axiosInstance.get(`/config/attendance-policy/${id}`, {
+    meta: { auth: "ADMIN_AUTH" },
+  });
+  return res?.data?.data;
+};
+
+const updateAttendancePolicy = async (axiosInstance, id, payload) => {
+  const res = await axiosInstance.put(`/config/attendance-policy-update/${id}`, payload, {
+    meta: { auth: "ADMIN_AUTH" },
+  });
+  return res?.data;
+};
+
+const deleteAttendancePolicy = async (axiosInstance, id) => {
+  const res = await axiosInstance.delete(`/config/attendance-policy-delete/${id}`, {
+    meta: { auth: "ADMIN_AUTH" },
+  });
+  return res?.data;
+};
 export default function AttendancePolicyList() {
   const [activeTab, setActiveTab] = useState("Active");
   const [openMenu, setOpenMenu] = useState(null);
@@ -79,11 +100,39 @@ export default function AttendancePolicyList() {
     return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
   };
 
-  const handleDelete = (id) => {
-    alert("Delete policy id: " + id);
-    setOpenMenu(null);
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this policy?")) {
+      setOpenMenu(null);
+      return;
+    }
+    setLoading(true);
+    setErrorMessage("");
+    try {
+      await deleteAttendancePolicy(axiosInstance, id);
+      setPolicies((prev) => prev.filter((p) => (p._id || p.id) !== id));
+    } catch (error) {
+      setErrorMessage(error?.response?.data?.message || "Unable to delete policy.");
+    } finally {
+      setLoading(false);
+      setOpenMenu(null);
+    }
   };
 
+  
+    // GET policy for view/edit
+    const handleView = async (id) => {
+      setLoading(true);
+      setErrorMessage("");
+      try {
+        const policy = await getAttendancePolicy(axiosInstance, id);
+        alert("Policy details: " + JSON.stringify(policy, null, 2));
+      } catch (error) {
+        setErrorMessage(error?.response?.data?.message || "Unable to fetch policy.");
+      } finally {
+        setLoading(false);
+        setOpenMenu(null);
+      }
+    };
   return (
     <div className="p-6">
       <div className="flex items-start justify-between mb-4">
@@ -186,7 +235,7 @@ export default function AttendancePolicyList() {
 
                 <div className="flex items-center justify-end gap-2 relative">
                   <button
-                    onClick={() => navigate(`/config/track/Attendance/policy/edit/${policyId}`)}
+                    onClick={() => navigate(`/config/track/Attendance/attendance-policy/edit/${policyId}`)}
                     className="p-2 rounded-md hover:bg-gray-100"
                   >
                     Edit
@@ -202,10 +251,7 @@ export default function AttendancePolicyList() {
                   {openMenu === policyId && (
                     <div className="absolute right-0 top-10 w-36 bg-white border rounded-md shadow-md z-10">
                       <button
-                        onClick={() => {
-                          navigate(`/config/track/Attendance/policy/view/${policyId}`);
-                          setOpenMenu(null);
-                        }}
+                        onClick={() => handleView(policyId)}
                         className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                       >
                         View

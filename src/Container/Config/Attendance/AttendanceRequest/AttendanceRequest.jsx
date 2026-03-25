@@ -1,19 +1,102 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import createAxios from "../../../../utils/axios.config";
+import { toast } from "react-toastify";
 
 export default function AttendanceRequest() {
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
+
   const [lockAttendance, setLockAttendance] = useState(true);
   const [startDay, setStartDay] = useState(29);
   const [endDay, setEndDay] = useState(2);
   const [cutoff, setCutoff] = useState(0);
   const [cycleBypass, setCycleBypass] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
+
+  const sanitizeDay = (value, fallback) => {
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed >= 1 && parsed <= 31
+      ? parsed
+      : fallback;
+  };
+
+  const sanitizeCutoff = (value, fallback = 0) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return fallback;
+    if (parsed < 0) return 0;
+    if (parsed > 10) return 10;
+    return parsed;
+  };
+
+  useEffect(() => {
+    const fetchAttendanceLockCycle = async () => {
+      try {
+        setLoading(true);
+        const res = await axiosInstance.get("/config/attendance-lock-cycle-get", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const data = res?.data?.data || res?.data;
+        if (!data || typeof data !== "object") return;
+
+        if (typeof data.isAttendanceLocked === "boolean") {
+          setLockAttendance(data.isAttendanceLocked);
+        }
+
+        setStartDay((prev) => sanitizeDay(data.lockStartDay, prev));
+        setEndDay((prev) => sanitizeDay(data.lockEndDay, prev));
+        setCutoff((prev) => sanitizeCutoff(data.regularizationCutOffDays, prev));
+
+        if (typeof data.isCycleBypassEnabled === "boolean") {
+          setCycleBypass(data.isCycleBypassEnabled);
+        }
+      } catch (error) {
+        console.log("Error fetching attendance lock cycle:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAttendanceLockCycle();
+  }, []);
+
+  const handleSave = async () => {
+    const payload = {
+      isAttendanceLocked: lockAttendance,
+      lockStartDay: startDay,
+      lockEndDay: endDay,
+      regularizationCutOffDays: cutoff,
+      isCycleBypassEnabled: cycleBypass,
+      description: `Attendance will be locked monthly from ${startDay}th to ${endDay}th`,
+    };
+
+    try {
+      setSaving(true);
+      const res = await axiosInstance.post("/config/attendance-lock-cycle", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      toast.success(res?.data?.message || "Attendance lock cycle saved successfully");
+    } catch (error) {
+      console.log("Error saving attendance lock cycle:", error);
+      toast.error(error?.response?.data?.message || "Failed to save attendance lock cycle");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="p-8 max-w-4xl">
       <h1 className="text-xl font-bold text-foreground mb-6">
         Attendance lock cycle
       </h1>
+
+      {loading && (
+        <p className="text-sm text-gray-500 mb-4">Loading attendance lock cycle...</p>
+      )}
 
       <p className="text-sm text-primary mb-4">
         Do you wish to lock the attendance?
@@ -187,8 +270,12 @@ export default function AttendanceRequest() {
       </div>
 
       {/* SAVE BUTTON */}
-      <button className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700">
-        Save
+      <button
+        onClick={handleSave}
+        disabled={saving || loading}
+        className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+      >
+        {saving ? "Saving..." : "Save"}
       </button>
     </div>
   );

@@ -85,7 +85,9 @@ export default function ClockInMethodList() {
   const token = localStorage.getItem("authToken");
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
-  const axiosInstance = createAxios(token);
+  const axiosInstance = React.useMemo(() => createAxios(token), [token]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [methods, setMethods] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -154,9 +156,24 @@ export default function ClockInMethodList() {
     return result;
   }, [methods, selectedLocation, statusFilter]);
 
-  const handleDelete = (id) => {
-    setMethods((prev) => prev.filter((item) => item.id !== id));
-    setOpenMenu(null);
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this clock-in method?")) {
+      setOpenMenu(null);
+      return;
+    }
+    setLoading(true);
+    setErrorMessage("");
+    try {
+      await axiosInstance.delete(`/config/clock-in-method-delete/${id}`, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      setMethods((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      setErrorMessage(error?.response?.data?.message || "Unable to delete clock-in method.");
+    } finally {
+      setLoading(false);
+      setOpenMenu(null);
+    }
   };
 
   const handleClear = () => {
@@ -239,6 +256,8 @@ export default function ClockInMethodList() {
       </div>
 
       <div className="space-y-3 mt-3">
+        {loading && <div className="text-sm text-gray-500">Loading...</div>}
+        {errorMessage && <div className="text-sm text-red-600">{errorMessage}</div>}
         {isLoading ? (
           <div className="bg-white rounded-xl border px-4 py-10 text-center text-sm text-gray-500">
             Loading...
