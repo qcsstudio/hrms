@@ -14,7 +14,6 @@ const createAxios = (token,inviteToken) => {
   instance.interceptors.request.use((config) => {
     const slug = getSlug();
     const auth = config.meta?.auth; // 👈 component se aata hai
-
     switch (auth) {
       case "TENANT_AUTH":
         if (token) {
