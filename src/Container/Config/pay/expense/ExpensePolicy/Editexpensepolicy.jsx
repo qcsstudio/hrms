@@ -1,15 +1,66 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import { useNavigate, useParams } from "react-router-dom";
+import createAxios from "../../../../../utils/axios.config";
 
 const categories = [
-  "Allowance", "Travel", "Personal Vehicle Expense", "Stay",
-  "Skill Development", "Meals and Entertainment", "Utilities", "Office Expenses", "Commute",
+  "Allowance",
+  "Travel",
+  "Personal Vehicle Expense",
+  "Stay",
+  "Skill Development",
+  "Meals and Entertainment",
+  "Utilities",
+  "Office Expenses",
+  "Commute",
 ];
 
-const trainClasses = ["All", "AC Seater", "AC Semi sleeper", "AC Sleeper", "Non-AC Seater", "Non-AC Semi-Sleeper", "Non AC Sleeper"];
-const busClasses = ["All", "AC Seater", "AC Semi sleeper", "AC Sleeper", "Non-AC Seater", "Non-AC Semi-Sleeper", "Non AC Sleeper"];
-const airClasses = ["All", "Business Class", "Economy Class", "First Class", "Premium Class"];
-const fuelTypes = ["All", "Diesel", "Electricity", "Natural Gas (CNG)", "Petrol"];
-const consumptionTypes = ["All", "Volume", "Distance"];
+const trainClasses = [
+  "1A - First class AC",
+  "2A - AC two tier",
+  "2S - Seater class",
+  "3A - AC three tier",
+  "CC - AC chair car",
+  "General",
+  "SL - Sleeper class",
+];
+const busClasses = [
+  "AC Seater",
+  "AC-Semi sleeper",
+  "AC Sleeper",
+  "Non-AC Seater",
+  "Non-AC Semi-Sleeper",
+  "Non AC Sleeper",
+];
+const airClasses = [
+  "All",
+  "Business Class",
+  "Economy Class",
+  "First Class",
+  "Premium Class",
+];
+const fuelTypes = ["Diesel", "Electricity", "Natural Gas (CNG)", "Petrol"];
+const consumptionTypes = ["Volume", "Distance"];
+
+const getStoredOfficeIds = () => {
+  const rawValue =
+    localStorage.getItem("companyOfficeId") ||
+    localStorage.getItem("officeId") ||
+    "";
+
+  if (!rawValue) return [];
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((item) => typeof item === "string" && item.trim());
+    }
+  } catch (error) {
+    // Ignore invalid JSON and use string fallback.
+  }
+
+  return /^[a-f\d]{24}$/i.test(rawValue) ? [rawValue] : [];
+};
 
 const steps = [
   { id: 1, label: "Policy Details" },
@@ -17,38 +68,102 @@ const steps = [
   { id: 3, label: "Advance Settings" },
 ];
 
-// Sample prefilled data for edit mode
-const samplePolicy = {
-  policyName: "Employee Travel Policy",
-  description: "Standard travel reimbursement policy for all employees.",
-  categorySelections: {
-    Allowance: "enabled",
-    Travel: "enabled",
-    "Personal Vehicle Expense": "enabled",
-    Stay: "enabled",
-    "Skill Development": "disabled",
-    "Meals and Entertainment": "enabled",
-    Utilities: "disabled",
-    "Office Expenses": "enabled",
-    Commute: "enabled",
+const blue = {
+  activeCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    backgroundColor: "#2563EB",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+    fontSize: 14,
+    border: "2px solid #2563EB",
+    flexShrink: 0,
   },
-  monthlyLimit: "50000",
-  catLimits: {
-    Allowance: { limit: "Monthly", amount: "5000" },
-    Travel: { limit: "Monthly", amount: "20000" },
-    Stay: { limit: "Monthly", amount: "10000" },
+  completedCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    backgroundColor: "#DBEAFE",
+    color: "#2563EB",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+    fontSize: 14,
+    border: "2px solid #2563EB",
+    flexShrink: 0,
   },
-  trainClass: "AC Seater",
-  busClass: "AC Semi sleeper",
-  airClass: "Economy Class",
-  fuelType: "Petrol",
-  consumptionType: "Distance",
-  advancePayment: true,
-  maxWithoutReceipt: "2000",
-  advanceRequest: true,
-  maxAdvance: "15000",
-  lowerLimit: "1000",
+  inactiveCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    backgroundColor: "#fff",
+    color: "#9CA3AF",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+    fontSize: 14,
+    border: "2px solid #D1D5DB",
+    flexShrink: 0,
+  },
+  activeLine: { flex: 1, height: 2, backgroundColor: "#2563EB", margin: "0 8px", marginBottom: 16 },
+  inactiveLine: { flex: 1, height: 2, backgroundColor: "#D1D5DB", margin: "0 8px", marginBottom: 16 },
+  activeLabel: { marginTop: 4, fontSize: 12, fontWeight: 600, color: "#2563EB", whiteSpace: "nowrap" },
+  inactiveLabel: { marginTop: 4, fontSize: 12, fontWeight: 500, color: "#9CA3AF", whiteSpace: "nowrap" },
+  primaryBtn: {
+    backgroundColor: "#2563EB",
+    color: "#fff",
+    border: "none",
+    padding: "10px 24px",
+    borderRadius: 6,
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: "pointer",
+  },
+  outlineBtn: {
+    backgroundColor: "#fff",
+    color: "#374151",
+    border: "1px solid #D1D5DB",
+    padding: "10px 24px",
+    borderRadius: 6,
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: "pointer",
+  },
+  input: {
+    height: 40,
+    borderRadius: 8,
+    border: "1px solid #DCE3EE",
+    backgroundColor: "#fff",
+    padding: "0 12px",
+    fontSize: 14,
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  select: {
+    height: 40,
+    borderRadius: 8,
+    border: "1px solid #DCE3EE",
+    backgroundColor: "#fff",
+    padding: "0 12px",
+    fontSize: 14,
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  faintLabel: {
+    fontSize: 12,
+    color: "#7B8794",
+    fontWeight: 500,
+  },
 };
+
 const Toggle = ({ value, onChange }) => (
   <div
     onClick={() => onChange(!value)}
@@ -81,141 +196,215 @@ const Toggle = ({ value, onChange }) => (
 );
 
 const EditExpensePolicy = () => {
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
+  const navigate = useNavigate();
+  const { id } = useParams();
+
   const [step, setStep] = useState(1);
+  const [policyName, setPolicyName] = useState("");
+  const [description, setDescription] = useState("");
+  const [categorySelections, setCategorySelections] = useState({});
+  const [monthlyLimit, setMonthlyLimit] = useState("");
+  const [catLimits, setCatLimits] = useState({});
+  const [trainClass, setTrainClass] = useState("");
+  const [busClass, setBusClass] = useState("");
+  const [airClass, setAirClass] = useState("");
+  const [fuelType, setFuelType] = useState("");
+  const [consumptionType, setConsumptionType] = useState("");
+  const [advancePayment, setAdvancePayment] = useState(true);
+  const [maxWithoutReceipt, setMaxWithoutReceipt] = useState("");
+  const [advanceRequest, setAdvanceRequest] = useState(true);
+  const [maxAdvance, setMaxAdvance] = useState("");
+  const [lowerLimit, setLowerLimit] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Step 1 - prefilled
-  const [policyName, setPolicyName] = useState(samplePolicy.policyName);
-  const [description, setDescription] = useState(samplePolicy.description);
-  const [categorySelections, setCategorySelections] = useState(samplePolicy.categorySelections);
+  useEffect(() => {
+    const fetchExpensePolicy = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get(`/config/getOne/expensePolicy/${id}`, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
 
-  // Step 2 - prefilled
-  const [monthlyLimit, setMonthlyLimit] = useState(samplePolicy.monthlyLimit);
-  const [catLimits, setCatLimits] = useState(samplePolicy.catLimits);
-  const [trainClass, setTrainClass] = useState(samplePolicy.trainClass);
-  const [busClass, setBusClass] = useState(samplePolicy.busClass);
-  const [airClass, setAirClass] = useState(samplePolicy.airClass);
-  const [fuelType, setFuelType] = useState(samplePolicy.fuelType);
-  const [consumptionType, setConsumptionType] = useState(samplePolicy.consumptionType);
+        const policy = response?.data?.data || response?.data?.expensePolicy || response?.data || {};
 
-  // Step 3 - prefilled
-  const [advancePayment, setAdvancePayment] = useState(samplePolicy.advancePayment);
-  const [maxWithoutReceipt, setMaxWithoutReceipt] = useState(samplePolicy.maxWithoutReceipt);
-  const [advanceRequest, setAdvanceRequest] = useState(samplePolicy.advanceRequest);
-  const [maxAdvance, setMaxAdvance] = useState(samplePolicy.maxAdvance);
-  const [lowerLimit, setLowerLimit] = useState(samplePolicy.lowerLimit);
+        setPolicyName(policy?.policyName || "");
+        setDescription(policy?.description || "");
+        setMonthlyLimit(policy?.monthlyLimit != null ? String(policy.monthlyLimit) : "");
+        setCategorySelections({
+          Allowance: policy?.categories?.allowance ? "enabled" : "disabled",
+          Travel: policy?.categories?.travel ? "enabled" : "disabled",
+          "Personal Vehicle Expense": policy?.categories?.personalVehicle ? "enabled" : "disabled",
+          Stay: policy?.categories?.stay ? "enabled" : "disabled",
+          "Skill Development": policy?.categories?.skillDevelopment ? "enabled" : "disabled",
+          "Meals and Entertainment": policy?.categories?.mealsEntertainment ? "enabled" : "disabled",
+          Utilities: policy?.categories?.utilities ? "enabled" : "disabled",
+          "Office Expenses": policy?.categories?.officeExpenses ? "enabled" : "disabled",
+          Commute: policy?.categories?.commute ? "enabled" : "disabled",
+        });
+        setCatLimits({
+          Allowance: {
+            limit: policy?.limits?.allowance?.limit != null ? String(policy.limits.allowance.limit) : "",
+            amount: policy?.limits?.allowance?.amount != null ? String(policy.limits.allowance.amount) : "",
+          },
+          Travel: {
+            limit: policy?.limits?.travel?.limit != null ? String(policy.limits.travel.limit) : "",
+            amount: policy?.limits?.travel?.amount != null ? String(policy.limits.travel.amount) : "",
+          },
+          "Personal Vehicle Expense": {
+            limit:
+              policy?.limits?.personalVehicle?.limit != null
+                ? String(policy.limits.personalVehicle.limit)
+                : "",
+            amount:
+              policy?.limits?.personalVehicle?.amount != null
+                ? String(policy.limits.personalVehicle.amount)
+                : "",
+          },
+          Stay: {
+            limit: policy?.limits?.stay?.limit != null ? String(policy.limits.stay.limit) : "",
+            amount: policy?.limits?.stay?.amount != null ? String(policy.limits.stay.amount) : "",
+          },
+          "Skill Development": { limit: "", amount: "" },
+          "Meals and Entertainment": { limit: "", amount: "" },
+          Utilities: { limit: "", amount: "" },
+          "Office Expenses": { limit: "", amount: "" },
+          Commute: { limit: "", amount: "" },
+        });
+        setTrainClass(policy?.travelSettings?.trainClass?.[0] || "");
+        setBusClass(policy?.travelSettings?.busClass?.[0] || "");
+        setAirClass(policy?.travelSettings?.airClass?.[0] || "");
+        setFuelType(policy?.vehicleSettings?.fuelType?.[0] || "");
+        setConsumptionType(policy?.vehicleSettings?.consumptionType?.[0] || "");
+        setAdvancePayment(Boolean(policy?.advanceSettings?.advancePayment));
+        setMaxWithoutReceipt(
+          policy?.advanceSettings?.maxWithoutReceipt != null
+            ? String(policy.advanceSettings.maxWithoutReceipt)
+            : ""
+        );
+        setAdvanceRequest(Boolean(policy?.advanceSettings?.advanceRequest));
+        setMaxAdvance(
+          policy?.advanceSettings?.maxAdvance != null
+            ? String(policy.advanceSettings.maxAdvance)
+            : ""
+        );
+        setLowerLimit(
+          policy?.advanceSettings?.lowerLimit != null
+            ? String(policy.advanceSettings.lowerLimit)
+            : ""
+        );
+      } catch (error) {
+        toast.error(error?.response?.data?.message || "Failed to load expense policy");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExpensePolicy();
+  }, [axiosInstance, id]);
 
   const updateCatLimit = (cat, field, val) => {
-    setCatLimits((prev) => ({
-      ...prev,
-      [cat]: { ...prev[cat], [field]: val },
-    }));
+    setCatLimits((prev) => ({ ...prev, [cat]: { ...prev[cat], [field]: val } }));
   };
 
-  const handleUpdate = () => {
-    alert("Expense policy updated!");
-  };
+  const handleUpdate = async () => {
+    if (!policyName.trim()) {
+      toast.error("Please enter policy name");
+      return;
+    }
 
-  // Blue color styles
-  const blue = {
-    activeCircle: {
-      width: 36, height: 36, borderRadius: "50%",
-      backgroundColor: "#2563EB", color: "#fff",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontWeight: "bold", fontSize: 14, border: "2px solid #2563EB",
-      flexShrink: 0,
-    },
-    completedCircle: {
-      width: 36, height: 36, borderRadius: "50%",
-      backgroundColor: "#DBEAFE", color: "#2563EB",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontWeight: "bold", fontSize: 14, border: "2px solid #2563EB",
-      flexShrink: 0,
-    },
-    inactiveCircle: {
-      width: 36, height: 36, borderRadius: "50%",
-      backgroundColor: "#fff", color: "#9CA3AF",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontWeight: "bold", fontSize: 14, border: "2px solid #D1D5DB",
-      flexShrink: 0,
-    },
-    activeLine: { flex: 1, height: 2, backgroundColor: "#2563EB", margin: "0 8px", marginBottom: 16 },
-    inactiveLine: { flex: 1, height: 2, backgroundColor: "#D1D5DB", margin: "0 8px", marginBottom: 16 },
-    activeLabel: { marginTop: 4, fontSize: 12, fontWeight: 600, color: "#2563EB", whiteSpace: "nowrap" },
-    inactiveLabel: { marginTop: 4, fontSize: 12, fontWeight: 500, color: "#9CA3AF", whiteSpace: "nowrap" },
-    primaryBtn: {
-      backgroundColor: "#2563EB", color: "#fff", border: "none",
-      padding: "10px 24px", borderRadius: 6, fontSize: 14, fontWeight: 500, cursor: "pointer",
-    },
-    outlineBtn: {
-      backgroundColor: "#fff", color: "#374151", border: "1px solid #D1D5DB",
-      padding: "10px 24px", borderRadius: 6, fontSize: 14, fontWeight: 500, cursor: "pointer",
-    },
-    toggle: (on) => ({
-      width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer",
-      backgroundColor: on ? "#2563EB" : "#D1D5DB", position: "relative", flexShrink: 0,
-    }),
-    toggleThumb: (on) => ({
-      position: "absolute", top: 2, width: 20, height: 20, borderRadius: "50%",
-      backgroundColor: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-      transition: "transform 0.2s",
-      transform: on ? "translateX(22px)" : "translateX(2px)",
-    }),
-    input: {
-      height: 40, borderRadius: 6, border: "1px solid #D1D5DB",
-      backgroundColor: "#fff", padding: "0 12px", fontSize: 14, outline: "none",
-      width: "100%", boxSizing: "border-box",
-    },
-    select: {
-      height: 40, borderRadius: 6, border: "1px solid #D1D5DB",
-      backgroundColor: "#fff", padding: "0 12px", fontSize: 14, outline: "none",
-      width: "100%", boxSizing: "border-box",
-    },
+    const payload = {
+      policyName: policyName.trim(),
+      companyOfficeId: getStoredOfficeIds(),
+      description: description.trim(),
+      monthlyLimit: Number(monthlyLimit) || 0,
+      allowance: categorySelections["Allowance"] === "enabled",
+      travel: categorySelections["Travel"] === "enabled",
+      personalVehicle: categorySelections["Personal Vehicle Expense"] === "enabled",
+      stay: categorySelections["Stay"] === "enabled",
+      skillDevelopment: categorySelections["Skill Development"] === "enabled",
+      mealsEntertainment: categorySelections["Meals and Entertainment"] === "enabled",
+      utilities: categorySelections["Utilities"] === "enabled",
+      officeExpenses: categorySelections["Office Expenses"] === "enabled",
+      commute: categorySelections["Commute"] === "enabled",
+      allowanceLimit: Number(catLimits["Allowance"]?.limit) || 0,
+      allowanceAmount: Number(catLimits["Allowance"]?.amount) || 0,
+      travelLimit: Number(catLimits["Travel"]?.limit) || 0,
+      travelAmount: Number(catLimits["Travel"]?.amount) || 0,
+      personalVehicleLimit: Number(catLimits["Personal Vehicle Expense"]?.limit) || 0,
+      personalVehicleAmount: Number(catLimits["Personal Vehicle Expense"]?.amount) || 0,
+      stayLimit: Number(catLimits["Stay"]?.limit) || 0,
+      stayAmount: Number(catLimits["Stay"]?.amount) || 0,
+      skillDevelopmentLimit: Number(catLimits["Skill Development"]?.limit) || 0,
+      skillDevelopmentAmount: Number(catLimits["Skill Development"]?.amount) || 0,
+      mealsEntertainmentLimit: Number(catLimits["Meals and Entertainment"]?.limit) || 0,
+      mealsEntertainmentAmount: Number(catLimits["Meals and Entertainment"]?.amount) || 0,
+      utilitiesLimit: Number(catLimits["Utilities"]?.limit) || 0,
+      utilitiesAmount: Number(catLimits["Utilities"]?.amount) || 0,
+      officeExpensesLimit: Number(catLimits["Office Expenses"]?.limit) || 0,
+      officeExpensesAmount: Number(catLimits["Office Expenses"]?.amount) || 0,
+      commuteLimit: Number(catLimits["Commute"]?.limit) || 0,
+      commuteAmount: Number(catLimits["Commute"]?.amount) || 0,
+      trainClass: trainClass ? [trainClass] : [],
+      busClass: busClass ? [busClass] : [],
+      airClass: airClass ? [airClass] : [],
+      fuelType: fuelType ? [fuelType] : [],
+      consumptionType: consumptionType ? [consumptionType] : [],
+      advancePayment,
+      maxWithoutReceipt: Number(maxWithoutReceipt) || 0,
+      advanceRequest,
+      maxAdvance: Number(maxAdvance) || 0,
+      lowerLimit: Number(lowerLimit) || 0,
+    };
+
+    try {
+      setIsSaving(true);
+      await axiosInstance.put(`/config/update/expensePolicy/${id}`, payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      toast.success("Expense policy updated successfully");
+      navigate("/config/pay/expensive/expense-policy/list");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to update expense policy");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    // Offset for sidebar - push content to right
-    <div style={{ marginLeft: 0, maxWidth: 820, padding: "24px 32px" }}>
+    <div style={{ padding: "24px 32px" }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Edit Expense Policy</h1>
       <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4, marginBottom: 24 }}>
         Update policy details, expense limits, and advance settings.
       </p>
 
-      {/* ── Stepper ── */}
+      {loading && (
+        <div style={{ marginBottom: 16, fontSize: 13, color: "#6B7280" }}>Loading policy...</div>
+      )}
+
       <div style={{ backgroundColor: "#EFF6FF", borderRadius: 8, padding: "16px 24px", marginBottom: 32 }}>
         <div style={{ display: "flex", alignItems: "flex-start" }}>
           {steps.map((s, idx) => (
             <div key={s.id} style={{ display: "flex", alignItems: "center", flex: 1 }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <div style={
-                  step === s.id ? blue.activeCircle :
-                  step > s.id  ? blue.completedCircle :
-                  blue.inactiveCircle
-                }>
+                <div style={step === s.id ? blue.activeCircle : step > s.id ? blue.completedCircle : blue.inactiveCircle}>
                   {step > s.id ? "✓" : s.id}
                 </div>
-                <span style={step === s.id ? blue.activeLabel : blue.inactiveLabel}>
-                  {s.label}
-                </span>
+                <span style={step === s.id ? blue.activeLabel : blue.inactiveLabel}>{s.label}</span>
               </div>
-              {idx < steps.length - 1 && (
-                <div style={step > s.id ? blue.activeLine : blue.inactiveLine} />
-              )}
+              {idx < steps.length - 1 && <div style={step > s.id ? blue.activeLine : blue.inactiveLine} />}
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── Step 1 ── */}
       {step === 1 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div>
             <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Policy Name</p>
-            <input
-              style={blue.input}
-              value={policyName}
-              onChange={(e) => setPolicyName(e.target.value)}
-              placeholder="Enter policy name"
-            />
+            <input style={blue.input} value={policyName} onChange={(e) => setPolicyName(e.target.value)} />
           </div>
 
           <div>
@@ -224,25 +413,23 @@ const EditExpensePolicy = () => {
               style={{ ...blue.input, height: 80, padding: "8px 12px", resize: "none" }}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter description"
               rows={3}
             />
           </div>
 
           <div>
-            <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>
-              Select the categories and types to be assigned
-            </p>
+            <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Select the categories and types to be assigned</p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               {categories.map((cat) => (
                 <div key={cat}>
                   <p style={{ fontSize: 13, marginBottom: 4, color: "#374151" }}>{cat}</p>
-                  {/* Blue bordered box */}
-                  <div style={{
-                    border: categorySelections[cat] === "enabled" ? "2px solid #2563EB" : "1px solid #D1D5DB",
-                    borderRadius: 6, overflow: "hidden",
-                    boxShadow: categorySelections[cat] === "enabled" ? "0 0 0 2px #DBEAFE" : "none",
-                  }}>
+                  <div
+                    style={{
+                      border: categorySelections[cat] === "enabled" ? "2px solid #2563EB" : "1px solid #D1D5DB",
+                      borderRadius: 6,
+                      overflow: "hidden",
+                    }}
+                  >
                     <select
                       value={categorySelections[cat] || ""}
                       onChange={(e) =>
@@ -261,103 +448,118 @@ const EditExpensePolicy = () => {
           </div>
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, paddingTop: 8 }}>
-            <button style={blue.outlineBtn}>Cancel</button>
-            <button style={blue.primaryBtn} onClick={() => setStep(2)}>Next</button>
+            <button style={blue.outlineBtn} onClick={() => navigate("/config/pay/expensive/expense-policy/list")}>
+              Cancel
+            </button>
+            <button style={blue.primaryBtn} onClick={() => setStep(2)}>
+              Next
+            </button>
           </div>
         </div>
       )}
 
-      {/* ── Step 2 ── */}
       {step === 2 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div>
             <p style={{ fontSize: 13, color: "#374151", marginBottom: 8 }}>
-              Assign monthly expense limit to <strong>{policyName}</strong> Policy
+              Assign monthly expense limit to <strong>{policyName || "this"}</strong> Policy
             </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <input
-                style={{ ...blue.input, width: 160 }}
+                style={{ ...blue.input, width: 154, fontSize: 12 }}
                 value={monthlyLimit}
                 onChange={(e) => setMonthlyLimit(e.target.value)}
-                placeholder="Enter amount"
+                placeholder="Choose Account"
               />
-              <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
+              <span style={{ fontSize: 13, color: "#6B7280" }}>Rs</span>
             </div>
           </div>
 
-          {/* Category table */}
-          <div style={{ borderTop: "1px solid #E5E7EB" }}>
-            <div style={{
-              display: "grid", gridTemplateColumns: "1fr 180px 180px",
-              gap: 16, padding: "12px 0", fontSize: 13, color: "#6B7280", fontWeight: 600,
-            }}>
-              <span>Categories</span>
-              <span>Limit</span>
-              <span>Amount</span>
+          <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: 8 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "170px 238px 238px",
+                columnGap: 24,
+                padding: "8px 0 4px",
+                borderBottom: "1px solid #E5E7EB",
+              }}
+            >
+              <span style={{ ...blue.faintLabel, paddingLeft: 18 }}>categories</span>
+              <span style={blue.faintLabel}>Limit</span>
+              <span style={blue.faintLabel}>Amount</span>
             </div>
 
             {categories.map((cat) => (
               <div key={cat}>
-                <div style={{
-                  display: "grid", gridTemplateColumns: "1fr 180px 180px",
-                  gap: 16, padding: "12px 0", borderTop: "1px solid #E5E7EB", alignItems: "center",
-                }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{cat}</span>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "170px 238px 238px",
+                    columnGap: 24,
+                    padding: "12px 0",
+                    alignItems: "start",
+                  }}
+                >
+                  <span style={{ fontSize: 13, color: "#111827", paddingTop: 8, paddingLeft: 18 }}>{cat}</span>
                   <input
-                    style={blue.input}
+                    style={{ ...blue.input, width: 155, fontSize: 12 }}
                     value={catLimits[cat]?.limit || ""}
                     onChange={(e) => updateCatLimit(cat, "limit", e.target.value)}
-                    placeholder="Enter limit"
+                    placeholder="Choose Account"
                   />
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <input
-                      style={blue.input}
-                      value={catLimits[cat]?.amount || ""}
-                      onChange={(e) => updateCatLimit(cat, "amount", e.target.value)}
-                      placeholder="Enter amount"
-                    />
-                    <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
-                  </div>
+                  <input
+                    style={{ ...blue.input, width: 155, fontSize: 12 }}
+                    value={catLimits[cat]?.amount || ""}
+                    onChange={(e) => updateCatLimit(cat, "amount", e.target.value)}
+                    placeholder="Choose Account"
+                  />
                 </div>
 
-                {/* Travel sub-fields */}
                 {cat === "Travel" && (
-                  <div style={{ marginLeft: 32, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 12 }}>
+                  <div style={{ marginLeft: 194, width: 336, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 12 }}>
                     {[
                       { label: "Train", value: trainClass, onChange: setTrainClass, options: trainClasses },
                       { label: "Bus", value: busClass, onChange: setBusClass, options: busClasses },
                       { label: "Air", value: airClass, onChange: setAirClass, options: airClasses },
                     ].map((field) => (
                       <div key={field.label}>
-                        <p style={{ fontSize: 13, color: "#374151", marginBottom: 4 }}>{field.label}</p>
-                        <select
-                          value={field.value}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          style={{ ...blue.select, width: 300 }}
-                        >
+                        <p style={{ fontSize: 13, color: "#111827", marginBottom: 4 }}>{field.label}</p>
+                        <select value={field.value} onChange={(e) => field.onChange(e.target.value)} style={{ ...blue.select, width: "100%", fontSize: 12 }}>
                           <option value="">Enter Class</option>
-                          {field.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                          {field.options.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Personal Vehicle sub-fields */}
                 {cat === "Personal Vehicle Expense" && (
-                  <div style={{ marginLeft: 32, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 12 }}>
+                  <div style={{ marginLeft: 194, width: 336, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 12 }}>
                     <div>
-                      <p style={{ fontSize: 13, color: "#374151", marginBottom: 4 }}>Fuel</p>
-                      <select value={fuelType} onChange={(e) => setFuelType(e.target.value)} style={{ ...blue.select, width: 300 }}>
+                      <p style={{ fontSize: 13, color: "#111827", marginBottom: 4 }}>Fuel</p>
+                      <select value={fuelType} onChange={(e) => setFuelType(e.target.value)} style={{ ...blue.select, width: "100%", fontSize: 12 }}>
                         <option value="">Enter Fuel Type</option>
-                        {fuelTypes.map((o) => <option key={o} value={o}>{o}</option>)}
+                        {fuelTypes.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
-                      <p style={{ fontSize: 13, color: "#374151", marginBottom: 4 }}>Consumption type</p>
-                      <select value={consumptionType} onChange={(e) => setConsumptionType(e.target.value)} style={{ ...blue.select, width: 300 }}>
+                      <p style={{ fontSize: 13, color: "#111827", marginBottom: 4 }}>Consumption type</p>
+                      <select value={consumptionType} onChange={(e) => setConsumptionType(e.target.value)} style={{ ...blue.select, width: "100%", fontSize: 12 }}>
                         <option value="">Enter Consumption Type</option>
-                        {consumptionTypes.map((o) => <option key={o} value={o}>{o}</option>)}
+                        {consumptionTypes.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -373,15 +575,19 @@ const EditExpensePolicy = () => {
         </div>
       )}
 
-      {/* ── Step 3 ── */}
       {step === 3 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          {/* Advance payment toggle */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            border: "1px solid #D1D5DB", borderRadius: 8, padding: "16px",
-            backgroundColor: advancePayment ? "#EFF6FF" : "#fff",
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              border: "1px solid #D1D5DB",
+              borderRadius: 8,
+              padding: "16px",
+              backgroundColor: advancePayment ? "#EFF6FF" : "#fff",
+            }}
+          >
             <span style={{ fontSize: 13, color: "#374151" }}>Allow employee to request for advance payment</span>
             <Toggle value={advancePayment} onChange={setAdvancePayment} />
           </div>
@@ -390,18 +596,23 @@ const EditExpensePolicy = () => {
             <div>
               <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Maximum amount without receipt</p>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <input style={{ ...blue.input, width: 160 }} value={maxWithoutReceipt} onChange={(e) => setMaxWithoutReceipt(e.target.value)} placeholder="Enter amount" />
-                <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
+                <input style={{ ...blue.input, width: 160 }} value={maxWithoutReceipt} onChange={(e) => setMaxWithoutReceipt(e.target.value)} />
+                <span style={{ fontSize: 14, color: "#6B7280" }}>Rs</span>
               </div>
             </div>
           )}
 
-          {/* Advance request toggle */}
-         <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            border: "1px solid #D1D5DB", borderRadius: 8, padding: "16px",
-            backgroundColor: advanceRequest ? "#EFF6FF" : "#fff",
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              border: "1px solid #D1D5DB",
+              borderRadius: 8,
+              padding: "16px",
+              backgroundColor: advanceRequest ? "#EFF6FF" : "#fff",
+            }}
+          >
             <span style={{ fontSize: 13, color: "#374151" }}>Allow employee to request for advance amount</span>
             <Toggle value={advanceRequest} onChange={setAdvanceRequest} />
           </div>
@@ -411,15 +622,15 @@ const EditExpensePolicy = () => {
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Maximum amount for advance</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input style={{ ...blue.input, width: 160 }} value={maxAdvance} onChange={(e) => setMaxAdvance(e.target.value)} placeholder="Enter amount" />
-                  <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
+                  <input style={{ ...blue.input, width: 160 }} value={maxAdvance} onChange={(e) => setMaxAdvance(e.target.value)} />
+                  <span style={{ fontSize: 14, color: "#6B7280" }}>Rs</span>
                 </div>
               </div>
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Lower limit of balance for new advance request</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <input style={{ ...blue.input, width: 160 }} value={lowerLimit} onChange={(e) => setLowerLimit(e.target.value)} placeholder="Enter amount" />
-                  <span style={{ fontSize: 14, color: "#6B7280" }}>₹</span>
+                  <input style={{ ...blue.input, width: 160 }} value={lowerLimit} onChange={(e) => setLowerLimit(e.target.value)} />
+                  <span style={{ fontSize: 14, color: "#6B7280" }}>Rs</span>
                 </div>
               </div>
             </div>
@@ -427,7 +638,13 @@ const EditExpensePolicy = () => {
 
           <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8 }}>
             <button style={blue.outlineBtn} onClick={() => setStep(2)}>Back</button>
-            <button style={{ ...blue.primaryBtn, backgroundColor: "#16A34A" }} onClick={handleUpdate}>Update Policy</button>
+            <button
+              style={{ ...blue.primaryBtn, opacity: isSaving ? 0.7 : 1, cursor: isSaving ? "not-allowed" : "pointer" }}
+              onClick={handleUpdate}
+              disabled={isSaving}
+            >
+              {isSaving ? "Updating..." : "Update"}
+            </button>
           </div>
         </div>
       )}

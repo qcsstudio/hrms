@@ -1,10 +1,28 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import createAxios from "../../../../utils/axios.config";
 
+// API helpers
+const getAttendancePolicy = async (axiosInstance, id) => {
+  const res = await axiosInstance.get(`/config/attendance-policy/${id}`, {
+    meta: { auth: "ADMIN_AUTH" },
+  });
+  return res?.data?.data;
+};
+
+const updateAttendancePolicy = async (axiosInstance, id, payload) => {
+  const res = await axiosInstance.put(`/config/attendance-policy-update/${id}`, payload, {
+    meta: { auth: "ADMIN_AUTH" },
+  });
+  return res?.data;
+};
+
+
 export default function AttendancePolicyCreate() {
   const navigate = useNavigate();
+  const { id } = useParams(); // for edit mode
   const token = localStorage.getItem("authToken");
   const axiosInstance = createAxios(token);
   const [step, setStep] = useState(1);
@@ -33,6 +51,71 @@ export default function AttendancePolicyCreate() {
     weeklyPenalty: "yes", weeklyLeaveType: "", weeklyLeavesDeduct: "",
     weeklyLeavesPerLate: "", weeklyDeductPolicy: "auto-leave",
   });
+
+  // Fetch policy if editing
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      try {
+        const policy = await getAttendancePolicy(axiosInstance, id);
+        if (policy) {
+          // Map API fields to form fields as needed
+          setData((prev) => ({
+            ...prev,
+            policyName: policy.policyName || "",
+            policyDesc: policy.policyDescription || "",
+            wfhOd: policy.workRequest?.wfhOdType || "wfh",
+            wfhCount: policy.workRequest?.wfhMaxRequestsPerMonth || "",
+            backupCount: policy.workRequest?.backupMaxRequestsPerMonth || "",
+            restrictRequests: policy.workRequest?.restrictAttendanceRequests ? "yes" : "no",
+            restrictCount: policy.workRequest?.restrictedRequestsCount || "",
+            autoActions: policy.absenteeism?.autoActionsEnabled ? "yes" : "no",
+            noShowAction: policy.absenteeism?.noShowHandling || null,
+            leaveSubAction: policy.absenteeism?.leaveSubAction || "create-request",
+            absentLeaveType: policy.absenteeism?.absentLeaveType || "",
+            absentLeavesDeduct: policy.absenteeism?.absentLeavesToDeduct || "",
+            lateComers: policy.punctuality?.trackLateComers ? "yes" : "no",
+            lateType: policy.punctuality?.lateMarkTrackingType || "grace-hours",
+            graceHrs: policy.punctuality?.graceHours?.monthlyGrace?.hours || "",
+            graceMins: policy.punctuality?.graceHours?.monthlyGrace?.minutes || "",
+            graceTriggerHrs: policy.punctuality?.graceHours?.triggerAfter?.hours || "",
+            graceTriggerMins: policy.punctuality?.graceHours?.triggerAfter?.minutes || "",
+            graceMaxHrs: policy.punctuality?.graceHours?.maxAllowed?.hours || "",
+            graceMaxMins: policy.punctuality?.graceHours?.maxAllowed?.minutes || "",
+            gracePenalty: policy.punctuality?.graceHours?.penaltyType || "deduct-refill",
+            gracePenaltyLeaveType: policy.punctuality?.graceHours?.penalty?.leaveType || "",
+            gracePenaltyLeavesDeduct: policy.punctuality?.graceHours?.penalty?.leavesToDeduct || "",
+            gracePenaltyDeductPolicy: policy.punctuality?.graceHours?.penalty?.deductionPolicy || "auto-leave",
+            timeReq: policy.timeAtWork?.requirementEnabled || "yes-daily",
+            halfDayMode: policy.timeAtWork?.halfDay?.minDuration?.mode || "percent",
+            halfDayPct: policy.timeAtWork?.halfDay?.minDuration?.percent || "",
+            halfDayHrs: policy.timeAtWork?.halfDay?.minDuration?.time?.hours || "",
+            halfDayMins: policy.timeAtWork?.halfDay?.minDuration?.time?.minutes || "",
+            halfDayPenalty: policy.timeAtWork?.halfDay?.penalty?.enabled || "yes",
+            halfDayLeaveType: policy.timeAtWork?.halfDay?.penalty?.leaveType || "",
+            halfDayLeavesDeduct: policy.timeAtWork?.halfDay?.penalty?.leavesToDeduct || "",
+            halfDayDeductPolicy: policy.timeAtWork?.halfDay?.penalty?.deductionPolicy || "auto-leave",
+            fullDayMode: policy.timeAtWork?.fullDay?.minDuration?.mode || "percent",
+            fullDayPct: policy.timeAtWork?.fullDay?.minDuration?.percent || "",
+            fullDayHrs: policy.timeAtWork?.fullDay?.minDuration?.time?.hours || "",
+            fullDayMins: policy.timeAtWork?.fullDay?.minDuration?.time?.minutes || "",
+            fullDayPenalty: policy.timeAtWork?.fullDay?.penalty?.enabled || "yes",
+            fullDayLeaveType: policy.timeAtWork?.fullDay?.penalty?.leaveType || "",
+            fullDayLeavesDeduct: policy.timeAtWork?.fullDay?.penalty?.leavesToDeduct || "",
+            fullDayDeductPolicy: policy.timeAtWork?.fullDay?.penalty?.deductionPolicy || "auto-leave",
+            weeklyHrs: policy.timeAtWork?.weekly?.requiredHours?.hours || "",
+            weeklyMins: policy.timeAtWork?.weekly?.requiredHours?.minutes || "",
+            weeklyPenalty: policy.timeAtWork?.weekly?.penalty?.enabled || "yes",
+            weeklyLeaveType: policy.timeAtWork?.weekly?.penalty?.leaveType || "",
+            weeklyLeavesDeduct: policy.timeAtWork?.weekly?.penalty?.leavesToDeduct || "",
+            weeklyDeductPolicy: policy.timeAtWork?.weekly?.penalty?.deductionPolicy || "auto-leave",
+          }));
+        }
+      } catch (error) {
+        toast.error(error?.response?.data?.message || "Failed to fetch policy for edit");
+      }
+    })();
+  }, [id]);
 
   const set = (key, val) => setData(prev => ({ ...prev, [key]: val }));
   const toNumber = (value, fallback = 0) => {
@@ -132,11 +215,18 @@ export default function AttendancePolicyCreate() {
     setIsSubmitting(true);
     try {
       const payload = buildPayload(status);
-      const res = await axiosInstance.post("/config/attendance-policy", payload, {
-        meta: { auth: "ADMIN_AUTH" }
-      });
-
-      toast.success(res?.data?.message || `Attendance policy ${status === "draft" ? "saved as draft" : "created"} successfully`);
+      let res;
+      if (id) {
+        // Edit mode: update
+        res = await updateAttendancePolicy(axiosInstance, id, payload);
+        toast.success(res?.message || "Attendance policy updated successfully");
+      } else {
+        // Create mode: add
+        res = await axiosInstance.post("/config/attendance-policy", payload, {
+          meta: { auth: "ADMIN_AUTH" }
+        });
+        toast.success(res?.data?.message || `Attendance policy ${status === "draft" ? "saved as draft" : "created"} successfully`);
+      }
       navigate("/config/track/Attendance/attendance-policy/list");
     } catch (error) {
       console.log(error, "attendance policy create error");

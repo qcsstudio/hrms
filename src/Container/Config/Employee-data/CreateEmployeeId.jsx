@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import createAxios from "../../../utils/axios.config";
 import { FaAngleDown } from "react-icons/fa";
 import { createPortal } from "react-dom";
+import { toast } from "react-toastify";
 
 const panelClass =
   "rounded-lg border border-[#E5E7EB] bg-white p-4 surface-card overflow-visible";
@@ -369,6 +370,84 @@ export default function CreateEmployeeId() {
     [previewPrefix, previewMid, previewSuffix].filter(Boolean).join(selectedSeparator) ||
     "EMP0001";
 
+  useEffect(() => {
+    const fetchEmployeeIdConfig = async () => {
+      if (!token) return;
+
+      try {
+        const response = await axiosInstance.get("/config/employee-id-config-get", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const config = response?.data?.data || response?.data?.config || response?.data || {};
+        if (!config || typeof config !== "object") return;
+
+        setMode(config?.assignType === "manual" ? "manual" : "auto");
+        setAssignMethod(
+          config?.continueSeriesForFutureEmployees
+            ? "continue"
+            : config?.assignToExistingEmployees
+            ? "oldest"
+            : "oldest"
+        );
+        setIncludeDeactivated(config?.includeDeactivatedEmployees ? "yes" : "no");
+
+        if (config?.preview) {
+          const previewValue = String(config.preview);
+          const resolvedSeparator = previewValue.includes("-")
+            ? "hyphen"
+            : previewValue.includes("/")
+            ? "forward_slash"
+            : previewValue.includes("\\")
+            ? "backward_slash"
+            : "none";
+
+          const separatorSymbol = separatorMap[resolvedSeparator];
+          const parts = separatorSymbol ? previewValue.split(separatorSymbol) : [previewValue];
+
+          setSeparatorType(resolvedSeparator);
+
+          setPrefix(false);
+          setMid(false);
+          setSuffix(false);
+          setPrefixType("");
+          setMidType("");
+          setPrefixText("");
+          setMidText("");
+          setSuffixText("");
+
+          if (parts[0]) {
+            setPrefix(true);
+            setPrefixType("custom_text");
+            setPrefixText(parts[0]);
+            setPrefixUpper(parts[0] === parts[0].toUpperCase());
+          }
+
+          if (parts.length === 2 && /^\d+$/.test(parts[1])) {
+            setSuffix(true);
+            setSuffixText(parts[1]);
+          } else {
+            if (parts[1]) {
+              setMid(true);
+              setMidType("custom_text");
+              setMidText(parts[1]);
+              setMidUpper(parts[1] === parts[1].toUpperCase());
+            }
+            if (parts[2]) {
+              setSuffix(true);
+              setSuffixText(parts[2]);
+            }
+          }
+        }
+      } catch (error) {
+        console.log("get employee id config error", error?.response?.data || error);
+        toast.error(error?.response?.data?.message || "Failed to load employee ID config");
+      }
+    };
+
+    fetchEmployeeIdConfig();
+  }, [token]);
+
   const buildTypeOptions = (currentValue, blockedValues) =>
     idTypeOptions.map((option) => ({
       ...option,
@@ -417,37 +496,8 @@ export default function CreateEmployeeId() {
 
     const payLoad = {
       assignType: mode === "auto" ? "automatic" : "manual",
-      separator: selectedSeparator,
-      prefix: {
-        enabled: prefix,
-        type: prefixType,
-        customText: prefixType === "custom_text" ? prefixText : "",
-        numberOfCharacters:
-          prefixType && prefixType !== "custom_text"
-            ? Number(prefixChars) || null
-            : null,
-        upperCase: prefixUpper,
-      },
-      midText: {
-        enabled: mid,
-        type: midType,
-        customText: midType === "custom_text" ? midText : "",
-        numberOfCharacters:
-          midType && midType !== "custom_text" ? Number(midChars) || null : null,
-        startFrom: midType === "numerical_series" ? 1 : null,
-        currentNumber: midType === "numerical_series" ? 1 : null,
-        upperCase: midUpper,
-      },
-      suffix: {
-        enabled: suffix,
-        type: SUFFIX_TYPE,
-        customText: suffixText,
-        startFrom: Number(suffixText) || 1,
-        currentNumber: Number(suffixText) || 1,
-        upperCase: false,
-      },
-      assignToExistingEmployees:
-        assignMethod === "oldest" ? "oldest_joining_date" : null,
+      preview: previewEmployeeId,
+      assignToExistingEmployees: assignMethod === "oldest",
       includeDeactivatedEmployees: includeDeactivated === "yes",
       continueSeriesForFutureEmployees: assignMethod === "continue",
     };
@@ -455,11 +505,15 @@ export default function CreateEmployeeId() {
     try {
       const response = await axiosInstance.post(
         "/config/employee-id-config",
-        payLoad
+        payLoad,{
+          meta:{auth:"ADMIN_AUTH"}
+        }
       );
       console.log("Saved:", response.data);
+      toast.success(response?.data?.message || "Employee ID config saved successfully");
     } catch (error) {
       console.log("error", error.response?.data);
+      toast.error(error?.response?.data?.message || "Failed to save employee ID config");
     }
   };
 

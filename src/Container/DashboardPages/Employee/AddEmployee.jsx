@@ -79,6 +79,8 @@ const AddEmployee = () => {
     const [getLeavePolicy, setGetLeavePolicy] = useState([])
     const [getHolidayPolicy, setGetHolidayPolicy] = useState([])
     const [getExtraTimePloicy, setGetExtraTimePloicy] = useState([])
+    const [getemployeeId, setGetemployeeId] = useState(null)
+    const [isEmployeeIdAutoAssigned, setIsEmployeeIdAutoAssigned] = useState(false)
 
     useEffect(() => {
         // offices=========================
@@ -221,6 +223,28 @@ const AddEmployee = () => {
                 toast.error(error?.response?.data?.message)
             }
         };
+        const fetchallemployeeId = async () => {
+            try {
+                const response = await axiosInstance.get("/config/getEmployeeidforCreate", {
+                    meta: { auth: "ADMIN_AUTH" }
+                });
+                const employeeIdConfig = response?.data || {}
+                const nextAssignType = employeeIdConfig?.assignType || ""
+                const nextEmployeeId = nextAssignType === "automatic"
+                    ? employeeIdConfig?.employeeId || ""
+                    : ""
+
+                setGetemployeeId(employeeIdConfig);
+                setIsEmployeeIdAutoAssigned(nextAssignType === "automatic")
+                setFormData((prev) => ({
+                    ...prev,
+                    employeeId: nextEmployeeId
+                }))
+            } catch (error) {
+                console.error("Error fetching business units:", error);
+                toast.error(error?.response?.data?.message)
+            }
+        };
         fetchOffices();
         fetchteam();
         fetchgrade();
@@ -232,6 +256,7 @@ const AddEmployee = () => {
         fetchleavePolicy();
         fetchhodidaypolicy();
         fetchalldepartment();
+        fetchallemployeeId();
     }, [])
 
     const [importOpen, setImportOpen] = useState(false)
@@ -406,7 +431,16 @@ const AddEmployee = () => {
                                 </div>
                                 <div className='w-[100%]'>
                                     <h1 className='mt-[9px] text-[15px]' >Employee ID</h1>
-                                    <input className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd]' type='text' placeholder='Enter Employee ID' name='employeeId' value={formData.employeeId} onChange={handleChange}></input>
+                                    <input
+                                        className='border w-[100%] rounded-md p-[10px] border-2 border-[#E7EBEd] disabled:bg-[#F8F9FA] disabled:text-[#667085] disabled:cursor-not-allowed'
+                                        type='text'
+                                        placeholder='Enter Employee ID'
+                                        name='employeeId'
+                                        value={formData.employeeId}
+                                        onChange={handleChange}
+                                        readOnly={isEmployeeIdAutoAssigned}
+                                        disabled={isEmployeeIdAutoAssigned}
+                                    ></input>
                                 </div>
                             </div>
 

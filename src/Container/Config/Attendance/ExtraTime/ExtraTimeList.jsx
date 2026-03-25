@@ -87,9 +87,17 @@ export default function ExtraTimeList() {
     return items;
   };
 
-  const handleDelete = (id) => {
-    alert("Delete policy id: " + id);
-    setOpenMenu(null);
+  const handleDelete = async (id) => {
+    try {
+      await axiosInstance.delete(`/config/extra-time-policy-delete/${id}`, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      setPolicies((prev) => prev.filter((policy) => (policy?._id || policy?.id) !== id));
+    } catch (error) {
+      setErrorMessage(error?.response?.data?.message || "Unable to delete extra time policy.");
+    } finally {
+      setOpenMenu(null);
+    }
   };
 
   return (
@@ -199,7 +207,7 @@ export default function ExtraTimeList() {
 
                 <div className="flex items-center justify-end gap-2 relative">
                   <button
-                    onClick={() => navigate(`/track/extra-time/edit/${policyId}`)}
+                    onClick={() => navigate(`/config/track/Attendance/extra-time/edit/${policyId}`)}
                     className="p-2 rounded-md hover:bg-gray-100"
                   >
                     Edit
@@ -216,7 +224,7 @@ export default function ExtraTimeList() {
                     <div className="absolute right-0 top-10 w-36 bg-white border rounded-md shadow-md z-10">
                       <button
                         onClick={() => {
-                          navigate(`/track/extra-time/view/${policyId}`);
+                          navigate(`/config/track/Attendance/extra-time/edit/${policyId}`);
                           setOpenMenu(null);
                         }}
                         className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"

@@ -451,7 +451,14 @@ const AppRoutes = () => {
 
           <Route path="Attendance/attendance-policy/list" element={<AttendancePolicyList />} />
           <Route path="Attendance/attendance-policy/create" element={<AttendancePolicyCreate />} />
+          <Route path="Attendance/attendance-policy/edit/:id" element={<AttendancePolicyCreate />} />
+
+
+
+
           <Route path="Attendance/extra-time/create" element={<ExtraTimeCreate />} />
+
+          <Route path="Attendance/extra-time/edit/:id" element={<ExtraTimeCreate />} />
           <Route path="Attendance/extra-time/list" element={<ExtraTimeList />} />
           <Route path="deviceintegration" element={<DeviceIntegration />} />
           <Route
@@ -470,6 +477,7 @@ const AppRoutes = () => {
 
           <Route path="leave/holiday-plan/list" element={<HolidayPlanList />} />
           <Route path="leave/holiday-plan/create" element={<HolidayPlanCreate />} />
+          <Route path="leave/holiday-plan/edit/:id" element={<HolidayPlanCreate />} />
           <Route path="leave/leave-cycle" element={<LeaveCycle />} />
 
 

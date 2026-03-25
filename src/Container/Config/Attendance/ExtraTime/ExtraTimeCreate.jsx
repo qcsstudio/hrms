@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import createAxios from "../../../../utils/axios.config";
 
 export default function ExtraTimeCreate() {
   const navigate = useNavigate();
+  const { id } = useParams();
   const token = localStorage.getItem("authToken");
-  const axiosInstance = createAxios(token);
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
+  const isEditMode = Boolean(id);
 
   const [step, setStep] = useState(1);
+  const [loadingPolicy, setLoadingPolicy] = useState(false);
 
   /* ── Radio dot ── */
   const RDot = ({ checked }) => (
@@ -124,28 +128,100 @@ export default function ExtraTimeCreate() {
     return Number.isNaN(parsed) ? null : parsed;
   };
 
+  const boolToYesNo = (value) => (value ? "yes" : "no");
+
+  const toInputString = (value) => {
+    if (value === null || value === undefined) return "";
+    return String(value);
+  };
+
+  const prefillPolicy = (policy = {}) => {
+    setPolicyName(policy?.policyName || "");
+    setPolicyDesc(policy?.policyDescription || "");
+
+    const working = policy?.workingDayBenefits || {};
+    setS2benefit(boolToYesNo(working?.benefitEnabled));
+    setS2earnType(working?.earnType === "each-hour" ? "each-hour" : "hours");
+    setS2minHrs(toInputString(working?.minimumHoursRequired));
+    setS2earnDays(toInputString(working?.leavesEarnedPerCycle));
+    setS2canAccum(boolToYesNo(working?.canAccumulateHours));
+    setS2accumMonths(toInputString(working?.accumulationOverMonths));
+    setS2limitDay(toInputString(working?.compOffLimitPerDay));
+    setS2perHrDays(toInputString(working?.leavesPerHourOfOT));
+    setS2perHrLimit(toInputString(working?.compOffLimitPerDayEachHour));
+    setS2minThresh(boolToYesNo(working?.minimumThresholdEnabled));
+    setS2threshMins(toInputString(working?.minimumThresholdMinutes));
+
+    const nonWorking = policy?.nonWorkingDayBenefits || {};
+    setS3benefit(boolToYesNo(nonWorking?.benefitEnabled));
+    setS3earnType(nonWorking?.earnType === "each-hour" ? "each-hour" : "both");
+    setS3minHrs(toInputString(nonWorking?.minimumHoursRequired));
+    setS3earnDays(toInputString(nonWorking?.leavesEarnedPerCycle));
+    setS3canAccum(boolToYesNo(nonWorking?.canAccumulateHours));
+    setS3accumMonths(toInputString(nonWorking?.accumulationOverMonths));
+    setS3limitDay(toInputString(nonWorking?.compOffLimitPerDay));
+    setS3perHrDays(toInputString(nonWorking?.leavesPerHourOfOT));
+    setS3perHrLimit(toInputString(nonWorking?.compOffLimitPerDayEachHour));
+
+    const settings = policy?.extraTimePolicy || {};
+    setApprovalReq(boolToYesNo(settings?.approvalRequired));
+    setCreditApproval(boolToYesNo(settings?.creditApprovalRequired));
+    setUnusedBalance(settings?.unusedBalanceHandling || "lapse");
+    setLapseDays(toInputString(settings?.lapseDays));
+    setAttachments(boolToYesNo(settings?.attachmentsRequired));
+    setAttachDays(toInputString(settings?.attachmentRequiredIfDaysGreaterThan));
+    setAttachDesc(settings?.attachmentInstructions || "");
+    setPastDates(boolToYesNo(settings?.allowPastDateApplications));
+    setPastDays(toInputString(settings?.pastDateApplicationDaysLimit));
+  };
+
+  useEffect(() => {
+    const fetchPolicyById = async () => {
+      if (!isEditMode) return;
+
+      setLoadingPolicy(true);
+      try {
+        const res = await axiosInstance.get(`/config/extra-time-getOne/${id}`, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        const policyData = res?.data?.data || {};
+        prefillPolicy(policyData);
+      } catch (error) {
+        console.log("extra time getOne error", error);
+      } finally {
+        setLoadingPolicy(false);
+      }
+    };
+
+    fetchPolicyById();
+  }, [axiosInstance, id, isEditMode]);
+
   const buildPayload = (status) => ({
     policyName: policyName.trim(),
     policyDescription: policyDesc.trim(),
     workingDayBenefits: {
       benefitEnabled: s2benefit === "yes",
       earnType: s2earnType === "each-hour" ? "each-hour" : s2earnType,
-      minimumHoursRequired: toNumber(s2minHrs, 0),
-      leavesEarnedPerCycle: toNumber(s2earnDays || s2perHrDays, 0),
+      minimumHoursRequired: s2earnType === "hours" ? toNumber(s2minHrs, 0) : null,
+      leavesEarnedPerCycle: s2earnType === "hours" ? toNumber(s2earnDays, 0) : null,
       canAccumulateHours: s2canAccum === "yes",
       accumulationOverMonths: s2canAccum === "yes" ? toNullableNumber(s2accumMonths) : null,
-      compOffLimitPerDay: toNumber(s2limitDay || s2perHrLimit, 0),
+      compOffLimitPerDay: s2earnType === "hours" ? toNumber(s2limitDay, 0) : null,
+      leavesPerHourOfOT: s2earnType === "each-hour" ? toNumber(s2perHrDays, 0) : null,
+      compOffLimitPerDayEachHour: s2earnType === "each-hour" ? toNumber(s2perHrLimit, 0) : null,
       minimumThresholdEnabled: s2minThresh === "yes",
       minimumThresholdMinutes: s2minThresh === "yes" ? toNumber(s2threshMins, 0) : 0,
     },
     nonWorkingDayBenefits: {
       benefitEnabled: s3benefit === "yes",
       earnType: s3earnType === "each-hour" ? "each-hour" : s3earnType,
-      minimumHoursRequired: toNumber(s3minHrs, 0),
-      leavesEarnedPerCycle: toNumber(s3earnDays || s3perHrDays, 0),
+      minimumHoursRequired: s3earnType === "both" ? toNumber(s3minHrs, 0) : null,
+      leavesEarnedPerCycle: s3earnType === "both" ? toNumber(s3earnDays, 0) : null,
       canAccumulateHours: s3canAccum === "yes",
       accumulationOverMonths: s3canAccum === "yes" ? toNullableNumber(s3accumMonths) : null,
-      compOffLimitPerDay: toNumber(s3limitDay || s3perHrLimit, 0),
+      compOffLimitPerDay: s3earnType === "both" ? toNumber(s3limitDay, 0) : null,
+      leavesPerHourOfOT: s3earnType === "each-hour" ? toNumber(s3perHrDays, 0) : null,
+      compOffLimitPerDayEachHour: s3earnType === "each-hour" ? toNumber(s3perHrLimit, 0) : null,
     },
     extraTimePolicy: {
       approvalRequired: approvalReq === "yes",
@@ -164,9 +240,15 @@ export default function ExtraTimeCreate() {
   const savePolicy = async (status) => {
     try {
       const payload = buildPayload(status);
-      await axiosInstance.post("/config/extra-time", payload, {
-        meta: { auth: "ADMIN_AUTH" },
-      });
+      if (isEditMode) {
+        await axiosInstance.put(`/config/extra-time-policy-update/${id}`, payload, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+      } else {
+        await axiosInstance.post("/config/extra-time", payload, {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+      }
       navigate("/config/track/Attendance/extra-time/list");
     } catch (error) {
       console.log("extra time create error", error);
@@ -215,6 +297,9 @@ export default function ExtraTimeCreate() {
 
       {/* ════ CONTENT ════ */}
       <div className="max-w-3xl mx-auto px-7 pt-9">
+        {loadingPolicy && (
+          <div className="text-sm text-gray-500 mb-4">Loading policy details...</div>
+        )}
 
         {/* ── STEP 1: Describe ── */}
         {step === 1 && (
