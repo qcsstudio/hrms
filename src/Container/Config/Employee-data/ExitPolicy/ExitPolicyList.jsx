@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { FiEdit2 } from "react-icons/fi";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import createAxios from "../../../../utils/axios.config";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
 import AssignedEmployeesDrawer from "../../Company-data/Department/AssignedEmployeesDrawer";
 
@@ -16,34 +18,6 @@ const TAB_OPTIONS = [
 const flatSecondaryButtonClassName =
   "inline-flex items-center justify-center h-10 px-6 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium shadow-none hover:shadow-none hover:bg-gray-100 transition hover:translate-y-0";
 
-const initialPolicies = [
-  {
-    id: 1,
-    name: "15 Days",
-    status: "active",
-    date: "12 Jun 2025 11:10 AM",
-    createdByName: "Aanya Sharma",
-    createdByImage: "https://randomuser.me/api/portraits/women/44.jpg",
-    notice: 40,
-    employees: [
-      { name: "Rohan Mehta" },
-      { name: "Pooja Saini" },
-      { name: "Kunal Verma" },
-      { name: "Sneha Arora" },
-    ],
-  },
-  {
-    id: 2,
-    name: "Immediate Exit",
-    status: "draft",
-    date: "12 Jun 2025 11:10 AM",
-    createdByName: "Neha Kapoor",
-    createdByImage: "https://randomuser.me/api/portraits/women/65.jpg",
-    notice: 0,
-    employees: [],
-  },
-];
-
 const getInitials = (name = "") =>
   name
     .split(" ")
@@ -54,12 +28,60 @@ const getInitials = (name = "") =>
 
 const ExitPolicyList = () => {
   const [tab, setTab] = useState("active");
-  const [policies, setPolicies] = useState(initialPolicies);
+  const [policies, setPolicies] = useState([]);         // ✅ empty — filled from API
+  const [loading, setLoading] = useState(false);
   const [openMenu, setOpenMenu] = useState(null);
   const [showCountryDialog, setShowCountryDialog] = useState(false);
   const [isAssignedDrawerOpen, setIsAssignedDrawerOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState(null);
   const navigate = useNavigate();
+
+  // ✅ Token from Reduxconst 
+  const token = localStorage.getItem("authToken")
+  // const { token } = useSelector((state) => state.user);
+  const axiosInstance = createAxios(token);
+
+  // ✅ Fetch all exit policies from API
+  const fetchPolicies = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get("/config/getAll-exit-policy", {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      // ✅ Map API response to match UI fields
+      const mapped = (res?.data?.data || []).map((item) => ({
+        id: item._id,
+        name: item.name,
+        status: item.status,
+        date: new Date(item.createdAt).toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        createdByName: item.adminId || "Admin",
+        createdByImage: null,                            // ✅ API doesn't return image
+        notice: item.notice,
+        employees: item.employees || [],                 // ✅ fallback empty array
+        // keep all original fields too
+        ...item,
+      }));
+
+      setPolicies(mapped);
+    } catch (error) {
+      console.error("Failed to fetch exit policies:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Fetch on mount
+  useEffect(() => {
+    fetchPolicies();
+  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -67,7 +89,6 @@ const ExitPolicyList = () => {
         setOpenMenu(null);
       }
     };
-
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
@@ -93,11 +114,7 @@ const ExitPolicyList = () => {
     const confirmDelete = window.confirm(
       `Are you sure you want to delete "${item.name}"?`
     );
-
-    if (!confirmDelete) {
-      return;
-    }
-
+    if (!confirmDelete) return;
     setPolicies((prev) => prev.filter((policy) => policy.id !== item.id));
     setOpenMenu(null);
   };
@@ -146,7 +163,6 @@ const ExitPolicyList = () => {
           <div className="inline-flex rounded-[9px] border border-[#DEE2E6] bg-[#F4F4F5] px-1 py-1 gap-2">
             {TAB_OPTIONS.map((option) => {
               const isActive = tab === option.key;
-
               return (
                 <button
                   key={option.key}
@@ -177,42 +193,42 @@ const ExitPolicyList = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
-                <th className="px-5 py-3.5 text-left font-medium">
-                  Exit Policy Name
-                </th>
+                <th className="px-5 py-3.5 text-left font-medium">Exit Policy Name</th>
                 <th className="px-5 py-3.5 text-left font-medium">Created By</th>
-                <th className="px-5 py-3.5 text-left font-medium">
-                  Assigned Employee
-                </th>
-                <th className="px-5 py-3.5 text-left font-medium">
-                  Notice Period
-                </th>
+                <th className="px-5 py-3.5 text-left font-medium">Assigned Employee</th>
+                <th className="px-5 py-3.5 text-left font-medium">Notice Period</th>
                 <th className="px-5 py-3.5 text-left font-medium">Status</th>
                 <th className="px-5 py-3.5 text-right font-medium">Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredPolicies.length === 0 && (
+              {/* ✅ Loading state */}
+              {loading && (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="px-5 py-8 text-center text-sm text-gray-500"
-                  >
+                  <td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-400">
+                    Loading...
+                  </td>
+                </tr>
+              )}
+
+              {/* ✅ Empty state */}
+              {!loading && filteredPolicies.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-500">
                     No exit policies found in this status.
                   </td>
                 </tr>
               )}
 
-              {filteredPolicies.map((item) => (
+              {/* ✅ Data rows — exact same UI */}
+              {!loading && filteredPolicies.map((item) => (
                 <tr
                   key={item.id}
                   className="border-t border-gray-100 hover:bg-gray-50/70"
                 >
                   <td className="px-5 py-4 align-middle">
-                    <div className="text-sm font-medium text-gray-900">
-                      {item.name}
-                    </div>
+                    <div className="text-sm font-medium text-gray-900">{item.name}</div>
                     <div className="mt-0.5 text-xs text-gray-400">{item.date}</div>
                   </td>
 
@@ -220,18 +236,16 @@ const ExitPolicyList = () => {
                     <div className="flex items-center gap-2">
                       {item.createdByImage ? (
                         <img
-                          src={item.createdByImage}
-                          alt={item.createdByName}
+                          src={item.adminName}
+                          alt={item.adminEmail}
                           className="h-8 w-8 rounded-full object-cover"
                         />
                       ) : (
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-700">
-                          {getInitials(item.createdByName)}
+                          {getInitials(item.adminName)}
                         </div>
                       )}
-                      <span className="text-sm text-gray-700">
-                        {item.createdByName}
-                      </span>
+                      <span className="text-sm text-gray-700">{item.adminName}</span>
                     </div>
                   </td>
 
@@ -255,15 +269,13 @@ const ExitPolicyList = () => {
                               type="button"
                               onClick={() => openAssignedEmployeesDrawer(item)}
                               className="flex h-8 w-8 items-center justify-center rounded-full border border-white bg-gray-900 text-xs font-medium text-white shadow-none transition hover:translate-y-0 hover:bg-black hover:shadow-none"
-                              title="View assigned employees"
                             >
                               +{item.employees.length - 3}
                             </button>
                           )}
                         </div>
                         <span className="text-sm text-gray-700">
-                          {item.employees.length} Employee
-                          {item.employees.length > 1 ? "s" : ""} Assigned
+                          {item.employees.length} Employee{item.employees.length > 1 ? "s" : ""} Assigned
                         </span>
                       </div>
                     )}
@@ -315,15 +327,11 @@ const ExitPolicyList = () => {
                       <div className="absolute right-5 top-12 z-20 w-36 overflow-hidden rounded-md border border-gray-200 bg-white divide-y divide-gray-100">
                         <button
                           type="button"
-                          onClick={() => {
-                            handleView(item);
-                            setOpenMenu(null);
-                          }}
+                          onClick={() => { handleView(item); setOpenMenu(null); }}
                           className="w-full bg-white px-4 py-2.5 text-left text-sm font-medium text-gray-700 shadow-none transition hover:translate-y-0 hover:bg-gray-50 hover:shadow-none"
                         >
                           View
                         </button>
-
                         <button
                           type="button"
                           onClick={() => handleDelete(item)}

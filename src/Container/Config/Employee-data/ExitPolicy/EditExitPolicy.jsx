@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { toast } from "react-toastify";
 
 const EXIT_POLICY_LIST_ROUTE = "/config/hris/Employee-data/exitPolicy-list";
+
+const token = localStorage.getItem("authToken");
+const axiosInstance = createAxios(token);
 
 const fieldClassName =
   "mt-2 w-full rounded-lg border border-[#D0D5DD] bg-white px-4 py-2.5 text-sm text-[#101828] shadow-none outline-none transition-colors duration-200 focus:border-[#84ADFF] focus:outline-none focus:ring-2 focus:ring-[#DCE9FF]";
@@ -15,14 +20,7 @@ const secondaryButtonClassName =
 const primaryButtonClassName =
   "inline-flex h-10 items-center justify-center rounded-lg bg-[#0575E6] px-6 text-sm font-medium text-white shadow-none transition hover:translate-y-0 hover:bg-[#0467CA] hover:shadow-none";
 
-const RadioOptionCard = ({
-  name,
-  checked,
-  onChange,
-  label,
-  description,
-  children,
-}) => {
+const RadioOptionCard = ({ name, checked, onChange, label, description, children }) => {
   return (
     <div
       className={`rounded-xl border p-4 transition-colors ${
@@ -39,7 +37,6 @@ const RadioOptionCard = ({
           onChange={onChange}
           className="mt-0.5 h-4 w-4 accent-[#0575E6]"
         />
-
         <div>
           <p className="text-sm font-medium text-[#101828]">{label}</p>
           {description && (
@@ -67,74 +64,103 @@ const InlineInfoCard = ({ title, children }) => {
 const EditExitPolicy = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isEdit = Boolean(id);
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     notice: "",
-    selfResign: "yes",
-    changeNotice: "yes",
-    managerInitiate: "yes",
-    managerChangeNotice: "yes",
+    selfResign: true,
+    changeNotice: true,
+    managerInitiate: true,
+    managerChangeNotice: true,
     notifyOn: "employee",
   });
 
-  // Dummy Data (Replace with API)
-  const dummyData = [
-    {
-      id: "1",
-      name: "15 Days",
-      description: "Standard exit policy",
-      notice: 40,
-      selfResign: "yes",
-      changeNotice: "yes",
-      managerInitiate: "yes",
-      managerChangeNotice: "no",
-      notifyOn: "employee",
-    },
-    {
-      id: "2",
-      name: "IMMEDIATE",
-      description: "Immediate exit",
-      notice: 0,
-      selfResign: "no",
-      changeNotice: "no",
-      managerInitiate: "yes",
-      managerChangeNotice: "yes",
-      notifyOn: "approvers",
-    },
-  ];
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Load Edit Data
+  // ── GET /config/getOne-exit-policy/:id → prefill form fields
   useEffect(() => {
-    if (isEdit) {
-      const policy = dummyData.find((item) => item.id === id);
-      if (policy) {
-        setFormData(policy);
+    if (!id) return;
+
+    const fetchPolicy = async () => {
+      try {
+        setLoading(true);
+
+        const response = await axiosInstance.get(
+          `/config/getOne-exit-policy/${id}`,
+          // { meta: { auth: "ADMIN_AUTH" } }
+        );
+
+        const data = response?.data?.data || response?.data;
+
+        if (data) {
+          setFormData({
+            name: data.name || "",
+            description: data.description || "",
+            notice: data.notice || "",
+            selfResign: data.selfResign ?? true,
+            changeNotice: data.changeNotice ?? true,
+            managerInitiate: data.managerInitiate ?? true,
+            managerChangeNotice: data.managerChangeNotice ?? true,
+            notifyOn: data.notifyOn || "employee",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching exit policy:", error);
+        toast.error("Failed to load exit policy data.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } finally {
+        setLoading(false);
       }
-    }
-  }, [id, isEdit]);
+    };
+
+    fetchPolicy();
+  }, [id]);
 
   const handleChange = (key, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
-
-  const handleSubmit = () => {
-    if (isEdit) {
-      console.log("Update API call", formData);
-    } else {
-      console.log("Create API call", formData);
-    }
-
-    navigate(EXIT_POLICY_LIST_ROUTE);
+    setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleCancel = () => {
     navigate(EXIT_POLICY_LIST_ROUTE, { replace: true });
+  };
+
+  // ── PUT /config/update-exit-policy/:id
+  const handleSubmit = async () => {
+    try {
+      setSaving(true);
+
+      const payload = {
+        ...formData,
+        notice: Number(formData.notice),
+      };
+
+      const response = await axiosInstance.put(
+        `/config/update-exit-policy/${id}`,
+        payload,
+        // { meta: { auth: "ADMIN_AUTH" } }
+      );
+
+      console.log("Exit policy updated:", response?.data);
+
+      toast.success("Exit policy updated successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+      navigate(EXIT_POLICY_LIST_ROUTE);
+    } catch (error) {
+      console.error("Error updating exit policy:", error);
+      toast.error("Failed to update exit policy. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -143,7 +169,7 @@ const EditExitPolicy = () => {
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-[#101828]">
-              {isEdit ? "Edit Exit Policy" : "Create Exit Policy"}
+              Edit Exit Policy
             </h1>
             <p className="mt-1 text-sm text-[#667085]">
               Review the exit settings and update the policy details using the
@@ -156,10 +182,15 @@ const EditExitPolicy = () => {
               Policy Mode
             </p>
             <p className="mt-1 text-sm font-semibold text-[#101828]">
-              {isEdit ? "Editing existing policy" : "Creating new policy"}
+              Editing existing policy
             </p>
           </div>
         </div>
+
+        {/* Loading state */}
+        {loading && (
+          <div className="text-sm text-gray-400 mb-4">Loading policy data...</div>
+        )}
 
         <div className="space-y-6 rounded-2xl border border-[#E4E7EC] bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -173,6 +204,7 @@ const EditExitPolicy = () => {
                 onChange={(e) => handleChange("name", e.target.value)}
                 placeholder="Enter exit policy name"
                 className={fieldClassName}
+                disabled={loading}
               />
             </div>
 
@@ -186,6 +218,7 @@ const EditExitPolicy = () => {
                 onChange={(e) => handleChange("notice", e.target.value)}
                 placeholder="Enter notice period in days"
                 className={fieldClassName}
+                disabled={loading}
               />
             </div>
           </div>
@@ -198,6 +231,7 @@ const EditExitPolicy = () => {
               onChange={(e) => handleChange("description", e.target.value)}
               placeholder="Write a short description for this exit policy"
               className={textareaClassName}
+              disabled={loading}
             />
           </div>
 
@@ -211,23 +245,23 @@ const EditExitPolicy = () => {
               <div className="space-y-3">
                 <RadioOptionCard
                   name="selfResign"
-                  checked={formData.selfResign === "yes"}
-                  onChange={() => handleChange("selfResign", "yes")}
+                  checked={formData.selfResign === true}
+                  onChange={() => handleChange("selfResign", true)}
                   label="Yes"
                   description="Employees can initiate their own resignation request."
                 >
                   <InlineInfoCard title="Notice Period Change Request">
                     <RadioOptionCard
                       name="changeNotice"
-                      checked={formData.changeNotice === "yes"}
-                      onChange={() => handleChange("changeNotice", "yes")}
+                      checked={formData.changeNotice === true}
+                      onChange={() => handleChange("changeNotice", true)}
                       label="Yes"
                       description="Allow employees to ask for changes in their notice period."
                     />
                     <RadioOptionCard
                       name="changeNotice"
-                      checked={formData.changeNotice === "no"}
-                      onChange={() => handleChange("changeNotice", "no")}
+                      checked={formData.changeNotice === false}
+                      onChange={() => handleChange("changeNotice", false)}
                       label="No"
                       description="Keep the original notice period fixed for employee requests."
                     />
@@ -236,10 +270,10 @@ const EditExitPolicy = () => {
 
                 <RadioOptionCard
                   name="selfResign"
-                  checked={formData.selfResign === "no"}
+                  checked={formData.selfResign === false}
                   onChange={() => {
-                    handleChange("selfResign", "no");
-                    handleChange("changeNotice", "no");
+                    handleChange("selfResign", false);
+                    handleChange("changeNotice", false);
                   }}
                   label="No"
                   description="Employees cannot start the resignation process themselves."
@@ -256,23 +290,23 @@ const EditExitPolicy = () => {
               <div className="space-y-3">
                 <RadioOptionCard
                   name="managerInitiate"
-                  checked={formData.managerInitiate === "yes"}
-                  onChange={() => handleChange("managerInitiate", "yes")}
+                  checked={formData.managerInitiate === true}
+                  onChange={() => handleChange("managerInitiate", true)}
                   label="Yes"
                   description="Managers can initiate separation for their team members."
                 >
                   <InlineInfoCard title="Manager Notice Change Request">
                     <RadioOptionCard
                       name="managerChangeNotice"
-                      checked={formData.managerChangeNotice === "yes"}
-                      onChange={() => handleChange("managerChangeNotice", "yes")}
+                      checked={formData.managerChangeNotice === true}
+                      onChange={() => handleChange("managerChangeNotice", true)}
                       label="Yes"
                       description="Managers can request a change in the notice period."
                     />
                     <RadioOptionCard
                       name="managerChangeNotice"
-                      checked={formData.managerChangeNotice === "no"}
-                      onChange={() => handleChange("managerChangeNotice", "no")}
+                      checked={formData.managerChangeNotice === false}
+                      onChange={() => handleChange("managerChangeNotice", false)}
                       label="No"
                       description="Managers must continue with the existing notice period."
                     />
@@ -281,10 +315,10 @@ const EditExitPolicy = () => {
 
                 <RadioOptionCard
                   name="managerInitiate"
-                  checked={formData.managerInitiate === "no"}
+                  checked={formData.managerInitiate === false}
                   onChange={() => {
-                    handleChange("managerInitiate", "no");
-                    handleChange("managerChangeNotice", "no");
+                    handleChange("managerInitiate", false);
+                    handleChange("managerChangeNotice", false);
                   }}
                   label="No"
                   description="Managers cannot start the separation process from this policy."
@@ -322,6 +356,7 @@ const EditExitPolicy = () => {
             <button
               type="button"
               onClick={handleCancel}
+              disabled={saving}
               className={secondaryButtonClassName}
             >
               Cancel
@@ -330,9 +365,10 @@ const EditExitPolicy = () => {
             <button
               type="button"
               onClick={handleSubmit}
-              className={primaryButtonClassName}
+              disabled={loading || saving}
+              className={`${primaryButtonClassName} disabled:opacity-50`}
             >
-              {isEdit ? "Update" : "Save"}
+              {saving ? "Updating..." : "Update"}
             </button>
           </div>
         </div>

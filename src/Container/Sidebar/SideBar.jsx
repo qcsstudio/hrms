@@ -261,6 +261,9 @@ const SideBar = () => {
       case "announcement":
         navigate("/dashboard/announcement");
         break;
+      case "settings":
+        navigate("/dashboard/settings");
+        break;
 
       // config=============================================================
       //Account Management============================

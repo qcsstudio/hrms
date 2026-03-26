@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FaAngleDown } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import createAxios from "../../../utils/axios.config";
 
 const dropdownControlClass =
   "h-[40px] w-full rounded-lg border border-[#DEE2E6] bg-white px-3 text-[14px] font-medium text-[#344054] shadow-none outline-none transition-colors duration-200 hover:border-[#C7CED8] focus:outline-none focus:ring-0 flex items-center justify-between";
@@ -18,13 +20,34 @@ const permissionFields = [
 ];
 
 const visibilityOptions = [
-  { value: "employee", label: "Only Employee" },
-  { value: "manager", label: "Reporting Manager" },
+  { value: "Self-Admin", label: "Self & Admin" },
+  { value: "team", label: "Team" },
   { value: "department", label: "Department" },
-  { value: "organization", label: "Organization" },
+  { value: "employeedecide", label: "Let Employee Decide" },
 ];
 
 const allFields = permissionFields.flat().filter(Boolean);
+
+const permissionKeyMap = {
+  "Personal Data": "personalData",
+  About: "about",
+  Address: "address",
+  Contact: "contact",
+  Biodata: "biodata",
+  "Important Dates": "importantDates",
+  Dependents: "dependents",
+  Medical: "medical",
+  Identity: "identity",
+  Banking: "banking",
+  Skills: "skills",
+  Language: "language",
+  "Work Experience Details": "workExperienceDetails",
+  "Education Details": "educationDetails",
+  Documents: "documents",
+};
+
+const buildInitialPermissions = () =>
+  Object.fromEntries(allFields.map((field) => [field, ""]));
 
 const DivDropdown = ({
   value,
@@ -101,9 +124,8 @@ const DivDropdown = ({
           {selectedOption?.label || placeholder}
         </span>
         <FaAngleDown
-          className={`text-[12px] text-[#667085] transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`text-[12px] text-[#667085] transition-transform ${isOpen ? "rotate-180" : ""
+            }`}
         />
       </button>
 
@@ -126,11 +148,10 @@ const DivDropdown = ({
                   onSelect(option.value);
                   setIsOpen(false);
                 }}
-                className={`w-full border-none px-4 py-2.5 text-left text-sm shadow-none outline-none transition-colors focus:outline-none focus:ring-0 ${
-                  value === option.value
+                className={`w-full border-none px-4 py-2.5 text-left text-sm shadow-none outline-none transition-colors focus:outline-none focus:ring-0 ${value === option.value
                     ? "bg-blue-50 font-medium text-[#111827]"
                     : "text-[#334155] hover:bg-blue-50 active:bg-blue-100"
-                }`}
+                  }`}
               >
                 {option.label}
               </button>
@@ -159,9 +180,53 @@ const PermissionField = ({ label, value, onSelect }) => {
 
 export default function DefaultPrivacyPolicy() {
   const navigate = useNavigate();
-  const [permissions, setPermissions] = useState(() =>
-    Object.fromEntries(allFields.map((field) => [field, ""]))
-  );
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = createAxios(token);
+
+  const [permissions, setPermissions] = useState(buildInitialPermissions);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchDefaultPrivacy = async () => {
+      try {
+        setLoading(true);
+
+        const response = await axiosInstance.get(
+          "/config/getAlldefault-privacy",
+          {
+            meta: { auth: "ADMIN_AUTH" },
+          }
+        );
+
+        const data = response?.data?.data || response?.data;
+        const fetchedPermissions = data?.permissions || {};
+
+        if (Object.keys(fetchedPermissions).length) {
+          setPermissions((prev) => {
+            const nextPermissions = { ...prev };
+
+            allFields.forEach((field) => {
+              const apiKey = permissionKeyMap[field];
+              nextPermissions[field] = fetchedPermissions[apiKey] || "";
+            });
+
+            return nextPermissions;
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching default privacy policy:", error);
+        toast.error(
+          error?.response?.data?.message ||
+            "Failed to fetch default privacy settings."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDefaultPrivacy();
+  }, []);
 
   const selectedCount = Object.values(permissions).filter(Boolean).length;
 
@@ -170,6 +235,40 @@ export default function DefaultPrivacyPolicy() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+
+      const payload = {
+        permissions: allFields.reduce((acc, field) => {
+          const apiKey = permissionKeyMap[field];
+          acc[apiKey] = permissions[field] || "";
+          return acc;
+        }, {}),
+      };
+
+      const response = await axiosInstance.post(
+        "/config/createOrUpdate-default-privacy",
+        payload,
+        {
+          meta: { auth: "ADMIN_AUTH" },
+        }
+      );
+
+      toast.success(
+        response?.data?.message || "Default privacy settings saved successfully."
+      );
+    } catch (error) {
+      console.error("Error saving default privacy policy:", error);
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to save default privacy settings."
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -205,6 +304,12 @@ export default function DefaultPrivacyPolicy() {
               native select fields.
             </p>
           </div>
+
+          {loading ? (
+            <div className="mb-5 rounded-lg border border-[#E5E7EB] bg-[#F8FAFC] px-4 py-3 text-sm text-[#667085]">
+              Loading privacy settings...
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             {permissionFields.map(([left, right]) => (
@@ -244,9 +349,11 @@ export default function DefaultPrivacyPolicy() {
           </button>
           <button
             type="button"
+            onClick={handleSave}
+            disabled={saving}
             className="inline-flex h-[40px] items-center justify-center rounded-lg bg-[#0575E6] px-5 text-sm font-medium text-white shadow-none transition hover:bg-[#0467CA] hover:shadow-none hover:translate-y-0"
           >
-            Save Privacy Settings
+            {saving ? "Saving..." : "Save Privacy Settings"}
           </button>
         </div>
       </div>

@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const EXIT_POLICY_LIST_ROUTE = "/config/hris/Employee-data/exitPolicy-list";
 
@@ -7,10 +10,10 @@ const initialFormData = {
   name: "",
   description: "",
   notice: "",
-  selfResign: "yes",
-  changeNotice: "yes",
-  managerInitiate: "yes",
-  managerChangeNotice: "yes",
+  selfResign: true,
+  changeNotice: true,
+  managerInitiate: true,
+  managerChangeNotice: true,
   notifyOn: "employee",
 };
 
@@ -53,7 +56,6 @@ const RadioOptionCard = ({
           onChange={onChange}
           className="mt-0.5 h-4 w-4 accent-[#0575E6]"
         />
-
         <div>
           <p className="text-sm font-medium text-[#101828]">{label}</p>
           {description ? (
@@ -61,7 +63,6 @@ const RadioOptionCard = ({
           ) : null}
         </div>
       </label>
-
       {children ? (
         <div className="mt-4 border-t border-[#D6E4FF] pt-4 pl-7">{children}</div>
       ) : null}
@@ -80,16 +81,37 @@ const InlineInfoCard = ({ title, children }) => {
 
 const ExitPolicyCreate = () => {
   const navigate = useNavigate();
+const token = localStorage.getItem("authToken")
+  // ✅ Get token from Redux store
+  // const { token } = useSelector((state) => state.user);
+
+  // ✅ Create axios instance with token — same pattern as exit-reason
+  const axiosInstance = createAxios(token);
+
   const [tab, setTab] = useState("active");
   const [formData, setFormData] = useState(() => ({ ...initialFormData }));
-
+  const [saving, setSaving] = useState(false);
+const [companyOfficeId ,setCompanyOfficeId] = useState([])
   const handleChange = (key, value) => {
     setFormData((prev) => ({
       ...prev,
       [key]: value,
     }));
   };
-
+useEffect(() => {
+  
+    try {
+      const raw = localStorage.getItem("companyOfficeId");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Could be array or single string — normalise to array
+        const ids = Array.isArray(parsed) ? parsed : [parsed];
+        setCompanyOfficeId(ids);
+      }
+    } catch (e) {
+      console.error("Failed to parse companyOfficeId from localStorage:", e);
+    }
+  }, []);
   const handleClear = () => {
     setTab("active");
     setFormData({ ...initialFormData });
@@ -99,13 +121,50 @@ const ExitPolicyCreate = () => {
     navigate(EXIT_POLICY_LIST_ROUTE, { replace: true });
   };
 
-  const handleSave = () => {
-    console.log("Create API call", {
-      ...formData,
-      status: tab,
-    });
+  // ✅ API call — same pattern as exit-reason
+  const handleSave = async () => {
+    try {
+      setSaving(true);
 
-    navigate(EXIT_POLICY_LIST_ROUTE);
+      // ✅ Build payload matching schema keys exactly
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        notice: Number(formData.notice),
+        status: tab,
+        selfResign: formData.selfResign,
+        changeNotice: formData.selfResign === false ? false : formData.changeNotice,
+        managerInitiate: formData.managerInitiate,
+        managerChangeNotice: formData.managerInitiate === false ? false : formData.managerChangeNotice,
+        notifyOn: formData.notifyOn,
+        companyOfficeId
+      };
+
+      // ✅ POST to correct endpoint with ADMIN_AUTH meta
+      const res = await axiosInstance.post(
+        "/config/create-exit-policy",
+        payload,
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+localStorage.removeItem("companyOfficeId");
+      console.log("Exit policy created:", res?.data);
+
+      toast.success("Exit policy created successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+      navigate(EXIT_POLICY_LIST_ROUTE);
+
+    } catch (error) {
+      console.error("Error creating exit policy:", error);
+      toast.error("Failed to create exit policy. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -214,27 +273,26 @@ const ExitPolicyCreate = () => {
                 Decide whether employees can initiate resignation and whether
                 they are allowed to request changes in the notice period.
               </p>
-
               <div className="space-y-3">
                 <RadioOptionCard
                   name="selfResign"
-                  checked={formData.selfResign === "yes"}
-                  onChange={() => handleChange("selfResign", "yes")}
+                  checked={formData.selfResign === true}
+                  onChange={() => handleChange("selfResign", true)}
                   label="Yes"
                   description="Employees can start the resignation process on their own."
                 >
                   <InlineInfoCard title="Notice Period Change Request">
                     <RadioOptionCard
                       name="changeNotice"
-                      checked={formData.changeNotice === "yes"}
-                      onChange={() => handleChange("changeNotice", "yes")}
+                      checked={formData.changeNotice === true}
+                      onChange={() => handleChange("changeNotice", true)}
                       label="Yes"
                       description="Allow employees to request a notice period update."
                     />
                     <RadioOptionCard
                       name="changeNotice"
-                      checked={formData.changeNotice === "no"}
-                      onChange={() => handleChange("changeNotice", "no")}
+                      checked={formData.changeNotice === false}
+                      onChange={() => handleChange("changeNotice", false)}
                       label="No"
                       description="Keep the original notice period fixed for employee requests."
                     />
@@ -243,10 +301,10 @@ const ExitPolicyCreate = () => {
 
                 <RadioOptionCard
                   name="selfResign"
-                  checked={formData.selfResign === "no"}
+                  checked={formData.selfResign === false}
                   onChange={() => {
-                    handleChange("selfResign", "no");
-                    handleChange("changeNotice", "no");
+                    handleChange("selfResign", false);
+                    handleChange("changeNotice", false);
                   }}
                   label="No"
                   description="Employees cannot initiate resignation from this policy."
@@ -259,27 +317,26 @@ const ExitPolicyCreate = () => {
                 Control whether managers can start separation and request
                 adjustments to the notice period.
               </p>
-
               <div className="space-y-3">
                 <RadioOptionCard
                   name="managerInitiate"
-                  checked={formData.managerInitiate === "yes"}
-                  onChange={() => handleChange("managerInitiate", "yes")}
+                  checked={formData.managerInitiate === true}
+                  onChange={() => handleChange("managerInitiate", true)}
                   label="Yes"
                   description="Managers can initiate the separation flow for their team members."
                 >
                   <InlineInfoCard title="Manager Notice Change Request">
                     <RadioOptionCard
                       name="managerChangeNotice"
-                      checked={formData.managerChangeNotice === "yes"}
-                      onChange={() => handleChange("managerChangeNotice", "yes")}
+                      checked={formData.managerChangeNotice === true}
+                      onChange={() => handleChange("managerChangeNotice", true)}
                       label="Yes"
                       description="Allow managers to request changes to the notice period."
                     />
                     <RadioOptionCard
                       name="managerChangeNotice"
-                      checked={formData.managerChangeNotice === "no"}
-                      onChange={() => handleChange("managerChangeNotice", "no")}
+                      checked={formData.managerChangeNotice === false}
+                      onChange={() => handleChange("managerChangeNotice", false)}
                       label="No"
                       description="Managers must continue with the existing notice period."
                     />
@@ -288,10 +345,10 @@ const ExitPolicyCreate = () => {
 
                 <RadioOptionCard
                   name="managerInitiate"
-                  checked={formData.managerInitiate === "no"}
+                  checked={formData.managerInitiate === false}
                   onChange={() => {
-                    handleChange("managerInitiate", "no");
-                    handleChange("managerChangeNotice", "no");
+                    handleChange("managerInitiate", false);
+                    handleChange("managerChangeNotice", false);
                   }}
                   label="No"
                   description="Managers cannot start separation from this policy."
@@ -305,7 +362,6 @@ const ExitPolicyCreate = () => {
               Choose who should receive the communication when the exit request
               reaches approval.
             </p>
-
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <RadioOptionCard
                 name="notifyOn"
@@ -314,7 +370,6 @@ const ExitPolicyCreate = () => {
                 label="Notify Approvers"
                 description="Send approval updates to the approvers in the flow."
               />
-
               <RadioOptionCard
                 name="notifyOn"
                 checked={formData.notifyOn === "employee"}
@@ -337,9 +392,10 @@ const ExitPolicyCreate = () => {
             <button
               type="button"
               onClick={handleSave}
-              className={primaryButtonClassName}
+              disabled={saving}
+              className={`${primaryButtonClassName} disabled:opacity-50`}
             >
-              Save
+              {saving ? "Saving..." : "Save"}
             </button>
           </div>
         </div>

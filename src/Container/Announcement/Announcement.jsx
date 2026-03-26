@@ -1,526 +1,309 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from "react";
+import { FaAngleDown } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-const Announcement = () => {
-     const navigate = useNavigate();
+const SUMMARY_CARDS = [
+  {
+    title: "Active Announcements",
+    value: "12",
+    note: "+2 published today",
+    noteClassName: "text-[#10b981]",
+  },
+  {
+    title: "Scheduled",
+    value: "4",
+    note: "Next publish: 27 Mar, 9:00 AM",
+    noteClassName: "text-[#f59e0b]",
+  },
+  {
+    title: "Acknowledgement Pending",
+    value: "38",
+    note: "5 urgent notices pending",
+    noteClassName: "text-[#ef4444]",
+  },
+  {
+    title: "Expired This Month",
+    value: "9",
+    note: "Archived automatically",
+    noteClassName: "text-[#64748b]",
+  },
+];
+
+const ANNOUNCEMENTS = [
+  {
+    accentClassName: "border-[#ef4444]",
+    title: "HRMS Maintenance Notice",
+    description:
+      "The HRMS portal will be unavailable tonight from 11:00 PM to 12:30 AM due to scheduled maintenance. Employees are advised to complete attendance regularization and pending approvals before downtime.",
+    meta: [
+      { label: "Published", value: "25 Mar 2026, 10:30 AM" },
+      { label: "Expires", value: "26 Mar 2026, 1:00 AM" },
+      { label: "Posted by", value: "HR Admin" },
+      { label: "Acknowledgement", value: "Required" },
+    ],
+    badges: [
+      { label: "Urgent", className: "bg-[#fee2e2] text-[#b91c1c]" },
+      { label: "IT / System", className: "bg-[#e0f2fe] text-[#0369a1]" },
+      { label: "Pinned", className: "bg-[#fef3c7] text-[#92400e]" },
+      { label: "All Employees", className: "bg-[#ede9fe] text-[#6d28d9]" },
+    ],
+    actions: [
+      { label: "View Details", className: "bg-[#1677f2] text-white" },
+      { label: "Edit", className: "bg-[#eef2f7] text-[#334155]" },
+      { label: "Archive", className: "bg-[#f8fafc] text-[#475569]" },
+    ],
+  },
+  {
+    accentClassName: "border-[#f59e0b]",
+    title: "Updated Document Submission Deadline",
+    description:
+      "All employees must upload updated identity and address proof documents on or before 31 March 2026. Incomplete records may affect payroll and compliance processing.",
+    meta: [
+      { label: "Published", value: "24 Mar 2026, 4:15 PM" },
+      { label: "Expires", value: "31 Mar 2026, 11:59 PM" },
+      { label: "Posted by", value: "HR Manager" },
+      { label: "Acknowledgement", value: "Optional" },
+    ],
+    badges: [
+      { label: "Important", className: "bg-[#fef3c7] text-[#92400e]" },
+      { label: "HR Notice", className: "bg-[#dcfce7] text-[#166534]" },
+      { label: "All Employees", className: "bg-[#ede9fe] text-[#6d28d9]" },
+    ],
+    actions: [
+      { label: "View Details", className: "bg-[#1677f2] text-white" },
+      { label: "Edit", className: "bg-[#eef2f7] text-[#334155]" },
+      { label: "Archive", className: "bg-[#f8fafc] text-[#475569]" },
+    ],
+  },
+  {
+    accentClassName: "border-[#10b981]",
+    title: "Monthly Town Hall Meeting",
+    description:
+      "The monthly town hall will take place this Friday at 4:00 PM in the main conference hall. Department heads are requested to join 15 minutes early for the briefing session.",
+    meta: [
+      { label: "Published", value: "25 Mar 2026, 9:00 AM" },
+      { label: "Expires", value: "28 Mar 2026, 5:30 PM" },
+      { label: "Posted by", value: "Admin" },
+      { label: "Acknowledgement", value: "Not Required" },
+    ],
+    badges: [
+      { label: "Normal", className: "bg-[#dcfce7] text-[#166534]" },
+      { label: "Event", className: "bg-[#e0f2fe] text-[#0369a1]" },
+      { label: "Mohali Branch", className: "bg-[#ede9fe] text-[#6d28d9]" },
+    ],
+    actions: [
+      { label: "View Details", className: "bg-[#1677f2] text-white" },
+      { label: "Edit", className: "bg-[#eef2f7] text-[#334155]" },
+      { label: "Archive", className: "bg-[#f8fafc] text-[#475569]" },
+    ],
+  },
+  {
+    accentClassName: "border-[#8b5cf6]",
+    title: "Festival Holiday Notice",
+    description:
+      "Office will remain closed on 29 March 2026 due to a public holiday. Employees on critical support shifts will receive separate instructions from their reporting managers.",
+    meta: [
+      { label: "Publish On", value: "27 Mar 2026, 9:00 AM" },
+      { label: "Expires", value: "29 Mar 2026, 11:59 PM" },
+      { label: "Posted by", value: "HR Admin" },
+      { label: "Acknowledgement", value: "Optional" },
+    ],
+    badges: [
+      { label: "Scheduled", className: "bg-[#ede9fe] text-[#6d28d9]" },
+      { label: "Holiday", className: "bg-[#fce7f3] text-[#be185d]" },
+      { label: "All Employees", className: "bg-[#ede9fe] text-[#6d28d9]" },
+    ],
+    actions: [
+      { label: "Preview", className: "bg-[#8b5cf6] text-white" },
+      { label: "Edit", className: "bg-[#eef2f7] text-[#334155]" },
+      { label: "Cancel", className: "bg-[#f8fafc] text-[#475569]" },
+    ],
+  },
+];
+
+const FILTER_OPTIONS = [
+  {
+    key: "category",
+    label: "Category",
+    options: ["General", "HR Notice", "Policy Update", "Holiday", "Event", "IT / System", "Payroll"],
+  },
+  {
+    key: "priority",
+    label: "Priority",
+    options: ["Normal", "Important", "Urgent"],
+  },
+  {
+    key: "audience",
+    label: "Audience",
+    options: ["All Employees", "Managers", "HR Team", "Specific Department", "Specific Branch"],
+  },
+];
+
+const panelClass = "rounded-[20px] border border-[#E5E7EB] bg-white p-5 sm:p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)]";
+const metricCardClass =
+  "rounded-[20px] border border-[#E5E7EB] bg-white p-5 sm:p-6 shadow-[0_6px_16px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)]";
+const primaryButtonClass =
+  "inline-flex h-[40px] items-center justify-center rounded-lg border border-[#E4E9EE] bg-[#0575E6] px-5 text-sm font-medium text-white shadow-none outline-none transition-all duration-200 focus:outline-none focus:ring-0 hover:bg-[#0467CA] active:scale-[0.99]";
+const secondaryButtonClass =
+  "inline-flex h-[40px] items-center justify-center rounded-lg border border-[#D1D5DB] bg-white px-5 text-sm font-medium text-[#344054] shadow-none outline-none transition-all duration-200 focus:outline-none focus:ring-0 hover:bg-gray-50 active:scale-[0.99]";
+const mutedActionButtonClass =
+  "inline-flex h-[36px] items-center justify-center rounded-lg border border-[#D0D5DD] bg-white px-4 text-[13px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0 hover:bg-[#F9FAFB]";
+const filledActionButtonClass = "inline-flex h-[36px] items-center justify-center rounded-lg bg-[#0575E6] px-4 text-[13px] font-medium text-white";
+
+function DivDropdown({ label, value, options, onSelect }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const selectedLabel = value || label;
+  const menuItems = [label, ...options.filter((option) => option !== value)];
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
   return (
-    <>
-    <div className="max-w-[1440px] mx-auto p-6">
-  {/* Header */}
-  <div className="flex justify-between items-center gap-4 flex-wrap mb-6">
-    <div>
-      <h1 className="m-0 text-[32px] font-extrabold text-[#111827]">
-        Announcements
-      </h1>
-      <p className="mt-2 text-sm text-[#6b7280]">
-        Manage company-wide notices, HR updates, policy changes, events, and
-        system alerts.
-      </p>
-    </div>
-
-    <div className="flex gap-3 flex-wrap">
-      <button className="h-[46px] px-[18px] border-none rounded-xl bg-[#e8eef8] text-[#334155] text-sm font-bold cursor-pointer">
-        Export
+    <div ref={dropdownRef} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex h-[40px] w-full items-center justify-between rounded-lg border border-[#DEE2E6] bg-white px-3 text-[14px] font-medium text-[#344054] shadow-none outline-none focus:outline-none focus:ring-0"
+      >
+        <span>{selectedLabel}</span>
+        <FaAngleDown className={`text-[12px] transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
-      <button className="h-[46px] px-5 border-none rounded-xl bg-[#1677f2] text-white text-sm font-bold cursor-pointer" onClick={() => navigate("/dashboard/create-announcement")}>
-        + Create Announcement
-      </button>
-    </div>
-  </div>
 
-  {/* Top Cards */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-    <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-      <div className="text-sm font-bold text-[#64748b] mb-[10px]">
-        Active Announcements
-      </div>
-      <div className="text-[30px] font-extrabold text-[#111827]">12</div>
-      <div className="mt-2 text-[13px] text-[#10b981]">+2 published today</div>
-    </div>
+      {isOpen && (
+        <div className="absolute left-0 z-20 mt-2 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-none">
+          <div className="w-full bg-blue-50 px-4 py-2 text-left text-sm font-medium text-[#111827]">{selectedLabel}</div>
 
-    <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-      <div className="text-sm font-bold text-[#64748b] mb-[10px]">Scheduled</div>
-      <div className="text-[30px] font-extrabold text-[#111827]">4</div>
-      <div className="mt-2 text-[13px] text-[#f59e0b]">
-        Next publish: 27 Mar, 9:00 AM
-      </div>
-    </div>
-
-    <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-      <div className="text-sm font-bold text-[#64748b] mb-[10px]">
-        Acknowledgement Pending
-      </div>
-      <div className="text-[30px] font-extrabold text-[#111827]">38</div>
-      <div className="mt-2 text-[13px] text-[#ef4444]">
-        5 urgent notices pending
-      </div>
-    </div>
-
-    <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-      <div className="text-sm font-bold text-[#64748b] mb-[10px]">
-        Expired This Month
-      </div>
-      <div className="text-[30px] font-extrabold text-[#111827]">9</div>
-      <div className="mt-2 text-[13px] text-[#6b7280]">
-        Archived automatically
-      </div>
-    </div>
-  </div>
-
-  {/* Main Layout */}
-  <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-5 items-start">
-    {/* Left Column */}
-    <div>
-      {/* Filters */}
-      <div className="bg-white rounded-[18px] p-4 mb-[18px] shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-        <div className="flex gap-3 flex-wrap items-center">
-          <input
-            type="text"
-            placeholder="Search announcement title or keyword"
-            className="flex-1 min-w-[240px] h-[46px] border border-[#dbe3ee] rounded-xl px-[14px] text-sm outline-none bg-[#f8fafc]"
-          />
-
-          <select className="h-[46px] min-w-[150px] border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none">
-            <option>Category</option>
-            <option>General</option>
-            <option>HR Notice</option>
-            <option>Policy Update</option>
-            <option>Holiday</option>
-            <option>Event</option>
-            <option>IT / System</option>
-            <option>Payroll</option>
-          </select>
-
-          <select className="h-[46px] min-w-[140px] border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none">
-            <option>Priority</option>
-            <option>Normal</option>
-            <option>Important</option>
-            <option>Urgent</option>
-          </select>
-
-          <select className="h-[46px] min-w-[160px] border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none">
-            <option>Audience</option>
-            <option>All Employees</option>
-            <option>Managers</option>
-            <option>HR Team</option>
-            <option>Specific Department</option>
-            <option>Specific Branch</option>
-          </select>
-
-          <button className="h-[46px] px-4 border-none rounded-xl bg-[#eef2f7] text-[#334155] text-sm font-bold cursor-pointer">
-            Clear
-          </button>
-        </div>
-      </div>
-
-      {/* Announcement List */}
-      <div className="flex flex-col gap-4">
-        {/* Card 1 */}
-        <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] border-l-[6px] border-[#ef4444]">
-          <div className="flex justify-between gap-4 flex-wrap items-start">
-            <div className="flex-1 min-w-[280px]">
-              <div className="flex gap-2 flex-wrap mb-[10px]">
-                <span className="px-[10px] py-[6px] rounded-full bg-[#fee2e2] text-[#b91c1c] text-xs font-bold">
-                  Urgent
-                </span>
-                <span className="px-[10px] py-[6px] rounded-full bg-[#e0f2fe] text-[#0369a1] text-xs font-bold">
-                  IT / System
-                </span>
-                <span className="px-[10px] py-[6px] rounded-full bg-[#fef3c7] text-[#92400e] text-xs font-bold">
-                  Pinned
-                </span>
-                <span className="px-[10px] py-[6px] rounded-full bg-[#ede9fe] text-[#6d28d9] text-xs font-bold">
-                  All Employees
-                </span>
-              </div>
-
-              <h3 className="m-0 text-[20px] font-extrabold text-[#111827]">
-                HRMS Maintenance Notice
-              </h3>
-
-              <p className="mt-[10px] mb-[14px] text-sm text-[#475569] leading-[1.7]">
-                The HRMS portal will be unavailable tonight from 11:00 PM to
-                12:30 AM due to scheduled maintenance. Employees are advised
-                to complete attendance regularization and pending approvals
-                before downtime.
-              </p>
-
-              <div className="flex gap-[18px] flex-wrap text-[13px] text-[#64748b]">
-                <div>
-                  <strong className="text-[#334155]">Published:</strong> 25 Mar
-                  2026, 10:30 AM
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Expires:</strong> 26 Mar
-                  2026, 1:00 AM
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Posted by:</strong> HR
-                  Admin
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Acknowledgement:</strong>{" "}
-                  Required
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-[10px] min-w-[150px]">
-              <button className="h-10 border-none rounded-[10px] bg-[#1677f2] text-white text-[13px] font-bold cursor-pointer">
-                View Details
-              </button>
-              <button className="h-10 border-none rounded-[10px] bg-[#eef2f7] text-[#334155] text-[13px] font-bold cursor-pointer">
-                Edit
-              </button>
-              <button className="h-10 border-none rounded-[10px] bg-[#f8fafc] text-[#475569] text-[13px] font-bold cursor-pointer">
-                Archive
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2 */}
-        <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] border-l-[6px] border-[#f59e0b]">
-          <div className="flex justify-between gap-4 flex-wrap items-start">
-            <div className="flex-1 min-w-[280px]">
-              <div className="flex gap-2 flex-wrap mb-[10px]">
-                <span className="px-[10px] py-[6px] rounded-full bg-[#fef3c7] text-[#92400e] text-xs font-bold">
-                  Important
-                </span>
-                <span className="px-[10px] py-[6px] rounded-full bg-[#dcfce7] text-[#166534] text-xs font-bold">
-                  HR Notice
-                </span>
-                <span className="px-[10px] py-[6px] rounded-full bg-[#ede9fe] text-[#6d28d9] text-xs font-bold">
-                  All Employees
-                </span>
-              </div>
-
-              <h3 className="m-0 text-[20px] font-extrabold text-[#111827]">
-                Updated Document Submission Deadline
-              </h3>
-
-              <p className="mt-[10px] mb-[14px] text-sm text-[#475569] leading-[1.7]">
-                All employees must upload updated identity and address proof
-                documents on or before 31 March 2026. Incomplete records may
-                affect payroll and compliance processing.
-              </p>
-
-              <div className="flex gap-[18px] flex-wrap text-[13px] text-[#64748b]">
-                <div>
-                  <strong className="text-[#334155]">Published:</strong> 24 Mar
-                  2026, 4:15 PM
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Expires:</strong> 31 Mar
-                  2026, 11:59 PM
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Posted by:</strong> HR
-                  Manager
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Acknowledgement:</strong>{" "}
-                  Optional
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-[10px] min-w-[150px]">
-              <button className="h-10 border-none rounded-[10px] bg-[#1677f2] text-white text-[13px] font-bold cursor-pointer">
-                View Details
-              </button>
-              <button className="h-10 border-none rounded-[10px] bg-[#eef2f7] text-[#334155] text-[13px] font-bold cursor-pointer">
-                Edit
-              </button>
-              <button className="h-10 border-none rounded-[10px] bg-[#f8fafc] text-[#475569] text-[13px] font-bold cursor-pointer">
-                Archive
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3 */}
-        <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] border-l-[6px] border-[#10b981]">
-          <div className="flex justify-between gap-4 flex-wrap items-start">
-            <div className="flex-1 min-w-[280px]">
-              <div className="flex gap-2 flex-wrap mb-[10px]">
-                <span className="px-[10px] py-[6px] rounded-full bg-[#dcfce7] text-[#166534] text-xs font-bold">
-                  Normal
-                </span>
-                <span className="px-[10px] py-[6px] rounded-full bg-[#e0f2fe] text-[#0369a1] text-xs font-bold">
-                  Event
-                </span>
-                <span className="px-[10px] py-[6px] rounded-full bg-[#ede9fe] text-[#6d28d9] text-xs font-bold">
-                  Mohali Branch
-                </span>
-              </div>
-
-              <h3 className="m-0 text-[20px] font-extrabold text-[#111827]">
-                Monthly Town Hall Meeting
-              </h3>
-
-              <p className="mt-[10px] mb-[14px] text-sm text-[#475569] leading-[1.7]">
-                The monthly town hall will take place this Friday at 4:00 PM
-                in the main conference hall. Department heads are requested to
-                join 15 minutes early for the briefing session.
-              </p>
-
-              <div className="flex gap-[18px] flex-wrap text-[13px] text-[#64748b]">
-                <div>
-                  <strong className="text-[#334155]">Published:</strong> 25 Mar
-                  2026, 9:00 AM
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Expires:</strong> 28 Mar
-                  2026, 5:30 PM
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Posted by:</strong> Admin
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Acknowledgement:</strong>{" "}
-                  Not Required
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-[10px] min-w-[150px]">
-              <button className="h-10 border-none rounded-[10px] bg-[#1677f2] text-white text-[13px] font-bold cursor-pointer">
-                View Details
-              </button>
-              <button className="h-10 border-none rounded-[10px] bg-[#eef2f7] text-[#334155] text-[13px] font-bold cursor-pointer">
-                Edit
-              </button>
-              <button className="h-10 border-none rounded-[10px] bg-[#f8fafc] text-[#475569] text-[13px] font-bold cursor-pointer">
-                Archive
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4 */}
-        <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] border-l-[6px] border-[#8b5cf6]">
-          <div className="flex justify-between gap-4 flex-wrap items-start">
-            <div className="flex-1 min-w-[280px]">
-              <div className="flex gap-2 flex-wrap mb-[10px]">
-                <span className="px-[10px] py-[6px] rounded-full bg-[#ede9fe] text-[#6d28d9] text-xs font-bold">
-                  Scheduled
-                </span>
-                <span className="px-[10px] py-[6px] rounded-full bg-[#fce7f3] text-[#be185d] text-xs font-bold">
-                  Holiday
-                </span>
-                <span className="px-[10px] py-[6px] rounded-full bg-[#ede9fe] text-[#6d28d9] text-xs font-bold">
-                  All Employees
-                </span>
-              </div>
-
-              <h3 className="m-0 text-[20px] font-extrabold text-[#111827]">
-                Festival Holiday Notice
-              </h3>
-
-              <p className="mt-[10px] mb-[14px] text-sm text-[#475569] leading-[1.7]">
-                Office will remain closed on 29 March 2026 due to a public
-                holiday. Employees on critical support shifts will receive
-                separate instructions from their reporting managers.
-              </p>
-
-              <div className="flex gap-[18px] flex-wrap text-[13px] text-[#64748b]">
-                <div>
-                  <strong className="text-[#334155]">Publish On:</strong> 27 Mar
-                  2026, 9:00 AM
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Expires:</strong> 29 Mar
-                  2026, 11:59 PM
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Posted by:</strong> HR
-                  Admin
-                </div>
-                <div>
-                  <strong className="text-[#334155]">Acknowledgement:</strong>{" "}
-                  Optional
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-[10px] min-w-[150px]">
-              <button className="h-10 border-none rounded-[10px] bg-[#8b5cf6] text-white text-[13px] font-bold cursor-pointer">
-                Preview
-              </button>
-              <button className="h-10 border-none rounded-[10px] bg-[#eef2f7] text-[#334155] text-[13px] font-bold cursor-pointer">
-                Edit
-              </button>
-              <button className="h-10 border-none rounded-[10px] bg-[#f8fafc] text-[#475569] text-[13px] font-bold cursor-pointer">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Right Column */}
-    <div>
-      {/* Create Announcement Panel */}
-      <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] mb-[18px]">
-        <h2 className="m-0 mb-4 text-[20px] font-extrabold text-[#111827]">
-          Create Announcement
-        </h2>
-
-        <div className="flex flex-col gap-[14px]">
-          <div>
-            <label className="block mb-[6px] text-[13px] font-bold text-[#475569]">
-              Title
-            </label>
-            <input
-              type="text"
-              placeholder="Enter announcement title"
-              className="w-full h-11 box-border border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-[6px] text-[13px] font-bold text-[#475569]">
-              Category
-            </label>
-            <select className="w-full h-11 border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none">
-              <option>Select category</option>
-              <option>General</option>
-              <option>HR Notice</option>
-              <option>Policy Update</option>
-              <option>Holiday</option>
-              <option>Event</option>
-              <option>IT / System</option>
-              <option>Payroll</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block mb-[6px] text-[13px] font-bold text-[#475569]">
-              Audience
-            </label>
-            <select className="w-full h-11 border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none">
-              <option>All Employees</option>
-              <option>Managers Only</option>
-              <option>HR Team</option>
-              <option>Specific Department</option>
-              <option>Specific Branch</option>
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block mb-[6px] text-[13px] font-bold text-[#475569]">
-                Priority
-              </label>
-              <select className="w-full h-11 border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none">
-                <option>Normal</option>
-                <option>Important</option>
-                <option>Urgent</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block mb-[6px] text-[13px] font-bold text-[#475569]">
-                Publish Type
-              </label>
-              <select className="w-full h-11 border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none">
-                <option>Publish Now</option>
-                <option>Schedule</option>
-                <option>Save Draft</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block mb-[6px] text-[13px] font-bold text-[#475569]">
-              Message
-            </label>
-            <textarea
-              placeholder="Write your announcement message here..."
-              className="w-full h-[120px] box-border border border-[#dbe3ee] rounded-xl p-3 text-sm bg-[#f8fafc] outline-none resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block mb-[6px] text-[13px] font-bold text-[#475569]">
-                Publish Date
-              </label>
-              <input
-                type="date"
-                className="w-full h-11 box-border border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-[6px] text-[13px] font-bold text-[#475569]">
-                Expiry Date
-              </label>
-              <input
-                type="date"
-                className="w-full h-11 box-border border border-[#dbe3ee] rounded-xl px-3 text-sm bg-[#f8fafc] outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-[10px] mt-1">
-            <label className="flex items-center gap-[10px] text-sm text-[#334155]">
-              <input type="checkbox" defaultChecked />
-              Pin to dashboard
-            </label>
-
-            <label className="flex items-center gap-[10px] text-sm text-[#334155]">
-              <input type="checkbox" defaultChecked />
-              Send notification
-            </label>
-
-            <label className="flex items-center gap-[10px] text-sm text-[#334155]">
-              <input type="checkbox" />
-              Require acknowledgement
-            </label>
-          </div>
-
-          <div className="flex gap-[10px] mt-2">
-            <button className="flex-1 h-11 border-none rounded-xl bg-[#1677f2] text-white text-sm font-bold cursor-pointer">
-              Publish
+          {menuItems.map((item) => (
+            <button
+              key={`${label}-${item}`}
+              type="button"
+              onClick={() => {
+                onSelect(item === label ? "" : item);
+                setIsOpen(false);
+              }}
+              className="w-full border-none px-4 py-2 text-left text-sm text-[#111827] shadow-none outline-none transition-colors focus:outline-none focus:ring-0 hover:bg-blue-50 active:bg-blue-100"
+            >
+              {item}
             </button>
-            <button className="flex-1 h-11 border-none rounded-xl bg-[#eef2f7] text-[#334155] text-sm font-bold cursor-pointer">
-              Save Draft
-            </button>
-          </div>
+          ))}
         </div>
-      </div>
-
-      {/* Quick Rules */}
-      <div className="bg-white rounded-[18px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)]">
-        <h2 className="m-0 mb-[14px] text-[18px] font-extrabold text-[#111827]">
-          Announcement Rules
-        </h2>
-
-        <div className="flex flex-col gap-3">
-          <div className="p-3 rounded-xl bg-[#f8fafc] text-[13px] text-[#475569] leading-[1.6]">
-            Use <strong>Urgent</strong> only for system downtime, payroll
-            impact, compliance deadlines, or emergency notices.
-          </div>
-
-          <div className="p-3 rounded-xl bg-[#f8fafc] text-[13px] text-[#475569] leading-[1.6]">
-            Pinned announcements appear on employee dashboard until expiry or
-            manual unpin.
-          </div>
-
-          <div className="p-3 rounded-xl bg-[#f8fafc] text-[13px] text-[#475569] leading-[1.6]">
-            Enable acknowledgement for policy, compliance, payroll, or
-            mandatory training notices.
-          </div>
-        </div>
-      </div>
+      )}
     </div>
-  </div>
-</div>
-    </>
-  )
+  );
 }
 
-export default Announcement
+export default function Announcement() {
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState({
+    category: "",
+    priority: "",
+    audience: "",
+  });
+
+  return (
+    <div className="bg-[#F8F9FA] p-[15px] card-animate">
+      <div className="mx-auto flex max-w-[1600px] flex-col gap-5">
+        <div className={`${panelClass} flex flex-wrap items-start justify-between gap-4`}>
+          <div>
+            <h1 className="text-[20px] font-bold text-[#212529]">Announcements</h1>
+            <p className="mt-1 text-[12px] text-[#667085]">
+              Manage company-wide notices, HR updates, policy changes, events, and system alerts.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button className={secondaryButtonClass}>Export</button>
+            <button className={primaryButtonClass} onClick={() => navigate("/dashboard/create-announcement")}>
+              + Create Announcement
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          {SUMMARY_CARDS.map((card) => (
+            <div key={card.title} className={metricCardClass}>
+              <div>
+                <div className="text-[14px] font-medium text-[#667085]">{card.title}</div>
+                <div className="mt-3 text-[28px] font-bold text-[#111827]">{card.value}</div>
+                <div className={`mt-4 text-[13px] font-medium ${card.noteClassName}`}>{card.note}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {FILTER_OPTIONS.map((filter) => (
+            <DivDropdown
+              key={filter.key}
+              label={filter.label}
+              value={filters[filter.key]}
+              options={filter.options}
+              onSelect={(nextValue) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  [filter.key]: nextValue,
+                }))
+              }
+            />
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {ANNOUNCEMENTS.map((announcement) => (
+            <div
+              key={announcement.title}
+              className={`rounded-xl border border-[#E5E7EB] border-l-[6px] bg-white p-5 shadow-[0_6px_16px_rgba(15,23,42,0.04)] ${announcement.accentClassName}`}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-[280px] flex-1">
+                  <div className="mb-[10px] flex flex-wrap gap-2">
+                    {announcement.badges.map((badge) => (
+                      <span
+                        key={`${announcement.title}-${badge.label}`}
+                        className={`inline-flex h-7 items-center rounded-md border border-transparent px-3 text-xs font-medium ${badge.className}`}
+                      >
+                        {badge.label}
+                      </span>
+                    ))}
+                  </div>
+
+                  <h3 className="m-0 text-[18px] font-semibold text-[#212529]">{announcement.title}</h3>
+
+                  <p className="mb-[14px] mt-[10px] text-[14px] leading-[1.7] text-[#52525B]">{announcement.description}</p>
+
+                  <div className="flex flex-wrap gap-x-[18px] gap-y-2 text-[13px] text-[#667085]">
+                    {announcement.meta.map((item) => (
+                      <div key={`${announcement.title}-${item.label}`}>
+                        <strong className="text-[#344054]">{item.label}:</strong> {item.value}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex min-w-[150px] flex-col gap-[10px]">
+                  {announcement.actions.map((action, index) => (
+                    <button
+                      key={`${announcement.title}-${action.label}`}
+                      className={index === 0 ? filledActionButtonClass : mutedActionButtonClass}
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
