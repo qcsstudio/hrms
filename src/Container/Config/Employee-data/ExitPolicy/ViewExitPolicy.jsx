@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import createAxios from "../../../../utils/axios.config";
 
 const EXIT_POLICY_LIST_ROUTE = "/config/hris/Employee-data/exitPolicy-list";
+
+const token = localStorage.getItem("authToken");
+const axiosInstance = createAxios(token);
 
 const readOnlyFieldClassName =
   "mt-2 flex min-h-[44px] w-full items-center rounded-lg border border-[#EAECF0] bg-[#F8FAFC] px-4 py-2.5 text-sm text-[#101828]";
@@ -13,9 +17,7 @@ const ReadOnlyChoiceCard = ({ selected, label, description, children }) => {
   return (
     <div
       className={`rounded-xl border p-4 ${
-        selected
-          ? "border-[#A8CAFF] bg-[#EFF6FF]"
-          : "border-[#E4E7EC] bg-white"
+        selected ? "border-[#A8CAFF] bg-[#EFF6FF]" : "border-[#E4E7EC] bg-white"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -75,44 +77,50 @@ const ViewExitPolicy = () => {
     name: "",
     description: "",
     notice: "",
-    selfResign: "yes",
-    changeNotice: "yes",
-    managerInitiate: "yes",
-    managerChangeNotice: "yes",
+    selfResign: true,
+    changeNotice: true,
+    managerInitiate: true,
+    managerChangeNotice: true,
     notifyOn: "employee",
   });
 
-  // Dummy Data (Replace with API)
-  const dummyData = [
-    {
-      id: "1",
-      name: "15 Days",
-      description: "Standard exit policy",
-      notice: 40,
-      selfResign: "yes",
-      changeNotice: "yes",
-      managerInitiate: "yes",
-      managerChangeNotice: "no",
-      notifyOn: "employee",
-    },
-    {
-      id: "2",
-      name: "IMMEDIATE",
-      description: "Immediate exit",
-      notice: 0,
-      selfResign: "no",
-      changeNotice: "no",
-      managerInitiate: "yes",
-      managerChangeNotice: "yes",
-      notifyOn: "approvers",
-    },
-  ];
+  const [loading, setLoading] = useState(false);
 
+  // ── GET /config/getOne-exit-policy/:id → prefill read-only view
   useEffect(() => {
-    const policy = dummyData.find((item) => item.id === id);
-    if (policy) {
-      setFormData(policy);
-    }
+    if (!id) return;
+
+    const fetchPolicy = async () => {
+      try {
+        setLoading(true);
+
+        const response = await axiosInstance.get(
+          `/config/getOne-exit-policy/${id}`,
+          { meta: { auth: "ADMIN_AUTH" } }
+        );
+
+        const data = response?.data?.data || response?.data;
+
+        if (data) {
+          setFormData({
+            name: data.name || "",
+            description: data.description || "",
+            notice: data.notice ?? "",
+            selfResign: data.selfResign ?? true,
+            changeNotice: data.changeNotice ?? true,
+            managerInitiate: data.managerInitiate ?? true,
+            managerChangeNotice: data.managerChangeNotice ?? true,
+            notifyOn: data.notifyOn || "employee",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching exit policy:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPolicy();
   }, [id]);
 
   const handleBack = () => {
@@ -143,6 +151,11 @@ const ViewExitPolicy = () => {
           </div>
         </div>
 
+        {/* Loading */}
+        {loading && (
+          <div className="text-sm text-gray-400 mb-4">Loading policy data...</div>
+        )}
+
         <div className="space-y-6 rounded-2xl border border-[#E4E7EC] bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <ReadOnlyField label="Exit Policy Name" value={formData.name} />
@@ -167,18 +180,18 @@ const ViewExitPolicy = () => {
               subtitle="See whether employees can initiate resignation and request notice period changes."
             >
               <ReadOnlyChoiceCard
-                selected={formData.selfResign === "yes"}
+                selected={formData.selfResign === true}
                 label="Yes"
                 description="Employees are allowed to start the resignation process."
               >
                 <SectionCard title="Notice Period Change Request">
                   <ReadOnlyChoiceCard
-                    selected={formData.changeNotice === "yes"}
+                    selected={formData.changeNotice === true}
                     label="Yes"
                     description="Employees can request a change in the notice period."
                   />
                   <ReadOnlyChoiceCard
-                    selected={formData.changeNotice === "no"}
+                    selected={formData.changeNotice === false}
                     label="No"
                     description="Employees must continue with the original notice period."
                   />
@@ -186,7 +199,7 @@ const ViewExitPolicy = () => {
               </ReadOnlyChoiceCard>
 
               <ReadOnlyChoiceCard
-                selected={formData.selfResign === "no"}
+                selected={formData.selfResign === false}
                 label="No"
                 description="Employees cannot initiate resignation on their own."
               />
@@ -197,18 +210,18 @@ const ViewExitPolicy = () => {
               subtitle="Review whether managers can initiate separation and request notice period updates."
             >
               <ReadOnlyChoiceCard
-                selected={formData.managerInitiate === "yes"}
+                selected={formData.managerInitiate === true}
                 label="Yes"
                 description="Managers are allowed to start the separation process."
               >
                 <SectionCard title="Manager Notice Change Request">
                   <ReadOnlyChoiceCard
-                    selected={formData.managerChangeNotice === "yes"}
+                    selected={formData.managerChangeNotice === true}
                     label="Yes"
                     description="Managers can request a change in the notice period."
                   />
                   <ReadOnlyChoiceCard
-                    selected={formData.managerChangeNotice === "no"}
+                    selected={formData.managerChangeNotice === false}
                     label="No"
                     description="Managers must continue with the existing notice period."
                   />
@@ -216,7 +229,7 @@ const ViewExitPolicy = () => {
               </ReadOnlyChoiceCard>
 
               <ReadOnlyChoiceCard
-                selected={formData.managerInitiate === "no"}
+                selected={formData.managerInitiate === false}
                 label="No"
                 description="Managers cannot initiate separation from this policy."
               />

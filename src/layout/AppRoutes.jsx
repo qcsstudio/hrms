@@ -56,6 +56,7 @@ import PayrollOverviewPage from "../Container/Payroll/Run_Payroll/PayrollOvervie
 import PerformanceDashboard from "../Container/DashboardPages/Performance/PerformanceDashboard";
 import Announcement from "../Container/Announcement/Announcement";
 import AnnouncementCreate from "../Container/Announcement/AnnouncementCreate";
+import ProfileSettings from '../Container/settings/ProfileSettings'
 // import DashboardPayroll1 from "../Container/Payroll/Payroll/DashboardPayroll1";
 // import PayrollDashboard from "../Container/Payroll/Payroll/PayrollDashboard";
 // import DashboardPayroll2 from "../Container/Payroll/Payroll/DashboardPayroll2";
@@ -368,6 +369,9 @@ const AppRoutes = () => {
 
           <Route path="announcement" element={<Announcement />} />
           <Route path="create-announcement" element={<AnnouncementCreate />} />
+
+          {/* setting============= */}
+          <Route path="settings" element={<ProfileSettings/>} />
         
                   </Route>
 

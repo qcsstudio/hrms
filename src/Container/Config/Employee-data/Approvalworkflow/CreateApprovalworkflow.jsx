@@ -1,4 +1,8 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import createAxios from "../../../../utils/axios.config";
 
 /* -------------------- Config -------------------- */
 
@@ -118,6 +122,91 @@ const defaultWorkflowState = () => ({
   backupPerson: "",
   managerChange: "",
 });
+
+/* -------------------- API Body Builders -------------------- */
+
+// Maps UI workflowType id → API workflowType string
+const mapWorkflowType = (id) => {
+  const map = {
+    "full-trust": "full_trust",
+    "free-flowing": "free_flow",
+    "all-hands": "all_hands_in",
+    "level-based": "level_based",
+  };
+  return map[id] || id;
+};
+
+// Maps UI inactionAction → API inactionAction
+const mapInactionAction = (action) => {
+  const map = {
+    approve: "auto_approve",
+    reject: "auto_reject",
+    escalate: "escalate",
+  };
+  return map[action] || action;
+};
+
+// Builds a single workflow tab body from UI state
+// Only includes fields that have actual values — avoids sending empty strings
+// that fail backend enum validation (e.g. workflowType: "")
+const buildWorkflowBody = (state, showSameAsHRIS) => {
+  const body = {};
+
+  if (showSameAsHRIS) {
+    body.sameAsHRIS = state.sameAsHRIS === "yes";
+  }
+
+  // Only send workflowType if user actually selected one
+  if (state.workflowType) {
+    body.workflowType = mapWorkflowType(state.workflowType);
+  }
+
+  // For all-hands: approverHierarchyId comes from allHandsEmployee
+  if (state.workflowType === "all-hands" && state.allHandsEmployee) {
+    body.approverHierarchyId = state.allHandsEmployee;
+  }
+
+  // For level-based: approvalLevels count + levelApprovers array
+  if (state.workflowType === "level-based") {
+    body.approvalLevels = state.levels.length;
+    body.levelApprovers = state.levels
+      .map((lvl, i) => ({
+        levelNumber: i + 1,
+        ...(lvl.approver ? { approverHierarchyId: lvl.approver } : {}),
+      }));
+  }
+
+  // Inaction handling
+  body.autoHandleInaction = state.inactionHandling === "yes";
+  if (state.inactionHandling === "yes") {
+    if (state.inactionDays) body.forwardAfterDays = Number(state.inactionDays);
+    if (state.inactionAction) body.inactionAction = mapInactionAction(state.inactionAction);
+  }
+
+  // Backup decision maker — booleans per schema
+  // self_approval: Boolean, backup_person: Boolean, backupEmployeeId: ObjectId
+  if (state.backupDecision === "self") {
+    body.self_approval = true;
+    body.backup_person = false;
+    body.backupEmployeeId = null;
+  } else if (state.backupDecision === "backup") {
+    body.self_approval = false;
+    body.backup_person = true;
+    if (state.backupPerson) body.backupEmployeeId = state.backupPerson;
+  }
+
+  // Manager change — booleans per schema
+  // transferToNewuser: Boolean (transfer all), transferToManagerChange: Boolean (pending only)
+  if (state.managerChange === "all") {
+    body.transferToNewuser = true;
+    body.transferToManagerChange = false;
+  } else if (state.managerChange === "pending") {
+    body.transferToNewuser = false;
+    body.transferToManagerChange = true;
+  }
+
+  return body;
+};
 
 /* -------------------- Icons -------------------- */
 const CheckIcon = () => (
@@ -342,9 +431,7 @@ const LevelBasedApprovers = ({ levels, onLevelsChange }) => {
 };
 
 /* -------------------- Define Workflow Tab -------------------- */
-const DefineWorkflowTab = ({ onNext }) => {
-  const [name, setName] = useState("");
-  const [desc, setDesc] = useState("");
+const DefineWorkflowTab = ({ defineState, onDefineChange, onNext }) => {
   return (
     <div className="max-w-xl mx-auto py-8 px-4">
       <p className="text-sm font-medium text-gray-800 mb-4">
@@ -354,8 +441,8 @@ const DefineWorkflowTab = ({ onNext }) => {
         <label className="block text-sm font-medium text-blue-600 mb-1">Workflow Name</label>
         <input
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={defineState.workflowName}
+          onChange={(e) => onDefineChange({ workflowName: e.target.value })}
           placeholder="Enter Workflow Name"
           className="w-full border border-blue-500 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
@@ -365,8 +452,8 @@ const DefineWorkflowTab = ({ onNext }) => {
           Internal description for other admins who would view this setting
         </label>
         <textarea
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
+          value={defineState.description}
+          onChange={(e) => onDefineChange({ description: e.target.value })}
           placeholder="Description"
           rows={5}
           className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
@@ -383,9 +470,8 @@ const DefineWorkflowTab = ({ onNext }) => {
 };
 
 /* -------------------- Workflow Config Tab -------------------- */
-const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip }) => {
+const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip, state, setState }) => {
   const meta = workflowMeta[metaKey];
-  const [state, setState] = useState(defaultWorkflowState());
   const patch = (obj) => setState((s) => ({ ...s, ...obj }));
 
   return (
@@ -473,14 +559,12 @@ const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip }) => {
           workflow?
         </p>
 
-        {/* Yes row */}
         <SimpleRadio
           label="Yes"
           checked={state.inactionHandling === "yes"}
           onChange={() => patch({ inactionHandling: "yes" })}
         />
 
-        {/* Sub-fields rendered BELOW "Yes" row, outside the card */}
         {state.inactionHandling === "yes" && (
           <div className="border-l border-r border-b border-blue-200 bg-white px-4 py-4 space-y-4">
             <div>
@@ -517,7 +601,6 @@ const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip }) => {
           </div>
         )}
 
-        {/* No row — always visible below Yes */}
         <div className="mt-2">
           <SimpleRadio
             label="No"
@@ -603,12 +686,108 @@ const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip }) => {
 /* -------------------- Main Component -------------------- */
 const CreateApprovalWorkflow = () => {
   const [activeTab, setActiveTab] = useState(0);
+
+  // Define Workflow tab state
+  const [defineState, setDefineState] = useState({
+    workflowName: "",
+    description: "",
+  });
+
+  // Per-tab workflow states (lifted up so we can collect all on final Save)
+  const [hrisState, setHrisState] = useState(defaultWorkflowState());
+  const [attendanceState, setAttendanceState] = useState(defaultWorkflowState());
+  const [leaveState, setLeaveState] = useState(defaultWorkflowState());
+  const [expenseState, setExpenseState] = useState(defaultWorkflowState());
+  const [exitState, setExitState] = useState(defaultWorkflowState());
+
+  const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
+  const [companyOfficeId, setCompanyOfficeId] = useState([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("companyOfficeId");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Could be array or single string — normalise to array
+        const ids = Array.isArray(parsed) ? parsed : [parsed];
+        setCompanyOfficeId(ids);
+      }
+    } catch (e) {
+      toast.error("Failed to read office data. Please try again.");
+    }
+  }, []);
+
   const goNext = () => {
     if (activeTab < tabs.length - 1) setActiveTab(activeTab + 1);
   };
 
+  /* -------------------- Build single full payload for one POST -------------------- */
+  // Backend creates one doc with all tabs nested under tabs.{tabName}
+  // workflowName is required at schema root — must be included in every call
+  // Solution: send all tabs in one POST using defineWorkflow tabName
+  // which carries workflowName + all other tabs data together
+  const buildFullPayload = () => ({
+    companyOfficeId,
+    workflowName: defineState.workflowName,
+    description: defineState.description,
+    tabs: {
+      defineWorkflow: {
+        workflowName: defineState.workflowName,
+        description: defineState.description,
+      },
+      hrisWorkflow: buildWorkflowBody(hrisState, false),
+      attendanceWorkflow: buildWorkflowBody(attendanceState, true),
+      leaveWorkflow: buildWorkflowBody(leaveState, true),
+      expenseWorkflow: buildWorkflowBody(expenseState, true),
+      exitWorkflow: buildWorkflowBody(exitState, false),
+    },
+  });
+
+  /* -------------------- Final Save — single POST with all tabs -------------------- */
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      const axiosInstance = createAxios(token);
+      const body = buildFullPayload();
+
+      // tabName=defineWorkflow ensures workflowName is present
+      // and the full tabs object is passed so backend gets all tab data
+      await axiosInstance.post(
+        `/config/createWorkflow?tabName=defineWorkflow`,
+        body,
+        { meta: { auth: "ADMIN_AUTH" } }
+      );
+
+      toast.success("Workflow added successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+      localStorage.removeItem("companyOfficeId");
+
+      setTimeout(() => {
+        navigate("/config/hris/Employee-data/Approval-workflow");
+      }, 1500);
+
+    } catch (err) {
+      const errMsg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to save. Please try again.";
+      toast.error(errMsg, {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans">
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
       <div className="border-b border-gray-200 px-4">
         <div className="flex overflow-x-auto">
           {tabs.map((tab, i) => (
@@ -627,25 +806,61 @@ const CreateApprovalWorkflow = () => {
         </div>
       </div>
 
-      {activeTab === 0 && <DefineWorkflowTab onNext={goNext} />}
+      {activeTab === 0 && (
+        <DefineWorkflowTab
+          defineState={defineState}
+          onDefineChange={(patch) => setDefineState((s) => ({ ...s, ...patch }))}
+          onNext={goNext}
+        />
+      )}
       {activeTab === 1 && (
-        <WorkflowConfigTab metaKey="HRIS" isLast={false} onNext={goNext} onSkip={goNext} />
+        <WorkflowConfigTab
+          metaKey="HRIS"
+          isLast={false}
+          onNext={goNext}
+          onSkip={goNext}
+          state={hrisState}
+          setState={setHrisState}
+        />
       )}
       {activeTab === 2 && (
-        <WorkflowConfigTab metaKey="Attendance" isLast={false} onNext={goNext} onSkip={goNext} />
+        <WorkflowConfigTab
+          metaKey="Attendance"
+          isLast={false}
+          onNext={goNext}
+          onSkip={goNext}
+          state={attendanceState}
+          setState={setAttendanceState}
+        />
       )}
       {activeTab === 3 && (
-        <WorkflowConfigTab metaKey="Leave" isLast={false} onNext={goNext} onSkip={goNext} />
+        <WorkflowConfigTab
+          metaKey="Leave"
+          isLast={false}
+          onNext={goNext}
+          onSkip={goNext}
+          state={leaveState}
+          setState={setLeaveState}
+        />
       )}
       {activeTab === 4 && (
-        <WorkflowConfigTab metaKey="Expense" isLast={false} onNext={goNext} onSkip={goNext} />
+        <WorkflowConfigTab
+          metaKey="Expense"
+          isLast={false}
+          onNext={goNext}
+          onSkip={goNext}
+          state={expenseState}
+          setState={setExpenseState}
+        />
       )}
       {activeTab === 5 && (
         <WorkflowConfigTab
           metaKey="Exit"
           isLast={true}
-          onNext={() => alert("Saved!")}
+          onNext={handleSave}
           onSkip={goNext}
+          state={exitState}
+          setState={setExitState}
         />
       )}
     </div>

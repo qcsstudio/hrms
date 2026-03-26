@@ -1,102 +1,5 @@
-import { useState } from "react";
-
-// ─── Data ───────────────────────────────────────────────────────────────────
-
-const INCOME_COMPONENTS = [
-  {
-    id: "basic-pay", name: "Basic Pay", type: "income",
-    properties: [
-      { label: "Income", enabled: true }, { label: "CTC", enabled: true },
-      { label: "Taxed", enabled: true }, { label: "Variable", enabled: false },
-      { label: "Accrual", enabled: false }, { label: "Statutory", enabled: true },
-      { label: "Statutory Deduction", enabled: true },
-    ],
-    journalVoucher: "-",
-  },
-  {
-    id: "special-allowance", name: "Special Allowance", type: "income",
-    properties: [
-      { label: "Income", enabled: true }, { label: "CTC", enabled: true },
-      { label: "Taxed", enabled: true }, { label: "Variable", enabled: false },
-      { label: "Accrual", enabled: false }, { label: "Statutory", enabled: true },
-      { label: "Statutory Deduction", enabled: true },
-    ],
-    journalVoucher: "-",
-  },
-  {
-    id: "hra", name: "HRA", type: "income",
-    properties: [
-      { label: "Income", enabled: true }, { label: "CTC", enabled: true },
-      { label: "Taxed", enabled: true }, { label: "Variable", enabled: false },
-      { label: "Accrual", enabled: false }, { label: "Statutory", enabled: true },
-      { label: "Statutory Deduction", enabled: true },
-    ],
-    journalVoucher: "-",
-  },
-  {
-    id: "conveyance", name: "Conveyance", type: "income",
-    properties: [
-      { label: "Income", enabled: true }, { label: "CTC", enabled: true },
-      { label: "Taxed", enabled: true }, { label: "Variable", enabled: false },
-      { label: "Accrual", enabled: false }, { label: "Statutory", enabled: true },
-      { label: "Statutory Deduction", enabled: true },
-    ],
-    journalVoucher: "-",
-  },
-  {
-    id: "medical-allowance", name: "Medical Allowance", type: "income",
-    properties: [
-      { label: "Income", enabled: true }, { label: "CTC", enabled: true },
-      { label: "Taxed", enabled: true }, { label: "Variable", enabled: false },
-      { label: "Accrual", enabled: false }, { label: "Statutory", enabled: true },
-      { label: "Statutory Deduction", enabled: true },
-    ],
-    journalVoucher: "-",
-  },
-];
-
-const DEDUCTION_COMPONENTS = [
-  {
-    id: "epf", name: "EPF", type: "deduction",
-    properties: [
-      { label: "Deduction", enabled: true }, { label: "Gross Salary", enabled: true },
-      { label: "Taxed", enabled: true }, { label: "Variable", enabled: false },
-      { label: "Accrual", enabled: false }, { label: "Statutory", enabled: true },
-      { label: "Statutory Deduction", enabled: true },
-    ],
-    journalVoucher: "-",
-  },
-  {
-    id: "esi", name: "ESI", type: "deduction",
-    properties: [
-      { label: "Deduction", enabled: true }, { label: "Gross Salary", enabled: true },
-      { label: "Taxed", enabled: true }, { label: "Variable", enabled: false },
-      { label: "Accrual", enabled: false }, { label: "Statutory", enabled: true },
-      { label: "Statutory Deduction", enabled: true },
-    ],
-    journalVoucher: "-",
-  },
-  {
-    id: "professional-tax", name: "Professional Tax", type: "deduction",
-    properties: [
-      { label: "Deduction", enabled: true }, { label: "Gross Salary", enabled: true },
-      { label: "Taxed", enabled: true }, { label: "Variable", enabled: false },
-      { label: "Accrual", enabled: false }, { label: "Statutory", enabled: true },
-      { label: "Statutory Deduction", enabled: true },
-    ],
-    journalVoucher: "-",
-  },
-  {
-    id: "tds", name: "TDS", type: "deduction",
-    properties: [
-      { label: "Deduction", enabled: true }, { label: "Gross Salary", enabled: true },
-      { label: "Taxed", enabled: true }, { label: "Variable", enabled: false },
-      { label: "Accrual", enabled: false }, { label: "Statutory", enabled: true },
-      { label: "Statutory Deduction", enabled: true },
-    ],
-    journalVoucher: "-",
-  },
-];
+import { useEffect, useMemo, useState } from "react";
+import createAxios from "../../../../../utils/axios.config";
 
 const FORMULA_OPTIONS = [
   "40% of Basic Pay", "50% of CTC", "Flat Amount", "% of Gross Salary",
@@ -116,7 +19,31 @@ const STEPS = [
 const LOP_COLUMNS = ["Loss of Pay", "LOP's Arrears", "Salary Arrears", "New Joinee", "FNF"];
 const LOP_FIELDS = ["lossOfPay", "lopArrears", "salaryArrears", "newJoinee", "fnf"];
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+const mapApiComponent = (item = {}) => ({
+  id: item?._id || item?.id || item?.componentCode || item?.componentName,
+  name: item?.componentName || "-",
+  type: item?.Income ? "income" : "deduction",
+  properties: item?.Income
+    ? [
+        { label: "Income", enabled: Boolean(item?.Income) },
+        { label: "CTC", enabled: Boolean(item?.CTC) },
+        { label: "Taxed", enabled: Boolean(item?.isTaxable) },
+        { label: "Variable", enabled: Boolean(item?.isVariable) },
+        { label: "Accrual", enabled: Boolean(item?.willAccrue) },
+        { label: "Statutory", enabled: Boolean(item?.isStatutory) },
+        { label: "Statutory Deduction", enabled: Boolean(item?.isStatutoryDeduction) },
+      ]
+    : [
+        { label: "Deduction", enabled: true },
+        { label: "Employee Deduction", enabled: Boolean(item?.employeeDeduction) },
+        { label: "Employer Deduction", enabled: Boolean(item?.employerDeduction) },
+        { label: "Taxed", enabled: Boolean(item?.isTaxable) },
+        { label: "Variable", enabled: Boolean(item?.isVariable) },
+        { label: "Statutory", enabled: Boolean(item?.isStatutory) },
+        { label: "Statutory Deduction", enabled: Boolean(item?.isStatutoryDeduction) },
+      ],
+  journalVoucher: item?.journalVoucher ? "Enabled" : "-",
+});
 
 const S = {
   page: {
@@ -148,7 +75,6 @@ const S = {
     padding: 24,
     marginBottom: 16,
   },
-  // Stepper
   stepperWrap: {
     display: "flex",
     alignItems: "flex-start",
@@ -203,21 +129,18 @@ const S = {
   stepLineInactive: {
     flex: 1, height: 2, background: "#e5e7eb", margin: "0 4px", marginBottom: 20,
   },
-  // Form
   label: { fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 },
   input: {
     width: "100%", padding: "9px 12px", borderRadius: 8,
     border: "1px solid #d1d5db", fontSize: 14, color: "#111827",
     background: "#fff", outline: "none", boxSizing: "border-box",
   },
-  inputFocused: { border: "1.5px solid #3b5fe2" },
   textarea: {
     width: "100%", padding: "10px 12px", borderRadius: 8,
     border: "1.5px solid #3b5fe2", fontSize: 14, color: "#111827",
     background: "#fff", outline: "none", resize: "vertical", minHeight: 120,
     boxSizing: "border-box",
   },
-  // Component card
   compCard: (selected) => ({
     borderRadius: 10,
     border: selected ? "2px solid #3b5fe2" : "1px solid #e5e7eb",
@@ -246,7 +169,6 @@ const S = {
   jvLabel: { fontSize: 12, fontWeight: 600, color: "#374151" },
   jvValue: { fontSize: 12, color: "#9ca3af" },
   compCardFooter: { display: "flex", justifyContent: "center", paddingBottom: 10 },
-  // Search
   searchWrap: { position: "relative", maxWidth: 360, marginBottom: 20 },
   searchIcon: { position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "#9ca3af", fontSize: 15 },
   searchInput: {
@@ -254,9 +176,7 @@ const S = {
     border: "1px solid #e5e7eb", fontSize: 13, outline: "none",
     background: "#f9fafb", boxSizing: "border-box",
   },
-  // Grid
   compGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(185px, 1fr))", gap: 16 },
-  // Tabs
   tabBar: { display: "flex", gap: 4, borderBottom: "2px solid #e5e7eb", marginBottom: 24 },
   tab: (active) => ({
     padding: "8px 18px", fontSize: 13, fontWeight: active ? 600 : 500,
@@ -266,7 +186,6 @@ const S = {
     borderBottomWidth: 2.5, borderBottomStyle: "solid",
     borderBottomColor: active ? "#3b5fe2" : "transparent",
   }),
-  // Radio group
   radioCard: (active) => ({
     border: active ? "1.5px solid #3b5fe2" : "1px solid #e5e7eb",
     borderRadius: 10, padding: "14px 16px", marginBottom: 12, cursor: "pointer",
@@ -283,7 +202,6 @@ const S = {
     border: "1px solid #d1d5db", fontSize: 13, color: "#374151",
     background: "#fff", outline: "none", marginTop: 8,
   },
-  // LOP table
   table: { width: "100%", borderCollapse: "separate", borderSpacing: 0 },
   th: { fontSize: 13, fontWeight: 600, color: "#6b7280", padding: "10px 12px", textAlign: "center" },
   thLeft: { fontSize: 13, fontWeight: 600, color: "#6b7280", padding: "10px 12px", textAlign: "left" },
@@ -293,7 +211,6 @@ const S = {
     background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8,
     padding: "8px 14px", fontSize: 13, fontWeight: 500, display: "inline-block",
   },
-  // Switch
   switchOuter: (on) => ({
     width: 40, height: 22, borderRadius: 11,
     background: on ? "#3b5fe2" : "#d1d5db",
@@ -304,13 +221,11 @@ const S = {
     position: "absolute", top: 3, left: on ? 21 : 3, transition: "left 0.2s",
     boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
   }),
-  // Checkbox
   checkbox: (checked) => ({
     width: 16, height: 16, borderRadius: 4, border: checked ? "none" : "1.5px solid #d1d5db",
     background: checked ? "#3b5fe2" : "#fff", cursor: "pointer",
     display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
   }),
-  // Nav buttons
   navRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 },
   btnOutline: {
     padding: "9px 20px", borderRadius: 8, border: "1px solid #d1d5db",
@@ -324,19 +239,15 @@ const S = {
     padding: "9px 24px", borderRadius: 8, border: "none",
     background: "#3b5fe2", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer",
   },
-  // LOP select-all row
   selectAllRow: {
     display: "flex", justifyContent: "space-between", alignItems: "center",
     border: "1px solid #e5e7eb", borderRadius: 8, padding: "12px 16px", marginBottom: 16,
   },
-  // Trial run
   trialTable: { width: "100%", borderCollapse: "separate", borderSpacing: 0 },
   trialTh: { fontSize: 13, fontWeight: 600, color: "#6b7280", padding: "10px 12px", textAlign: "left", borderBottom: "1px solid #e5e7eb" },
   trialTd: { padding: "10px 12px", fontSize: 14, color: "#111827", borderBottom: "1px solid #f3f4f6" },
   emptyMsg: { color: "#9ca3af", fontSize: 14, padding: 8 },
 };
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
 
 function Stepper({ currentStep }) {
   return (
@@ -352,9 +263,7 @@ function Stepper({ currentStep }) {
               </div>
               <span style={isActive ? S.stepLabelActive : S.stepLabelInactive}>{step.label}</span>
             </div>
-            {index < STEPS.length - 1 && (
-              <div style={isCompleted ? S.stepLine : S.stepLineInactive} />
-            )}
+            {index < STEPS.length - 1 && <div style={isCompleted ? S.stepLine : S.stepLineInactive} />}
           </div>
         );
       })}
@@ -376,9 +285,7 @@ function CompCard({ component, selected, onToggle }) {
         {component.properties.map((p) => (
           <div key={p.label} style={S.propRow}>
             <span style={{ color: "#374151" }}>{p.label}</span>
-            {p.enabled
-              ? <span style={S.checkOn}>✔</span>
-              : <span style={S.checkOff}>✘</span>}
+            {p.enabled ? <span style={S.checkOn}>✔</span> : <span style={S.checkOff}>✘</span>}
           </div>
         ))}
         <div style={S.jvSection}>
@@ -409,40 +316,65 @@ function Checkbox({ checked, onChange }) {
   );
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
-
 export default function CreateSalaryStructure() {
-  const [currentStep, setCurrentStep] = useState(1);
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
 
-  // Step 1
+  const [currentStep, setCurrentStep] = useState(1);
+  const [components, setComponents] = useState([]);
+  const [componentLoading, setComponentLoading] = useState(false);
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  // Step 2
   const [selectedIncomeIds, setSelectedIncomeIds] = useState([]);
   const [incomeSearch, setIncomeSearch] = useState("");
 
-  // Step 3
   const [incomeDesigns, setIncomeDesigns] = useState({});
   const [activeIncomeTab, setActiveIncomeTab] = useState("");
 
-  // Step 4
   const [selectedDeductionIds, setSelectedDeductionIds] = useState([]);
   const [deductionSearch, setDeductionSearch] = useState("");
 
-  // Step 5
   const [deductionDesigns, setDeductionDesigns] = useState({});
   const [activeDeductionTab, setActiveDeductionTab] = useState("");
 
-  // Step 6
   const [lopConfigs, setLopConfigs] = useState({});
-
-  // Step 7
   const [grossPay, setGrossPay] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const selectedIncomeComponents = INCOME_COMPONENTS.filter((c) => selectedIncomeIds.includes(c.id));
-  const selectedDeductionComponents = DEDUCTION_COMPONENTS.filter((c) => selectedDeductionIds.includes(c.id));
+  useEffect(() => {
+    const fetchComponents = async () => {
+      try {
+        setComponentLoading(true);
+        const response = await axiosInstance.get("/config/get-all/component", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        const list = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.data?.data)
+          ? response.data.data
+          : Array.isArray(response?.data?.components)
+          ? response.data.components
+          : [];
+
+        setComponents(list.map(mapApiComponent));
+      } catch (error) {
+        console.error("Error fetching salary structure components:", error);
+        setComponents([]);
+      } finally {
+        setComponentLoading(false);
+      }
+    };
+
+    fetchComponents();
+  }, [axiosInstance]);
+
+  const incomeComponents = components.filter((component) => component.type === "income");
+  const deductionComponents = components.filter((component) => component.type === "deduction");
+
+  const selectedIncomeComponents = incomeComponents.filter((c) => selectedIncomeIds.includes(c.id));
+  const selectedDeductionComponents = deductionComponents.filter((c) => selectedDeductionIds.includes(c.id));
   const allComponentNames = [
     ...selectedIncomeComponents.map((c) => c.name),
     ...selectedDeductionComponents.map((c) => c.name),
@@ -457,100 +389,128 @@ export default function CreateSalaryStructure() {
     setDesigns({ ...designs, [id]: { ...getDesign(designs, id), ...updates } });
   };
 
-  const getLopConfig = (name) => lopConfigs[name] || { lossOfPay: false, lopArrears: false, salaryArrears: false, newJoinee: false, fnf: false };
-  const updateLop = (name, field, val) => {
-    setLopConfigs({ ...lopConfigs, [name]: { ...getLopConfig(name), [field]: val } });
+  const getLopConfig = (componentName) => (
+    lopConfigs[componentName] || { lossOfPay: false, lopArrears: false, salaryArrears: false, newJoinee: false, fnf: false }
+  );
+
+  const updateLop = (componentName, field, value) => {
+    setLopConfigs({ ...lopConfigs, [componentName]: { ...getLopConfig(componentName), [field]: value } });
   };
 
-  const allLopSelected = allComponentNames.length > 0 && allComponentNames.every((n) => {
-    const c = getLopConfig(n);
-    return c.lossOfPay && c.lopArrears && c.salaryArrears && c.newJoinee && c.fnf;
+  const allLopSelected = allComponentNames.length > 0 && allComponentNames.every((componentName) => {
+    const config = getLopConfig(componentName);
+    return config.lossOfPay && config.lopArrears && config.salaryArrears && config.newJoinee && config.fnf;
   });
 
   const toggleAllLop = () => {
-    const newVal = !allLopSelected;
+    const newValue = !allLopSelected;
     const newConfigs = {};
-    allComponentNames.forEach((n) => {
-      newConfigs[n] = { lossOfPay: newVal, lopArrears: newVal, salaryArrears: newVal, newJoinee: newVal, fnf: newVal };
+    allComponentNames.forEach((componentName) => {
+      newConfigs[componentName] = {
+        lossOfPay: newValue,
+        lopArrears: newValue,
+        salaryArrears: newValue,
+        newJoinee: newValue,
+        fnf: newValue,
+      };
     });
     setLopConfigs(newConfigs);
   };
 
-  const trialResults = allComponentNames.map((n) => {
-    const annual = grossPay ? Math.round(Number(grossPay) * (0.1 + Math.abs(Math.sin(n.length)) * 0.3)) : 0;
-    return { name: n, annual, monthly: Math.round(annual / 12) };
+  const trialResults = allComponentNames.map((componentName) => {
+    const annual = grossPay ? Math.round(Number(grossPay) * (0.1 + Math.abs(Math.sin(componentName.length)) * 0.3)) : 0;
+    return { name: componentName, annual, monthly: Math.round(annual / 12) };
   });
 
-  const renderComponentSelection = (components, selectedIds, setSelectedIds, search, setSearch) => {
-    const filtered = components.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
+  const renderComponentSelection = (list, selectedIds, setSelectedIds, search, setSearch) => {
+    const filtered = list.filter((component) => component.name.toLowerCase().includes(search.toLowerCase()));
+
     return (
       <div>
         <div style={S.searchWrap}>
           <span style={S.searchIcon}>🔍</span>
-          <input style={S.searchInput} placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input
+            style={S.searchInput}
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-        <div style={S.compGrid}>
-          {filtered.map((c) => (
-            <CompCard
-              key={c.id}
-              component={c}
-              selected={selectedIds.includes(c.id)}
-              onToggle={(id) => toggleId(id, selectedIds, setSelectedIds)}
-            />
-          ))}
-        </div>
+        {componentLoading ? (
+          <p style={S.emptyMsg}>Loading components...</p>
+        ) : filtered.length === 0 ? (
+          <p style={S.emptyMsg}>No components found.</p>
+        ) : (
+          <div style={S.compGrid}>
+            {filtered.map((component) => (
+              <CompCard
+                key={component.id}
+                component={component}
+                selected={selectedIds.includes(component.id)}
+                onToggle={(id) => toggleId(id, selectedIds, setSelectedIds)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   };
 
-  const renderDesign = (components, designs, setDesigns, activeTab, setActiveTab) => {
-    if (components.length === 0) return <p style={S.emptyMsg}>No components selected. Go back and select components.</p>;
-    const tab = activeTab || components[0]?.id || "";
+  const renderDesign = (list, designs, setDesigns, activeTab, setActiveTab) => {
+    if (list.length === 0) return <p style={S.emptyMsg}>No components selected. Go back and select components.</p>;
+
+    const tab = activeTab || list[0]?.id || "";
+
     return (
       <div style={{ maxWidth: 680 }}>
         <div style={S.tabBar}>
-          {components.map((c) => (
-            <button key={c.id} style={S.tab(tab === c.id)} onClick={() => setActiveTab(c.id)}>
-              {c.name}
+          {list.map((component) => (
+            <button key={component.id} style={S.tab(tab === component.id)} onClick={() => setActiveTab(component.id)}>
+              {component.name}
             </button>
           ))}
         </div>
-        {components.filter((c) => (tab || components[0]?.id) === c.id).map((c) => {
-          const d = getDesign(designs, c.id);
+        {list.filter((component) => tab === component.id).map((component) => {
+          const design = getDesign(designs, component.id);
+
           return (
-            <div key={c.id}>
-              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{c.name}</div>
-              {/* Formula option */}
-              <div style={S.radioCard(d.mode === "formula")} onClick={() => updateDesign(designs, setDesigns, c.id, { mode: "formula" })}>
+            <div key={component.id}>
+              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{component.name}</div>
+              <div style={S.radioCard(design.mode === "formula")} onClick={() => updateDesign(designs, setDesigns, component.id, { mode: "formula" })}>
                 <div style={S.radioRow}>
-                  <div style={S.radioCircle(d.mode === "formula")} />
+                  <div style={S.radioCircle(design.mode === "formula")} />
                   <span style={S.radioLabel}>Formula</span>
                 </div>
-                {d.mode === "formula" && (
+                {design.mode === "formula" && (
                   <select
                     style={S.select}
-                    value={d.formulaValue}
-                    onChange={(e) => { e.stopPropagation(); updateDesign(designs, setDesigns, c.id, { formulaValue: e.target.value }); }}
+                    value={design.formulaValue}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      updateDesign(designs, setDesigns, component.id, { formulaValue: e.target.value });
+                    }}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <option value="">Select any of these</option>
-                    {FORMULA_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                    {FORMULA_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
                   </select>
                 )}
               </div>
-              {/* Fixed amount option */}
-              <div style={S.radioCard(d.mode === "fixed")} onClick={() => updateDesign(designs, setDesigns, c.id, { mode: "fixed" })}>
+              <div style={S.radioCard(design.mode === "fixed")} onClick={() => updateDesign(designs, setDesigns, component.id, { mode: "fixed" })}>
                 <div style={S.radioRow}>
-                  <div style={S.radioCircle(d.mode === "fixed")} />
+                  <div style={S.radioCircle(design.mode === "fixed")} />
                   <span style={S.radioLabel}>Fixed Amount</span>
                 </div>
-                {d.mode === "fixed" && (
+                {design.mode === "fixed" && (
                   <input
                     type="number"
                     style={{ ...S.input, marginTop: 8 }}
                     placeholder="Enter Amount"
-                    value={d.fixedAmount}
-                    onChange={(e) => { e.stopPropagation(); updateDesign(designs, setDesigns, c.id, { fixedAmount: e.target.value }); }}
+                    value={design.fixedAmount}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      updateDesign(designs, setDesigns, component.id, { fixedAmount: e.target.value });
+                    }}
                     onClick={(e) => e.stopPropagation()}
                   />
                 )}
@@ -568,7 +528,7 @@ export default function CreateSalaryStructure() {
         return (
           <div style={{ maxWidth: 560 }}>
             <div style={{ marginBottom: 20 }}>
-              <label style={S.label}>Let's give this salary structure a name!</label>
+              <label style={S.label}>Let&apos;s give this salary structure a name!</label>
               <input
                 style={S.input}
                 placeholder="Enter structure name"
@@ -588,11 +548,11 @@ export default function CreateSalaryStructure() {
           </div>
         );
       case 2:
-        return renderComponentSelection(INCOME_COMPONENTS, selectedIncomeIds, setSelectedIncomeIds, incomeSearch, setIncomeSearch);
+        return renderComponentSelection(incomeComponents, selectedIncomeIds, setSelectedIncomeIds, incomeSearch, setIncomeSearch);
       case 3:
         return renderDesign(selectedIncomeComponents, incomeDesigns, setIncomeDesigns, activeIncomeTab, setActiveIncomeTab);
       case 4:
-        return renderComponentSelection(DEDUCTION_COMPONENTS, selectedDeductionIds, setSelectedDeductionIds, deductionSearch, setDeductionSearch);
+        return renderComponentSelection(deductionComponents, selectedDeductionIds, setSelectedDeductionIds, deductionSearch, setDeductionSearch);
       case 5:
         return renderDesign(selectedDeductionComponents, deductionDesigns, setDeductionDesigns, activeDeductionTab, setActiveDeductionTab);
       case 6:
@@ -615,18 +575,18 @@ export default function CreateSalaryStructure() {
                     </tr>
                   </thead>
                   <tbody>
-                    {allComponentNames.map((cName) => {
-                      const cfg = getLopConfig(cName);
+                    {allComponentNames.map((componentName) => {
+                      const config = getLopConfig(componentName);
                       return (
-                        <tr key={cName}>
+                        <tr key={componentName}>
                           <td style={S.tdLeft}>
-                            <span style={S.rowNameBox}>{cName}</span>
+                            <span style={S.rowNameBox}>{componentName}</span>
                           </td>
                           {LOP_FIELDS.map((field) => (
                             <td key={field} style={S.td}>
                               <Checkbox
-                                checked={cfg[field]}
-                                onChange={(v) => updateLop(cName, field, v)}
+                                checked={config[field]}
+                                onChange={(value) => updateLop(componentName, field, value)}
                               />
                             </td>
                           ))}
@@ -664,13 +624,13 @@ export default function CreateSalaryStructure() {
                     </tr>
                   </thead>
                   <tbody>
-                    {trialResults.map((r) => (
-                      <tr key={r.name}>
+                    {trialResults.map((result) => (
+                      <tr key={result.name}>
                         <td style={S.trialTd}>
-                          <span style={S.rowNameBox}>{r.name}</span>
+                          <span style={S.rowNameBox}>{result.name}</span>
                         </td>
-                        <td style={S.trialTd}>₹ {r.annual.toLocaleString()}</td>
-                        <td style={S.trialTd}>₹ {r.monthly.toLocaleString()}</td>
+                        <td style={S.trialTd}>Rs. {result.annual.toLocaleString()}</td>
+                        <td style={S.trialTd}>Rs. {result.monthly.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -705,17 +665,14 @@ export default function CreateSalaryStructure() {
         <h1 style={S.heading}>Create new salary structure</h1>
         <p style={S.subheading}>Manage employee directory, documents, and role-based actions.</p>
 
-        {/* Stepper */}
         <div style={S.card}>
           <Stepper currentStep={currentStep} />
         </div>
 
-        {/* Content */}
         <div style={{ ...S.card, minHeight: 340 }}>
           {renderStep()}
         </div>
 
-        {/* Navigation */}
         <div style={S.navRow}>
           <button style={S.btnOutline} onClick={() => { setSaved(false); setCurrentStep(1); }}>Cancel</button>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>

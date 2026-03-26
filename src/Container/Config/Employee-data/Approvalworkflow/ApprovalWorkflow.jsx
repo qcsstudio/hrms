@@ -5,30 +5,7 @@ import { FiEdit2 } from "react-icons/fi";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import CreateCountryPopup from "../../../../Components/Popup_Modal/CreateCountryPopup";
-
-const INITIAL_WORKFLOWS = [
-  {
-    id: 1,
-    name: "General Workflow",
-    createdBy: "Admin User",
-    createdAt: "2025-06-12T11:10:00.000Z",
-    assignedEmployees: [
-      { name: "A B" },
-      { name: "C D" },
-      { name: "E F" },
-      { name: "G H" },
-      { name: "I J" },
-      { name: "K L" },
-    ],
-  },
-  {
-    id: 2,
-    name: "HRIS Escalation Workflow",
-    createdBy: "Admin User",
-    createdAt: "2025-06-18T09:30:00.000Z",
-    assignedEmployees: [{ name: "M N" }, { name: "O P" }, { name: "Q R" }],
-  },
-];
+import createAxios from "../../../../utils/axios.config";
 
 const SORT_OPTIONS = [
   { value: "name", label: "Name (A-Z)" },
@@ -66,7 +43,9 @@ const formatDateTime = (value) => {
 const ApprovalWorkflowList = () => {
   const navigate = useNavigate();
   const [sort, setSort] = useState("");
-  const [data, setData] = useState(INITIAL_WORKFLOWS);
+  const [data, setData] = useState([]);
+  const [allWorkflows, setAllWorkflows] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [openMenu, setOpenMenu] = useState(null);
   const [showCountryDialog, setShowCountryDialog] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -90,13 +69,42 @@ const ApprovalWorkflowList = () => {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
+  useEffect(() => {
+    const fetchApprovalWorkflows = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("authToken");
+        const axiosInstance = createAxios(token);
+        const response = await axiosInstance.get("/config/approvalWorkflow-get-all", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+        const workflowList = Array.isArray(response?.data?.data)
+          ? response.data.data
+          : Array.isArray(response?.data)
+          ? response.data
+          : [];
+
+        setAllWorkflows(workflowList);
+        setData(workflowList);
+      } catch (error) {
+        console.error("Failed to fetch approval workflows:", error);
+        setAllWorkflows([]);
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApprovalWorkflows();
+  }, []);
+
   const handleCreate = () => {
     navigate("/config/hris/Employee-data/approval-workflow/create");
   };
 
   const handleClear = () => {
     setSort("");
-    setData(INITIAL_WORKFLOWS);
+    setData(allWorkflows);
     setOpenMenu(null);
     setIsSortOpen(false);
   };
@@ -107,7 +115,9 @@ const ApprovalWorkflowList = () => {
 
     const sorted = [...data];
     if (value === "name") {
-      sorted.sort((a, b) => a.name.localeCompare(b.name));
+      sorted.sort((a, b) =>
+        (a.workflowName || a.name || "").localeCompare(b.workflowName || b.name || "")
+      );
     } else if (value === "date") {
       sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
@@ -115,12 +125,24 @@ const ApprovalWorkflowList = () => {
     setData(sorted);
   };
 
-  const handleDelete = (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this workflow?");
-    if (!confirmDelete) return;
+  const handleDelete = async (id) => {
+    // const confirmDelete = window.confirm("Are you sure you want to delete this workflow?");
+    // if (!confirmDelete) return;
 
-    setData((prev) => prev.filter((item) => item.id !== id));
-    setOpenMenu(null);
+    try {
+      const token = localStorage.getItem("authToken");
+      const axiosInstance = createAxios(token);
+
+      await axiosInstance.delete(`/config/approvalWorkflow-delete/${id}`, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      setData((prev) => prev.filter((item) => (item.id || item._id) !== id));
+      setAllWorkflows((prev) => prev.filter((item) => (item.id || item._id) !== id));
+      setOpenMenu(null);
+    } catch (error) {
+      console.error("Failed to delete approval workflow:", error);
+    }
   };
 
   const sortLabel = useMemo(
@@ -195,32 +217,48 @@ const ApprovalWorkflowList = () => {
           </thead>
 
           <tbody>
-            {data.length === 0 && (
+            {loading && (
               <tr>
                 <td colSpan={4} className="px-5 py-8 text-center text-sm text-gray-500">
-                  No approval workflows found.
+                  Loading...
                 </td>
               </tr>
             )}
 
-            {data.map((item) => {
+            {!loading && data.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-5 py-8 text-center text-sm text-gray-500">
+                  No data found
+                </td>
+              </tr>
+            )}
+
+            {!loading && data.map((item) => {
               const assignedEmployees = Array.isArray(item.assignedEmployees)
                 ? item.assignedEmployees
                 : [];
 
               return (
-                <tr key={item.id} className="border-t border-gray-100 hover:bg-gray-50/70">
+                <tr key={item.id || item._id} className="border-t border-gray-100 hover:bg-gray-50/70">
                   <td className="px-5 py-4 align-middle">
-                    <div className="text-sm font-medium text-gray-900">{item.name || "--"}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{formatDateTime(item.createdAt)}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {item.tabs?.defineWorkflow?.workflowName || item.name || "--"}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {formatDateTime(item.createdAt)}
+                    </div>
                   </td>
 
                   <td className="px-5 py-4 align-middle">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-medium">
-                        {getInitials(item.createdBy)}
+                        {getInitials(
+                          item.createdBy?.name || item.createdByName || item.createdBy || "Unknown"
+                        )}
                       </div>
-                      <span className="text-sm text-gray-700">{item.createdBy || "--"}</span>
+                      <span className="text-sm text-gray-700">
+                        {item.createdBy?.name || item.createdByName || item.createdBy || "--"}
+                      </span>
                     </div>
                   </td>
 
@@ -229,11 +267,11 @@ const ApprovalWorkflowList = () => {
                       <div className="flex -space-x-2">
                         {assignedEmployees.slice(0, 4).map((employee, index) => (
                           <div
-                            key={`${item.id}-${employee.name}-${index}`}
+                            key={`${item.id || item._id}-${employee.name || employee.employeeName || index}-${index}`}
                             className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 border border-white flex items-center justify-center text-xs font-medium"
-                            title={employee.name}
+                            title={employee.name || employee.employeeName || "--"}
                           >
-                            {getInitials(employee.name)}
+                            {getInitials(employee.name || employee.employeeName || "")}
                           </div>
                         ))}
                         {assignedEmployees.length > 4 && (
@@ -255,7 +293,9 @@ const ApprovalWorkflowList = () => {
                       <button
                         type="button"
                         onClick={() =>
-                          navigate(`/config/hris/Employee-data/approval-workflow/edit/${item.id}`)
+                          navigate(
+                            `/config/hris/Employee-data/approval-workflow/edit/${item.id || item._id}`
+                          )
                         }
                         className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-blue-600 hover:bg-blue-50 transition hover:translate-y-0"
                         title="Edit workflow"
@@ -265,7 +305,11 @@ const ApprovalWorkflowList = () => {
 
                       <button
                         type="button"
-                        onClick={() => setOpenMenu((prev) => (prev === item.id ? null : item.id))}
+                        onClick={() =>
+                          setOpenMenu((prev) =>
+                            prev === (item.id || item._id) ? null : item.id || item._id
+                          )
+                        }
                         className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-white text-gray-600 shadow-none hover:shadow-none hover:text-gray-900 hover:bg-gray-100 transition hover:translate-y-0"
                         title="More actions"
                       >
@@ -273,11 +317,11 @@ const ApprovalWorkflowList = () => {
                       </button>
                     </div>
 
-                    {openMenu === item.id && (
+                    {openMenu === (item.id || item._id) && (
                       <div className="absolute right-5 top-12 w-36 overflow-hidden rounded-md border border-gray-200 bg-white divide-y divide-gray-100 z-20">
                         <button
                           type="button"
-                          onClick={() => handleDelete(item.id)}
+                          onClick={() => handleDelete(item.id || item._id)}
                           className="w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 bg-white shadow-none hover:shadow-none hover:bg-red-50 transition hover:translate-y-0"
                         >
                           Delete
