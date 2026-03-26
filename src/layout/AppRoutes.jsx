@@ -54,6 +54,8 @@ import LeaveManagementHr1 from "../Container/DashboardPages/LeaveManagement/Leav
 import PayrollDashboard from "../Container/Payroll/PayrollDashboard";
 import PayrollOverviewPage from "../Container/Payroll/Run_Payroll/PayrollOverviewPage";
 import PerformanceDashboard from "../Container/DashboardPages/Performance/PerformanceDashboard";
+import Announcement from "../Container/Announcement/Announcement";
+import AnnouncementCreate from "../Container/Announcement/AnnouncementCreate";
 // import DashboardPayroll1 from "../Container/Payroll/Payroll/DashboardPayroll1";
 // import PayrollDashboard from "../Container/Payroll/Payroll/PayrollDashboard";
 // import DashboardPayroll2 from "../Container/Payroll/Payroll/DashboardPayroll2";
@@ -361,6 +363,11 @@ const AppRoutes = () => {
           {/* <Route path="payroll" element={<DashboardPayroll1 />} /> */}
           <Route path="payroll" element={<PayrollDashboard />} />
           <Route path="run-payroll" element={<PayrollOverviewPage />} />
+
+          {/* announcement================ */}
+
+          <Route path="announcement" element={<Announcement />} />
+          <Route path="create-announcement" element={<AnnouncementCreate />} />
         
                   </Route>
 
