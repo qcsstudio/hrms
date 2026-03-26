@@ -1441,7 +1441,6 @@ const SideBar = () => {
                     <span>Performance</span>
                   </li>
                 )}
-
                 {/* ================= Announcements ================= */}
                 {!isSuperAdmin && (
                   <li
