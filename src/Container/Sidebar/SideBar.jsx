@@ -190,7 +190,7 @@ const SideBar = () => {
   //-------------------
 
   const userRole = localStorage.getItem("role");
-console.log(userRole,"5454545455454545")
+  console.log(userRole, "5454545455454545")
   const isSuperAdmin = userRole === "SUPER_ADMIN";
   const isCompanyAdmin = userRole === "COMPANY_ADMIN";
   const isEMP = userRole === "EMPLOYEE";
@@ -198,7 +198,7 @@ console.log(userRole,"5454545455454545")
   const isTL = userRole === "TL";
 
   const ddfinerole = isHR || isEMP || isTL
-console.log(ddfinerole,"ddfineroleddfineroleddfinerole")
+  console.log(ddfinerole, "ddfineroleddfineroleddfinerole")
   useEffect(() => {
     const storageVal = localStorage.getItem("openMenu");
     if (storageVal != null) {
@@ -257,6 +257,9 @@ console.log(ddfinerole,"ddfineroleddfineroleddfinerole")
         break;
       case "Performance":
         navigate("/dashboard/performance");
+        break;
+      case "announcement":
+        navigate("/dashboard/announcement");
         break;
 
       // config=============================================================
@@ -1329,7 +1332,7 @@ console.log(ddfinerole,"ddfineroleddfineroleddfinerole")
                 {/* ================= Dashboard ================= */}
                 <li
                   className={`transition-all duration-500 w-[100%] 
-  ${location.pathname === "/dashboard/companyadmin-dashboard"  || location.pathname === '/dashboard/superadmin-dashboard' ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
+  ${location.pathname === "/dashboard/companyadmin-dashboard" || location.pathname === '/dashboard/superadmin-dashboard' ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
   h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
                   onClick={() => changeTab("home")}
                 >
@@ -1438,13 +1441,13 @@ console.log(ddfinerole,"ddfineroleddfineroleddfinerole")
                     <span>Performance</span>
                   </li>
                 )}
-
                 {/* ================= Announcements ================= */}
                 {!isSuperAdmin && (
                   <li
-                    className="transition-all duration-500 w-[100%] text-[#64748B]
-  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]"
-                    onClick={() => changeTab("reportsAndExports")}
+                    className={`transition-all duration-500 w-[100%]
+  ${location.pathname.includes('announcement') ? "bg-[#EEF2FF] rounded-md text-[#0575E6]" : "text-[#64748B]"}
+  h-[2.76rem] py-[0.75rem] pl-[1.8rem] text-[0.87rem] cursor-pointer flex items-center gap-[0.75rem]`}
+                    onClick={() => changeTab("announcement")}
                   >
                     <div className="iconContainer w-[1.25rem] h-[1.25rem] flex justify-center items-center">
                       <img
@@ -1512,7 +1515,7 @@ console.log(ddfinerole,"ddfineroleddfineroleddfinerole")
                 </li>
               </ul>
               {
-               ddfinerole && (
+                ddfinerole && (
                   <div className="  p-2">
                     <button
                       className="bg-[#0575E6] px-4 py-2 w-full rounded-lg text-white disabled:opacity-60"
@@ -1537,8 +1540,8 @@ console.log(ddfinerole,"ddfineroleddfineroleddfinerole")
                     </div>
 
                   </div>
-               )
-              } 
+                )
+              }
 
             </div>
           )}
