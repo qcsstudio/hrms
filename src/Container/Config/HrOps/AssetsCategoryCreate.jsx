@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import createAxios from "../../../utils/axios.config";
 
 const AssetsCategoryCreate = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [categoryName, setCategoryName] = useState("");
   const [assetName, setAssetName] = useState("");
@@ -27,8 +32,106 @@ const AssetsCategoryCreate = () => {
   };
   const [customFields, setCustomFields] = useState([emptyField]);
 
-  const handleSave = () => {
-    setStep(3);
+  const buildPayload = () => {
+    const attributes = customFields
+      .map((field) => {
+        const trimmedLabel = field.fieldLabel.trim();
+        const trimmedOptions = (field.options || [])
+          .map((option) => option.trim())
+          .filter(Boolean);
+
+        if (!trimmedLabel) {
+          return null;
+        }
+
+        const attribute = {
+          fieldLabel: trimmedLabel,
+          inputValueType: field.inputValueType,
+        };
+
+        if (field.isMandatory) {
+          attribute.isMandatory = true;
+        }
+
+        if (field.inputValueType === "list" && trimmedOptions.length) {
+          attribute.options = trimmedOptions;
+        }
+
+        return attribute;
+      })
+      .filter(Boolean);
+
+    return {
+      categoryName: categoryName.trim(),
+      assetName: assetName.trim(),
+      brand: brand.trim(),
+      condition,
+      description: description.trim(),
+      assetType,
+      acknowledgement,
+      warranty,
+      attributes,
+    };
+  };
+
+  const handleSave = async () => {
+    if (!categoryName.trim()) {
+      toast.error("Category name is required");
+      setStep(1);
+      return;
+    }
+
+    if (!assetName.trim()) {
+      toast.error("Asset name is required");
+      setStep(1);
+      return;
+    }
+
+    if (!condition) {
+      toast.error("Condition is required");
+      setStep(1);
+      return;
+    }
+
+    const hasInvalidField = customFields.some((field) => {
+      if (!field.fieldLabel.trim()) {
+        return true;
+      }
+
+      if (field.inputValueType === "list") {
+        return !(field.options || []).some((option) => option.trim());
+      }
+
+      return false;
+    });
+
+    if (hasInvalidField) {
+      toast.error("Please complete all required custom field details");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = buildPayload();
+      const response = await axiosInstance.post(
+        "/config/create-asset-category",
+        payload,
+        {
+          meta: { auth: "ADMIN_AUTH" },
+        }
+      );
+
+      toast.success(
+        response?.data?.message || "Asset category created successfully"
+      );
+      setStep(3);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Failed to create asset category"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addCustomField = () => {
@@ -504,9 +607,10 @@ const AssetsCategoryCreate = () => {
             ) : step === 2 ? (
               <button
                 onClick={handleSave}
+                disabled={isSubmitting}
                 className="px-6 py-2.5 bg-blue-600 text-white rounded-lg"
               >
-                Save
+                {isSubmitting ? "Saving..." : "Save"}
               </button>
             ) : (
               <button

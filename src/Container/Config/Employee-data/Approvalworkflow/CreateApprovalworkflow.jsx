@@ -101,26 +101,35 @@ const APPROVER_OPTIONS = [
   { value: "vp", label: "VP" },
 ];
 
-const EMPLOYEE_OPTIONS = [
-  { value: "emp-1", label: "Alice Johnson" },
-  { value: "emp-2", label: "Bob Smith" },
-  { value: "emp-3", label: "Carol White" },
-  { value: "emp-4", label: "David Brown" },
-  { value: "emp-5", label: "Eve Davis" },
-];
+const createDefaultLevel = () => ({
+  approver: "",
+  tags: [],
+  additionalEmployee: "",
+});
 
 const defaultWorkflowState = () => ({
   sameAsHRIS: "no",
   workflowType: "",
-  allHandsTags: ["Additional Employee"],
+  allHandsTags: [],
   allHandsEmployee: "",
-  levels: [{ approver: "" }],
+  levels: [createDefaultLevel()],
   inactionHandling: "no",
   inactionDays: "",
   inactionAction: "",
   backupDecision: "",
   backupPerson: "",
   managerChange: "",
+});
+
+const cloneWorkflowState = (state) => ({
+  ...state,
+  allHandsTags: [...(state.allHandsTags || [])],
+  allHandsEmployee: state.allHandsEmployee || "",
+  levels: (state.levels || []).map((level) => ({
+    approver: level.approver || "",
+    tags: [...(level.tags || [])],
+    additionalEmployee: level.additionalEmployee || "",
+  })),
 });
 
 /* -------------------- API Body Builders -------------------- */
@@ -146,38 +155,72 @@ const mapInactionAction = (action) => {
   return map[action] || action;
 };
 
+const getApproverValueFromTags = (tags = []) => {
+  const selectedTag = tags.find((tag) => tag !== "Additional Employee");
+  return APPROVER_OPTIONS.find((option) => option.label === selectedTag)?.value || "";
+};
+
+const mapHierarchyRoleLabel = (label) => {
+  const roleMap = {
+    Manager: "Manager",
+    "HR Admin": "HR",
+    "Department Head": "Department Head",
+    "Additional Employee": "Additional Employee",
+    CEO: "CEO",
+    VP: "VP",
+  };
+
+  return roleMap[label] || label;
+};
+
+const toArray = (value) => {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value) return [];
+  return [value];
+};
+
 // Builds a single workflow tab body from UI state
 // Only includes fields that have actual values — avoids sending empty strings
 // that fail backend enum validation (e.g. workflowType: "")
 const buildWorkflowBody = (state, showSameAsHRIS) => {
-  const body = {};
-
-  if (showSameAsHRIS) {
-    body.sameAsHRIS = state.sameAsHRIS === "yes";
-  }
+  const body = {
+    sameAsHRIS: showSameAsHRIS ? state.sameAsHRIS === "yes" : false,
+    autoHandleInaction: state.inactionHandling === "yes",
+    self_approval: false,
+    backup_person: false,
+  };
 
   // Only send workflowType if user actually selected one
   if (state.workflowType) {
     body.workflowType = mapWorkflowType(state.workflowType);
   }
 
-  // For all-hands: approverHierarchyId comes from allHandsEmployee
-  if (state.workflowType === "all-hands" && state.allHandsEmployee) {
-    body.approverHierarchyId = state.allHandsEmployee;
+  if (state.workflowType === "all-hands") {
+    body.allHandsTags = (state.allHandsTags || []).map(mapHierarchyRoleLabel);
+    body.allHandsEmployee = toArray(state.allHandsEmployee);
   }
 
-  // For level-based: approvalLevels count + levelApprovers array
   if (state.workflowType === "level-based") {
     body.approvalLevels = state.levels.length;
-    body.levelApprovers = state.levels
-      .map((lvl, i) => ({
+    body.levelApprovers = state.levels.map((lvl, i) => {
+      const hierarchyRoles = (lvl.tags || []).map(mapHierarchyRoleLabel);
+      const hasOnlyAdditionalEmployees =
+        hierarchyRoles.length > 0 &&
+        hierarchyRoles.every((role) => role === "Additional Employee");
+
+      return {
         levelNumber: i + 1,
-        ...(lvl.approver ? { approverHierarchyId: lvl.approver } : {}),
-      }));
+        hierarchyRoles,
+        approverEmployeeId: null,
+        approverHierarchyId:
+          hasOnlyAdditionalEmployees || hierarchyRoles.length === 0
+            ? null
+            : lvl.approver || getApproverValueFromTags(lvl.tags) || null,
+        additionalEmployees: toArray(lvl.additionalEmployee),
+      };
+    });
   }
 
-  // Inaction handling
-  body.autoHandleInaction = state.inactionHandling === "yes";
   if (state.inactionHandling === "yes") {
     if (state.inactionDays) body.forwardAfterDays = Number(state.inactionDays);
     if (state.inactionAction) body.inactionAction = mapInactionAction(state.inactionAction);
@@ -222,7 +265,13 @@ const ChevronDown = () => (
 );
 
 /* -------------------- Multi-Select Tag Input -------------------- */
-const MultiSelectTagInput = ({ tags, onTagsChange, options, placeholder }) => {
+const MultiSelectTagInput = ({
+  tags,
+  onTagsChange,
+  options,
+  placeholder,
+  disabledLabels = [],
+}) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -235,6 +284,7 @@ const MultiSelectTagInput = ({ tags, onTagsChange, options, placeholder }) => {
   }, []);
 
   const toggle = (label) => {
+    if (disabledLabels.includes(label) && !tags.includes(label)) return;
     if (tags.includes(label)) onTagsChange(tags.filter((t) => t !== label));
     else onTagsChange([...tags, label]);
   };
@@ -284,22 +334,31 @@ const MultiSelectTagInput = ({ tags, onTagsChange, options, placeholder }) => {
 
       {open && (
         <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-48 overflow-y-auto">
-          {options.map((opt) => (
-            <div
-              key={opt.value}
-              onClick={() => toggle(opt.label)}
-              className={`px-3 py-2 text-sm cursor-pointer flex items-center justify-between hover:bg-blue-50 ${
-                tags.includes(opt.label) ? "text-blue-600 font-medium bg-blue-50" : "text-gray-700"
-              }`}
-            >
-              {opt.label}
-              {tags.includes(opt.label) && (
-                <span className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                  <CheckIcon />
-                </span>
-              )}
-            </div>
-          ))}
+          {options.map((opt) => {
+            const isSelected = tags.includes(opt.label);
+            const isDisabled = disabledLabels.includes(opt.label) && !isSelected;
+
+            return (
+              <div
+                key={opt.value}
+                onClick={() => !isDisabled && toggle(opt.label)}
+                className={`px-3 py-2 text-sm flex items-center justify-between ${
+                  isDisabled
+                    ? "text-gray-400 bg-gray-50 cursor-not-allowed"
+                    : isSelected
+                    ? "text-blue-600 font-medium bg-blue-50 cursor-pointer hover:bg-blue-50"
+                    : "text-gray-700 cursor-pointer hover:bg-blue-50"
+                }`}
+              >
+                {opt.label}
+                {isSelected && (
+                  <span className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                    <CheckIcon />
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -307,7 +366,7 @@ const MultiSelectTagInput = ({ tags, onTagsChange, options, placeholder }) => {
 };
 
 /* -------------------- Dropdown -------------------- */
-const Dropdown = ({ value, onChange, placeholder, options }) => (
+const Dropdown = ({ value, onChange, placeholder, options, disabledValues = [] }) => (
   <div className="relative">
     <select
       value={value}
@@ -316,12 +375,18 @@ const Dropdown = ({ value, onChange, placeholder, options }) => (
     >
       <option value="">{placeholder}</option>
       {options.map((o) => (
-        <option key={o.value} value={o.value}>{o.label}</option>
+        <option
+          key={o.value}
+          value={o.value}
+          disabled={disabledValues.includes(o.value) && value !== o.value}
+        >
+          {o.label}
+        </option>
       ))}
     </select>
-    <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+    {/* <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
       <ChevronDown />
-    </div>
+    </div> */}
   </div>
 );
 
@@ -378,16 +443,24 @@ const SimpleRadio = ({ label, checked, onChange }) => (
 );
 
 /* -------------------- Level-Based Approvers -------------------- */
-const LevelBasedApprovers = ({ levels, onLevelsChange }) => {
+const LevelBasedApprovers = ({ levels, onLevelsChange, employeeOptions }) => {
   const addLevel = () => {
-    if (levels.length < 5) onLevelsChange([...levels, { approver: "" }]);
+    if (levels.length < 5) onLevelsChange([...levels, createDefaultLevel()]);
   };
   const removeLevel = () => {
     if (levels.length > 1) onLevelsChange(levels.slice(0, -1));
   };
-  const updateApprover = (index, value) => {
-    onLevelsChange(levels.map((lvl, i) => (i === index ? { ...lvl, approver: value } : lvl)));
+  const updateLevel = (index, patch) => {
+    onLevelsChange(levels.map((lvl, i) => (i === index ? { ...lvl, ...patch } : lvl)));
   };
+  const getDisabledLabelsForLevel = (currentIndex) =>
+    levels
+      .flatMap((level, index) => (index === currentIndex ? [] : level.tags || []));
+  const getDisabledEmployeesForLevel = (currentIndex) =>
+    levels
+      .flatMap((level, index) =>
+        index === currentIndex || !level.additionalEmployee ? [] : [level.additionalEmployee]
+      );
 
   return (
     <div className="space-y-3">
@@ -396,12 +469,35 @@ const LevelBasedApprovers = ({ levels, onLevelsChange }) => {
           <p className="text-xs font-medium text-blue-600 mb-1">
             Level-{index + 1}&nbsp;&nbsp;Select employees based on their position in hierarchy
           </p>
-          <Dropdown
-            value={lvl.approver}
-            onChange={(v) => updateApprover(index, v)}
-            placeholder="Select Approver"
+          <MultiSelectTagInput
+            tags={lvl.tags || []}
+            onTagsChange={(value) =>
+              updateLevel(index, {
+                tags: value,
+                approver: getApproverValueFromTags(value),
+                additionalEmployee: value.includes("Additional Employee")
+                  ? lvl.additionalEmployee
+                  : "",
+              })
+            }
             options={APPROVER_OPTIONS}
+            placeholder="Select Approver"
+            disabledLabels={getDisabledLabelsForLevel(index)}
           />
+          {(lvl.tags || []).includes("Additional Employee") && (
+            <div className="mt-3">
+              <p className="text-sm font-medium text-blue-600 mb-1">
+                Select certain specific employees who will also receive the request for action
+              </p>
+              <Dropdown
+                value={lvl.additionalEmployee || ""}
+                onChange={(value) => updateLevel(index, { additionalEmployee: value })}
+                placeholder="Select Employee"
+                options={employeeOptions}
+                disabledValues={getDisabledEmployeesForLevel(index)}
+              />
+            </div>
+          )}
         </div>
       ))}
       <div className="flex flex-col gap-2 pt-1">
@@ -470,9 +566,18 @@ const DefineWorkflowTab = ({ defineState, onDefineChange, onNext }) => {
 };
 
 /* -------------------- Workflow Config Tab -------------------- */
-const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip, state, setState }) => {
+const WorkflowConfigTab = ({
+  metaKey,
+  isLast,
+  onNext,
+  onSkip,
+  state,
+  setState,
+  employeeOptions,
+}) => {
   const meta = workflowMeta[metaKey];
   const patch = (obj) => setState((s) => ({ ...s, ...obj }));
+  const showAdditionalEmployeeField = state.allHandsTags.includes("Additional Employee");
 
   return (
     <div className="max-w-xl mx-auto py-6 px-4">
@@ -521,22 +626,31 @@ const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip, state, setState })
                     </p>
                     <MultiSelectTagInput
                       tags={state.allHandsTags}
-                      onTagsChange={(v) => patch({ allHandsTags: v })}
+                      onTagsChange={(v) =>
+                        patch({
+                          allHandsTags: v,
+                          allHandsEmployee: v.includes("Additional Employee")
+                            ? state.allHandsEmployee
+                            : "",
+                        })
+                      }
                       options={APPROVER_OPTIONS}
                       placeholder="Select Approver"
                     />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-blue-600 mb-1">
-                      Select certain specific employees who will also receive the request for action
-                    </p>
-                    <Dropdown
-                      value={state.allHandsEmployee}
-                      onChange={(v) => patch({ allHandsEmployee: v })}
-                      placeholder="Select Employee"
-                      options={EMPLOYEE_OPTIONS}
-                    />
-                  </div>
+                  {showAdditionalEmployeeField && (
+                    <div>
+                      <p className="text-sm font-medium text-blue-600 mb-1">
+                        Select certain specific employees who will also receive the request for action
+                      </p>
+                      <Dropdown
+                        value={state.allHandsEmployee}
+                        onChange={(v) => patch({ allHandsEmployee: v })}
+                        placeholder="Select Employee"
+                        options={employeeOptions}
+                      />
+                    </div>
+                  )}
                 </>
               )}
 
@@ -545,6 +659,7 @@ const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip, state, setState })
                 <LevelBasedApprovers
                   levels={state.levels}
                   onLevelsChange={(newLevels) => patch({ levels: newLevels })}
+                  employeeOptions={employeeOptions}
                 />
               )}
             </RadioOption>
@@ -634,8 +749,8 @@ const WorkflowConfigTab = ({ metaKey, isLast, onNext, onSkip, state, setState })
                 <Dropdown
                   value={state.backupPerson}
                   onChange={(v) => patch({ backupPerson: v })}
-                  placeholder=""
-                  options={APPROVER_OPTIONS}
+                  placeholder="select employee"
+                  options={employeeOptions}
                 />
               </div>
             )}
@@ -702,7 +817,9 @@ const CreateApprovalWorkflow = () => {
 
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [createResponse, setCreateResponse] = useState(null);
   const [companyOfficeId, setCompanyOfficeId] = useState([]);
+  const [employeeOptions, setEmployeeOptions] = useState([]);
 
   useEffect(() => {
     try {
@@ -718,49 +835,159 @@ const CreateApprovalWorkflow = () => {
     }
   }, []);
 
-  const goNext = () => {
-    if (activeTab < tabs.length - 1) setActiveTab(activeTab + 1);
-  };
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const axiosInstance = createAxios(token);
+        const response = await axiosInstance.get("/employees/all", {
+          meta: { auth: "ADMIN_AUTH" },
+        });
+
+        const rawEmployees = Array.isArray(response?.data?.data) ? response.data.data : [];
+        const normalizedEmployees = rawEmployees
+          .map((employee) => {
+            const id = employee?._id;
+            const fullName = employee?.fullName;
+
+            if (!id || !fullName) return null;
+
+            return {
+              value: id,
+              label: fullName,
+            };
+          })
+          .filter(Boolean);
+
+        setEmployeeOptions(normalizedEmployees);
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || "Failed to load employees."
+        );
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+
+  useEffect(() => {
+    if (attendanceState.sameAsHRIS === "yes") {
+      setAttendanceState((prev) => ({
+        ...cloneWorkflowState(hrisState),
+        sameAsHRIS: "yes",
+      }));
+    }
+
+    if (leaveState.sameAsHRIS === "yes") {
+      setLeaveState((prev) => ({
+        ...cloneWorkflowState(hrisState),
+        sameAsHRIS: "yes",
+      }));
+    }
+
+    if (expenseState.sameAsHRIS === "yes") {
+      setExpenseState((prev) => ({
+        ...cloneWorkflowState(hrisState),
+        sameAsHRIS: "yes",
+      }));
+    }
+  }, [
+    hrisState,
+    attendanceState.sameAsHRIS,
+    leaveState.sameAsHRIS,
+    expenseState.sameAsHRIS,
+  ]);
+
+  const trimmedWorkflowName = defineState.workflowName.trim();
+  const trimmedDescription = defineState.description.trim();
 
   /* -------------------- Build single full payload for one POST -------------------- */
   // Backend creates one doc with all tabs nested under tabs.{tabName}
   // workflowName is required at schema root — must be included in every call
   // Solution: send all tabs in one POST using defineWorkflow tabName
   // which carries workflowName + all other tabs data together
-  const buildFullPayload = () => ({
-    companyOfficeId,
-    workflowName: defineState.workflowName,
-    description: defineState.description,
-    tabs: {
-      defineWorkflow: {
-        workflowName: defineState.workflowName,
-        description: defineState.description,
+  const buildFullPayload = () => {
+    const defineWorkflow = {
+      workflowName: trimmedWorkflowName,
+      description: trimmedDescription,
+    };
+    const hrisWorkflow = buildWorkflowBody(hrisState, false);
+    const attendanceWorkflow = buildWorkflowBody(attendanceState, true);
+    const leaveWorkflow = buildWorkflowBody(leaveState, true);
+    const expenseWorkflow = buildWorkflowBody(expenseState, true);
+    const exitWorkflow = buildWorkflowBody(exitState, false);
+
+    return {
+      workflowName: trimmedWorkflowName,
+      description: trimmedDescription,
+      defineWorkflow,
+      hrisWorkflow,
+      attendanceWorkflow,
+      leaveWorkflow,
+      expenseWorkflow,
+      exitWorkflow,
+      tabs: {
+        defineWorkflow,
+        hrisWorkflow,
+        attendanceWorkflow,
+        leaveWorkflow,
+        expenseWorkflow,
+        exitWorkflow,
       },
-      hrisWorkflow: buildWorkflowBody(hrisState, false),
-      attendanceWorkflow: buildWorkflowBody(attendanceState, true),
-      leaveWorkflow: buildWorkflowBody(leaveState, true),
-      expenseWorkflow: buildWorkflowBody(expenseState, true),
-      exitWorkflow: buildWorkflowBody(exitState, false),
-    },
-  });
+      assignedEmployeeList: [],
+    };
+  };
+
+  const validateBeforeSave = () => {
+    if (!trimmedWorkflowName) {
+      toast.error("Workflow Name is required.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setActiveTab(0);
+      return false;
+    }
+
+    return true;
+  };
+
+  const goNext = () => {
+    if (!validateBeforeSave()) return;
+    if (activeTab < tabs.length - 1) {
+      setActiveTab(activeTab + 1);
+    }
+  };
+
+  const handleTabChange = (nextTabIndex) => {
+    if (nextTabIndex === activeTab) return;
+    if (!validateBeforeSave()) return;
+    setActiveTab(nextTabIndex);
+  };
 
   /* -------------------- Final Save — single POST with all tabs -------------------- */
   const handleSave = async () => {
     setSaving(true);
     try {
+      if (!validateBeforeSave()) return;
+
       const token = localStorage.getItem("authToken");
       const axiosInstance = createAxios(token);
       const body = buildFullPayload();
-
-      // tabName=defineWorkflow ensures workflowName is present
-      // and the full tabs object is passed so backend gets all tab data
-      await axiosInstance.post(
+      console.log("Approval workflow create payload:", body);
+      const response = await axiosInstance.post(
         `/config/createWorkflow?tabName=defineWorkflow`,
         body,
-        { meta: { auth: "ADMIN_AUTH" } }
+        {
+          meta: { auth: "ADMIN_AUTH" },
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      toast.success("Workflow added successfully!", {
+      setCreateResponse(response?.data || null);
+
+      toast.success(response?.data?.message || "Workflow added successfully!", {
         position: "top-right",
         autoClose: 3000,
       });
@@ -770,7 +997,6 @@ const CreateApprovalWorkflow = () => {
       setTimeout(() => {
         navigate("/config/hris/Employee-data/Approval-workflow");
       }, 1500);
-
     } catch (err) {
       const errMsg =
         err?.response?.data?.message ||
@@ -788,12 +1014,18 @@ const CreateApprovalWorkflow = () => {
   return (
     <div className="min-h-screen bg-white font-sans">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+      {createResponse && (
+        <div className="mx-4 mt-4 rounded border border-green-200 bg-green-50 p-3 text-xs text-gray-700">
+          <p className="mb-2 font-semibold text-green-700">Create API Response</p>
+          <pre className="whitespace-pre-wrap break-words">{JSON.stringify(createResponse, null, 2)}</pre>
+        </div>
+      )}
       <div className="border-b border-gray-200 px-4">
         <div className="flex overflow-x-auto">
           {tabs.map((tab, i) => (
             <button
               key={tab.title}
-              onClick={() => setActiveTab(i)}
+              onClick={() => handleTabChange(i)}
               className={`px-4 py-3 text-sm whitespace-nowrap border-b-2 transition font-medium ${
                 activeTab === i
                   ? "border-blue-600 text-blue-600"
@@ -821,6 +1053,7 @@ const CreateApprovalWorkflow = () => {
           onSkip={goNext}
           state={hrisState}
           setState={setHrisState}
+          employeeOptions={employeeOptions}
         />
       )}
       {activeTab === 2 && (
@@ -831,6 +1064,7 @@ const CreateApprovalWorkflow = () => {
           onSkip={goNext}
           state={attendanceState}
           setState={setAttendanceState}
+          employeeOptions={employeeOptions}
         />
       )}
       {activeTab === 3 && (
@@ -841,6 +1075,7 @@ const CreateApprovalWorkflow = () => {
           onSkip={goNext}
           state={leaveState}
           setState={setLeaveState}
+          employeeOptions={employeeOptions}
         />
       )}
       {activeTab === 4 && (
@@ -851,6 +1086,7 @@ const CreateApprovalWorkflow = () => {
           onSkip={goNext}
           state={expenseState}
           setState={setExpenseState}
+          employeeOptions={employeeOptions}
         />
       )}
       {activeTab === 5 && (
@@ -861,6 +1097,7 @@ const CreateApprovalWorkflow = () => {
           onSkip={goNext}
           state={exitState}
           setState={setExitState}
+          employeeOptions={employeeOptions}
         />
       )}
     </div>
