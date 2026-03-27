@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FaAngleDown } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import createAxios from "../../../../utils/axios.config";
 
 const LEAVE_TYPES = ["Hourly Leave", "Medical Leave", "Unpaid Leave*", "Custom Leave*"];
@@ -14,6 +16,25 @@ const SANDWICH_KEYS = [
   { key: "optional", label: "Deduct if optional holidays occurs" },
   { key: "weeklyoff", label: "Deduct if weekly-offs occurs" },
 ];
+const SANDWICH_SUBTYPE_TO_FIELD = {
+  "In between leave (intervening/sandwiched)": "BetweenLeaves",
+  "Before leave (prefix)": "beforeLeaves",
+  "After leave (suffix)": "afterLeaves",
+};
+const MONTH_LABEL_TO_SHORT = {
+  January: "Jan",
+  February: "Feb",
+  March: "Mar",
+  April: "Apr",
+  May: "May",
+  June: "Jun",
+  July: "Jul",
+  August: "Aug",
+  September: "Sep",
+  October: "Oct",
+  November: "Nov",
+  December: "Dec",
+};
 
 const GAP_CLASSES = {
   6: "gap-[6px]",
@@ -52,21 +73,133 @@ const getLeaveTypeLabel = (value) =>
     .trim();
 const normalizeUsageLimitType = (value) =>
   value === "Per Year" ? "yearly" : value === "Per Month" ? "monthly" : String(value || "").trim().toLowerCase();
-const normalizeCalcType = (value) =>
-  value === "prorate" ? "monthly" : value === "noprorate" ? "fixed" : String(value || "").trim().toLowerCase();
-const normalizeProrateFrom = (value) =>
-  value === "joining" ? "joiningDate" : value === "probation" ? "probationEndDate" : String(value || "").trim();
 const normalizeElseCalcFrom = (value) =>
   value === "Joining Date" ? "joiningDate" : value === "Probation End Date" ? "nextMonth" : String(value || "").trim();
-const normalizeDisbursal = (value) =>
-  value === "credited" ? "monthly" : value === "accrued" ? "annual" : String(value || "").trim().toLowerCase();
-const normalizeAllocation = (value) =>
-  value === "auto" ? "annual" : String(value || "").trim().toLowerCase();
 const normalizeSimple = (value) =>
   String(value || "")
     .trim()
     .toLowerCase()
     .replace(/[\s-]+/g, "");
+const normalizeMaritalStatus = (value) => {
+  const normalized = normalizeSimple(value);
+  return normalized === "any" ? "all" : normalized || "all";
+};
+const normalizeMonthShort = (value) => MONTH_LABEL_TO_SHORT[value] || value || "";
+const createLeaveWindowPayload = (state) => ({
+  leaveApplications: toBool(state.limitFuture),
+  leaveduration: toNumber(state.futureDuration),
+  Employee: toNumber(state.futureApplyAtLeast),
+  earlier: toNumber(state.futureNotEarlier),
+  leaveApplication: toBool(state.allowPast),
+  leaveApplicationDays: toNumber(state.pastDays),
+});
+const buildDeductSection = (sandwichTypes = [], sandwichSubTypes = {}, sectionKey) =>
+  Object.entries(SANDWICH_SUBTYPE_TO_FIELD).reduce(
+    (acc, [label, field]) => ({
+      ...acc,
+      [field]: sandwichTypes.includes(sectionKey) && (sandwichSubTypes?.[sectionKey] || []).includes(label),
+    }),
+    {
+      BetweenLeaves: false,
+      beforeLeaves: false,
+      afterLeaves: false,
+    }
+  );
+const buildDeductPayload = ({ sandwiched, sandwichTypes, sandwichSubTypes }) => ({
+  deductLeave: toBool(sandwiched),
+  deductMandatory: buildDeductSection(sandwichTypes, sandwichSubTypes, "mandatory"),
+  deductOptional: buildDeductSection(sandwichTypes, sandwichSubTypes, "optional"),
+  deductWeekly: buildDeductSection(sandwichTypes, sandwichSubTypes, "weeklyoff"),
+});
+const getPolicyDisplayName = (value, fallback, index, total) => {
+  const baseName = String(value || "").trim() || fallback;
+  return total > 1 ? `${baseName} ${index + 1}` : baseName;
+};
+const createHourlyVariantState = () => ({
+  hourlyName: "",
+  maxHours: "",
+  employmentType: "",
+  calcType: "prorate",
+  prorateFrom: "joining",
+  joinMonthCalc: "irrespective",
+  joinAfterDays: "",
+  includeExtendedProbation: false,
+  probationMonthCalc: "full",
+  probationAfterDays: "",
+  noProRateType: "all",
+  joinsOnOrBefore: "",
+  joinsOnOrBeforeDays: "",
+  joinsOnOrBeforeMonth: "",
+  elseCalcFrom: "",
+  disbursal: "credited",
+  carryForward: "carry",
+  carryType: "all",
+  minHoursPerDay: "",
+  leaveHours: "",
+  approval: "bypass",
+});
+const createLeaveConfigVariantState = () => ({
+  leaveName4: "",
+  allocation: "auto",
+  annualDays: "",
+  gender: "",
+  empType4: "",
+  marital: "",
+  calcType4: "prorate",
+  prorateFrom4: "joining",
+  joinCalc4: "irrespective",
+  joinAfterDays4: "",
+  extProbation4: false,
+  probCalc4: "full",
+  probAfterDays4: "",
+  noProRate4: "all",
+  joinsOnOrBefore4: "",
+  joinsOnOrBeforeDays4: "",
+  joinsMonth4: "",
+  elseCalcFrom4: "",
+  disbursal4: "credited",
+  limitProbationCredit: "yes",
+  creditUntilProbationSel: "",
+  creditUntilProbationDays: "",
+  attachments: "yes",
+  attachmentDays: "",
+  attachmentNote: "",
+  maxProbationDays: "",
+  accumProbation: "yes",
+  applyDuringProbation1: "yes",
+  applyDuringProbation2: "yes",
+  afterConfirmPeriod: "",
+  afterConfirmMax: "",
+  maxConsecutive4: "",
+  halfDay4: "yes",
+  limitFuture4: "yes",
+  futureDuration4: "",
+  futureApplyAtLeast4: "",
+  futureNotEarlier4: "",
+  allowPast4: "yes",
+  pastDays4: "",
+  sandwiched4: "yes",
+  sandwichTypes4: ["mandatory", "optional", "weeklyoff"],
+  sandwichSubTypes4: {
+    mandatory: [],
+    optional: [],
+    weeklyoff: [],
+  },
+  clubbing4: "yes",
+  clubbingTypes4: "",
+  overutil: "allow",
+  overutilType: "deduct",
+  deductFrom: "",
+  carryForward4: true,
+  carryFwdLimit: "",
+  carryFwdUnused: "",
+  encash4: true,
+  encashLimit: "",
+  encashUnused: "",
+  giftLeave: "yes",
+  giftLeavesPerYear: "",
+  giftReceive: "yes",
+});
 const getStoredOfficeIds = () => {
   const rawValue =
     localStorage.getItem("companyOfficeId") ||
@@ -470,97 +603,14 @@ export default function CreateLeavePolicy({ onBack }) {
     clubbingTypes: "",
   });
 
-  const [s3, setS3] = useState({
-    hourlyName: "",
-    maxHours: "",
-    employmentType: "",
-    calcType: "prorate",
-    prorateFrom: "joining",
-    joinMonthCalc: "irrespective",
-    joinAfterDays: "",
-    includeExtendedProbation: false,
-    probationMonthCalc: "full",
-    probationAfterDays: "",
-    noProRateType: "all",
-    joinsOnOrBefore: "",
-    joinsOnOrBeforeDays: "",
-    joinsOnOrBeforeMonth: "",
-    elseCalcFrom: "",
-    disbursal: "credited",
-    carryForward: "carry",
-    carryType: "all",
-    minHoursPerDay: "",
-    leaveHours: "",
-    approval: "bypass",
-  });
-
-  const [s4, setS4] = useState({
-    leaveName4: "",
-    allocation: "auto",
-    annualDays: "",
-    gender: "",
-    empType4: "",
-    marital: "",
-    calcType4: "prorate",
-    prorateFrom4: "joining",
-    joinCalc4: "irrespective",
-    joinAfterDays4: "",
-    extProbation4: false,
-    probCalc4: "full",
-    probAfterDays4: "",
-    noProRate4: "all",
-    joinsOnOrBefore4: "",
-    joinsOnOrBeforeDays4: "",
-    joinsMonth4: "",
-    elseCalcFrom4: "",
-    disbursal4: "credited",
-    limitProbationCredit: "yes",
-    creditUntilProbationSel: "",
-    creditUntilProbationDays: "",
-    attachments: "yes",
-    attachmentDays: "",
-    attachmentNote: "",
-    maxProbationDays: "",
-    accumProbation: "yes",
-    applyDuringProbation1: "yes",
-    applyDuringProbation2: "yes",
-    afterConfirmPeriod: "",
-    afterConfirmMax: "",
-    maxConsecutive4: "",
-    halfDay4: "yes",
-    limitFuture4: "yes",
-    futureDuration4: "",
-    futureApplyAtLeast4: "",
-    futureNotEarlier4: "",
-    allowPast4: "yes",
-    pastDays4: "",
-    sandwiched4: "yes",
-    sandwichTypes4: ["mandatory", "optional", "weeklyoff"],
-    sandwichSubTypes4: {
-      mandatory: [],
-      optional: [],
-      weeklyoff: [],
-    },
-    clubbing4: "yes",
-    clubbingTypes4: "",
-    overutil: "allow",
-    overutilType: "deduct",
-    deductFrom: "",
-    carryForward4: true,
-    carryFwdLimit: "",
-    carryFwdUnused: "",
-    encash4: true,
-    encashLimit: "",
-    encashUnused: "",
-    giftLeave: "yes",
-    giftLeavesPerYear: "",
-    giftReceive: "yes",
+  const [hourlyVariants, setHourlyVariants] = useState([]);
+  const [leaveConfigVariants, setLeaveConfigVariants] = useState({
+    "Medical Leave": [],
+    "Custom Leave*": [],
   });
 
   const u1 = (payload) => setS1((prev) => ({ ...prev, ...payload }));
   const u2 = (payload) => setS2((prev) => ({ ...prev, ...payload }));
-  const u3 = (payload) => setS3((prev) => ({ ...prev, ...payload }));
-  const u4 = (payload) => setS4((prev) => ({ ...prev, ...payload }));
   const toggleArr = (arr, value) => (arr.includes(value) ? arr.filter((item) => item !== value) : [...arr, value]);
   const toggleNestedArr = (source, groupKey, value) => ({
     ...source,
@@ -592,6 +642,7 @@ export default function CreateLeavePolicy({ onBack }) {
           label: policyCount > 1 ? `${displayType} ${index + 1}` : displayType,
           kind,
           sourceType: type,
+          variantIndex: index,
         });
       }
     });
@@ -607,6 +658,25 @@ export default function CreateLeavePolicy({ onBack }) {
     [policyFlowSteps]
   );
   const activeStepConfig = stepConfigs[Math.max(0, Math.min(step - 1, stepConfigs.length - 1))];
+  const activeHourlyIndex = activeStepConfig?.kind === "hourly" ? activeStepConfig.variantIndex || 0 : 0;
+  const activeLeaveType = activeStepConfig?.kind === "leaveConfig" ? activeStepConfig.sourceType : "Medical Leave";
+  const activeLeaveIndex = activeStepConfig?.kind === "leaveConfig" ? activeStepConfig.variantIndex || 0 : 0;
+  const s3 = hourlyVariants[activeHourlyIndex] || hourlyVariants[0] || createHourlyVariantState();
+  const s4 =
+    leaveConfigVariants[activeLeaveType]?.[activeLeaveIndex] ||
+    leaveConfigVariants[activeLeaveType]?.[0] ||
+    createLeaveConfigVariantState();
+  const u3 = (payload) =>
+    setHourlyVariants((prev) =>
+      prev.map((item, index) => (index === activeHourlyIndex ? { ...item, ...payload } : item))
+    );
+  const u4 = (payload) =>
+    setLeaveConfigVariants((prev) => ({
+      ...prev,
+      [activeLeaveType]: (prev[activeLeaveType] || []).map((item, index) =>
+        index === activeLeaveIndex ? { ...item, ...payload } : item
+      ),
+    }));
 
   useEffect(() => {
     setStep((prev) => Math.min(prev, stepConfigs.length));
@@ -622,79 +692,163 @@ export default function CreateLeavePolicy({ onBack }) {
     return getStoredOfficeIds();
   }, [queryParams]);
 
-  const buildPayload = (status) => ({
-    policyName: s1.policyName.trim(),
-    description: s1.description.trim(),
-    selectedTypes: s1.selectedTypes.map(normalizeLeaveType),
-    leaveName: s2.leaveName.trim(),
-    usageLimitType: normalizeUsageLimitType(s2.usageLimitType),
-    maxDaysLeave: toNumber(s2.maxDaysLeave),
-    maxConsecutive: toNumber(s2.maxConsecutive),
-    halfDay: toBool(s2.halfDay),
-    limitFuture: toBool(s2.limitFuture),
-    allowPast: toBool(s2.allowPast),
-    sandwiched: toBool(s2.sandwiched),
-    clubbing: toBool(s2.clubbing),
-    futureDuration: toNumber(s2.futureDuration),
-    futureApplyAtLeast: toNumber(s2.futureApplyAtLeast),
-    futureNotEarlier: toNumber(s2.futureNotEarlier),
-    pastDays: toNumber(s2.pastDays),
-    sandwichTypes: s2.sandwichTypes,
-    clubbingTypes: s2.clubbingTypes ? [normalizeLeaveType(s2.clubbingTypes)] : [],
-    hourlyName: s3.hourlyName.trim(),
-    maxHours: toNumber(s3.maxHours),
-    employmentType: normalizeSimple(s3.employmentType),
-    calcType: normalizeCalcType(s3.calcType),
-    prorateFrom: normalizeProrateFrom(s3.prorateFrom),
-    joinMonthCalc: s3.joinMonthCalc === "irrespective",
-    joinAfterDays: toNumber(s3.joinAfterDays),
-    includeExtendedProbation: Boolean(s3.includeExtendedProbation),
-    probationMonthCalc: s3.probationMonthCalc === "full",
-    probationAfterDays: toNumber(s3.probationAfterDays),
-    noProRateType: s3.noProRateType === "conditional" ? "fixed" : normalizeSimple(s3.noProRateType),
-    joinsOnOrBefore: Boolean(s3.joinsOnOrBefore),
-    joinsOnOrBeforeDays: toNumber(s3.joinsOnOrBeforeDays),
-    joinsOnOrBeforeMonth: toNumber(s3.joinsOnOrBeforeMonth),
-    elseCalcFrom: normalizeElseCalcFrom(s3.elseCalcFrom),
-    disbursal: normalizeDisbursal(s3.disbursal),
-    carryForward: s3.carryForward === "carry",
-    carryType: s3.carryType ? normalizeSimple(s3.carryType) : "limited",
-    minHoursPerDay: toNumber(s3.minHoursPerDay),
-    leaveHours: toNumber(s3.leaveHours),
-    approval: s3.approval !== "bypass",
-    allocation: normalizeAllocation(s4.allocation),
-    annualDays: toNumber(s4.annualDays),
-    gender: s4.gender ? normalizeSimple(s4.gender) : "all",
-    empType: s4.empType4 ? normalizeSimple(s4.empType4) : "all",
-    marital: s4.marital ? normalizeSimple(s4.marital) : "all",
-    attachments: toBool(s4.attachments),
-    attachmentDays: toNumber(s4.attachmentDays),
-    attachmentNote: s4.attachmentNote.trim(),
-    overutil: s4.overutil === "allow",
-    overutilType: s4.overutil === "allow" ? normalizeSimple(s4.overutilType) : "",
-    deductFrom: s4.overutilType === "deduct" ? s4.deductFrom : "",
-    carryForwardEnabled: Boolean(s4.carryForward4),
-    carryFwdLimit: toNumber(s4.carryFwdLimit),
-    carryFwdUnused: Boolean(s4.carryFwdUnused),
-    encashEnabled: Boolean(s4.encash4),
-    encashLimit: toNumber(s4.encashLimit),
-    encashUnused: Boolean(s4.encashUnused),
-    giftLeave: toBool(s4.giftLeave),
-    giftLeavesPerYear: toNumber(s4.giftLeavesPerYear),
-    giftReceive: toBool(s4.giftReceive),
-    companyOfficeId: resolvedCompanyOfficeIds,
-    status,
+  const buildHourlyLeaveItem = (variantState, index, total) => ({
+    hourlyleaveName: getPolicyDisplayName(variantState.hourlyName, "Hourly Leave", index, total),
+    maxHours: toNumber(variantState.maxHours),
+    employmentType: normalizeSimple(variantState.employmentType),
+    prorateFromJoiningDate: variantState.calcType === "prorate" && variantState.prorateFrom === "joining",
+    joinMonthCalc: variantState.joinMonthCalc === "irrespective",
+    halfMonthCalc: variantState.joinMonthCalc === "half",
+    joinAfterDays: toNumber(variantState.joinAfterDays),
+    proratefromPrabationEndDate: variantState.calcType === "prorate" && variantState.prorateFrom === "probation",
+    includeExtend: Boolean(variantState.includeExtendedProbation),
+    calcLeaveEndMonth: variantState.probationMonthCalc === "full",
+    calcHalfLeaves: variantState.probationMonthCalc === "half",
+    endMonthDays: toNumber(variantState.probationAfterDays),
+    doNotprobationRate: variantState.calcType === "noprorate" && variantState.noProRateType === "all",
+    donotProRate: {
+      donotSelectRate: toNumber(variantState.joinsOnOrBefore),
+      donotDays: toNumber(variantState.joinsOnOrBeforeDays),
+      donotMonths: normalizeMonthShort(variantState.joinsOnOrBeforeMonth),
+      elseEmployee: normalizeElseCalcFrom(variantState.elseCalcFrom) || "all",
+    },
+    leaveBalanceStartMonth: variantState.disbursal === "accrued",
+    leaveBalanceCred: variantState.disbursal === "credited",
+    carryUnsendLeaves: variantState.carryForward === "lapse",
+    carryForward: variantState.carryForward === "carry",
+    minHoursPerDay: toNumber(variantState.minHoursPerDay),
+    leaveHours: toNumber(variantState.leaveHours),
+    leaveApproval: variantState.approval === "existing",
+    leaveBypass: variantState.approval === "bypass",
+    AutoApprove: variantState.approval === "auto",
   });
+
+  const buildLeaveConfigItem = (variantState, nameKey, defaultName, index, total) => ({
+    [nameKey]: getPolicyDisplayName(variantState.leaveName4, defaultName, index, total),
+    automaticallyLeaveBalance: variantState.allocation === "auto",
+    Days: toNumber(variantState.annualDays),
+    manuallyLeaveBalance: variantState.allocation === "manual",
+    gender: variantState.gender ? normalizeSimple(variantState.gender) : "all",
+    employmentType: variantState.empType4 ? normalizeSimple(variantState.empType4) : "all",
+    maritalStatus: normalizeMaritalStatus(variantState.marital),
+    prorateFromJoiningDate: variantState.calcType4 === "prorate" && variantState.prorateFrom4 === "joining",
+    joinMonthCalc: variantState.joinCalc4 === "irrespective",
+    halfMonthCalc: variantState.joinCalc4 === "half",
+    joinAfterDays: toNumber(variantState.joinAfterDays4),
+    proratefromPrabationEndDate: variantState.calcType4 === "prorate" && variantState.prorateFrom4 === "probation",
+    includeExtend: Boolean(variantState.extProbation4),
+    calcLeaveEndMonth: variantState.probCalc4 === "full",
+    calcHalfLeaves: variantState.probCalc4 === "half",
+    endMonthDays: toNumber(variantState.probAfterDays4),
+    doNotprobationRate: variantState.calcType4 === "noprorate" && variantState.noProRate4 === "all",
+    donotProRate: {
+      donotSelectRate: toNumber(variantState.joinsOnOrBefore4),
+      donotDays: toNumber(variantState.joinsOnOrBeforeDays4),
+      donotMonths: normalizeMonthShort(variantState.joinsMonth4),
+      elseEmployee: normalizeElseCalcFrom(variantState.elseCalcFrom4) || "all",
+    },
+    leaveBalanceAccured: variantState.disbursal4 === "accrued",
+    leaveBalanceCredit: variantState.disbursal4 === "credited",
+    creditDuring: variantState.limitProbationCredit === "yes",
+    creditDays: toNumber(variantState.creditUntilProbationSel || variantState.creditUntilProbationDays),
+    compulsoryLeave: toBool(variantState.attachments),
+    documentRequiredLeaveDays: toNumber(variantState.attachmentDays),
+    descriptionEmployee: variantState.attachmentNote.trim(),
+    MaximumDays: toNumber(variantState.maxProbationDays),
+    accumaltionBalance: toBool(variantState.accumProbation),
+    employeesProbation: toBool(variantState.applyDuringProbation1),
+    period: normalizeUsageLimitType(variantState.afterConfirmPeriod),
+    maximumLeaves: toNumber(variantState.afterConfirmMax),
+    consecutiveLeaves: toNumber(variantState.maxConsecutive4),
+    halfDay: toBool(variantState.halfDay4),
+    ...createLeaveWindowPayload({
+      limitFuture: variantState.limitFuture4,
+      futureDuration: variantState.futureDuration4,
+      futureApplyAtLeast: variantState.futureApplyAtLeast4,
+      futureNotEarlier: variantState.futureNotEarlier4,
+      allowPast: variantState.allowPast4,
+      pastDays: variantState.pastDays4,
+    }),
+    ...buildDeductPayload({
+      sandwiched: variantState.sandwiched4,
+      sandwichTypes: variantState.sandwichTypes4,
+      sandwichSubTypes: variantState.sandwichSubTypes4,
+    }),
+    balanceLapse: !variantState.carryForward4 && !variantState.encash4,
+    carryForward: {
+      carrySelect: variantState.carryForward4 ? String(variantState.carryFwdLimit || "limited").trim().toLowerCase() : "no",
+      UnusedLeaves: toNumber(variantState.carryFwdUnused),
+    },
+    enCash: {
+      carrySelect: variantState.encash4 ? String(variantState.encashLimit || "yes").trim().toLowerCase() : "no",
+      UnusedLeaves: toNumber(variantState.encashUnused),
+    },
+    employeeGift: toBool(variantState.giftLeave),
+    giftPerYear: toNumber(variantState.giftLeavesPerYear),
+    receivedGiftLeaves: toBool(variantState.giftReceive),
+  });
+
+  const buildPayload = (status) => {
+    const medicalVariants = leaveConfigVariants["Medical Leave"] || [];
+    const customVariants = leaveConfigVariants["Custom Leave*"] || [];
+
+    return {
+      policyName: s1.policyName.trim(),
+      description: s1.description.trim(),
+      unpaidLeaveName: s2.leaveName.trim() || "Unpaid Leave",
+      leaveUsageLimit: normalizeUsageLimitType(s2.usageLimitType),
+      leaveMaximumDays: toNumber(s2.maxDaysLeave),
+      maximumLeaves: toNumber(s2.maxConsecutive),
+      halfDayLeave: toBool(s2.halfDay),
+      ...createLeaveWindowPayload({
+        limitFuture: s2.limitFuture,
+        futureDuration: s2.futureDuration,
+        futureApplyAtLeast: s2.futureApplyAtLeast,
+        futureNotEarlier: s2.futureNotEarlier,
+        allowPast: s2.allowPast,
+        pastDays: s2.pastDays,
+      }),
+      ...buildDeductPayload({
+        sandwiched: s2.sandwiched,
+        sandwichTypes: s2.sandwichTypes,
+        sandwichSubTypes: s2.sandwichSubTypes,
+      }),
+      LeavesClubbing: toBool(s2.clubbing),
+      typeleaves: s2.clubbingTypes ? 1 : 0,
+      hourlyLeave: hourlyVariants.map((variant, index) => buildHourlyLeaveItem(variant, index, hourlyVariants.length)),
+      medicalLeave: medicalVariants.map((variant, index) =>
+        buildLeaveConfigItem(variant, "MedicalleaveName", "Medical Leave", index, medicalVariants.length)
+      ),
+      customLeave: customVariants.map((variant, index) =>
+        buildLeaveConfigItem(variant, "customleaveName", "Custom Leave", index, customVariants.length)
+      ),
+      companyOfficeId: resolvedCompanyOfficeIds,
+      status,
+    };
+  };
 
   const submitPolicy = async (status) => {
     try {
       setIsSubmitting(true);
-      await axiosInstance.post("/config/create/leavePolicy", buildPayload(status), {
+      const payload = buildPayload(status);
+
+      if (!payload.policyName) {
+        toast.error("Policy name is required.");
+        return;
+      }
+
+      await axiosInstance.post("/config/create/leavePolicy", payload, {
         meta: { auth: "ADMIN_AUTH" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+
+      toast.success(status === "draft" ? "Leave policy saved as draft." : "Leave policy saved successfully.");
       navigate("/config/track/leave/leave-policy/list");
     } catch (error) {
       console.log("leave policy create error", error);
+      toast.error(error?.response?.data?.message || "Failed to save leave policy.");
     } finally {
       setIsSubmitting(false);
     }
@@ -705,80 +859,120 @@ export default function CreateLeavePolicy({ onBack }) {
   const handleLeaveTypeToggle = (type) => {
     if (type === LOCKED_LEAVE_TYPE) return;
 
-    setS1((prev) => {
-      const nextPolicyCounts = { ...(prev.typePolicyCounts || {}) };
-      const isSelected = prev.selectedTypes.includes(type);
+    const isSelected = s1.selectedTypes.includes(type);
+    const nextPolicyCounts = { ...(s1.typePolicyCounts || {}) };
 
-      if (isSelected) {
-        delete nextPolicyCounts[type];
+    if (isSelected) {
+      delete nextPolicyCounts[type];
+      setS1((prev) => ({
+        ...prev,
+        selectedTypes: prev.selectedTypes.filter((item) => item !== type),
+        typePolicyCounts: nextPolicyCounts,
+      }));
 
-        return {
-          ...prev,
-          selectedTypes: prev.selectedTypes.filter((item) => item !== type),
-          typePolicyCounts: nextPolicyCounts,
-        };
+      if (type === HOURLY_LEAVE_TYPE) {
+        setHourlyVariants([]);
+      } else {
+        setLeaveConfigVariants((prevConfigs) => ({
+          ...prevConfigs,
+          [type]: [],
+        }));
       }
 
-      return {
-        ...prev,
-        selectedTypes: [...prev.selectedTypes, type],
-        typePolicyCounts: {
-          ...nextPolicyCounts,
-          [type]: Math.max(1, nextPolicyCounts[type] || 0),
-        },
-      };
-    });
+      return;
+    }
+
+    setS1((prev) => ({
+      ...prev,
+      selectedTypes: [...prev.selectedTypes, type],
+      typePolicyCounts: {
+        ...nextPolicyCounts,
+        [type]: Math.max(1, nextPolicyCounts[type] || 0),
+      },
+    }));
+
+    if (type === HOURLY_LEAVE_TYPE) {
+      setHourlyVariants((prevVariants) => (prevVariants.length ? prevVariants : [createHourlyVariantState()]));
+    } else {
+      setLeaveConfigVariants((prevConfigs) => ({
+        ...prevConfigs,
+        [type]: prevConfigs[type]?.length ? prevConfigs[type] : [createLeaveConfigVariantState()],
+      }));
+    }
   };
   const handlePolicyVariantAdd = (type) => {
     if (type === LOCKED_LEAVE_TYPE) return;
 
-    setS1((prev) => {
-      const currentCount = prev.typePolicyCounts?.[type] || 0;
-      const nextCount = currentCount === 0 ? 1 : currentCount + 1;
+    const currentCount = s1.typePolicyCounts?.[type] || 0;
+    const nextCount = currentCount === 0 ? 1 : currentCount + 1;
 
-      if (nextCount > MAX_POLICY_VARIANTS) {
-        return prev;
-      }
+    if (nextCount > MAX_POLICY_VARIANTS) {
+      return;
+    }
 
-      return {
-        ...prev,
-        selectedTypes: prev.selectedTypes.includes(type) ? prev.selectedTypes : [...prev.selectedTypes, type],
-        typePolicyCounts: {
-          ...(prev.typePolicyCounts || {}),
-          [type]: nextCount,
-        },
-      };
-    });
+    setS1((prev) => ({
+      ...prev,
+      selectedTypes: prev.selectedTypes.includes(type) ? prev.selectedTypes : [...prev.selectedTypes, type],
+      typePolicyCounts: {
+        ...(prev.typePolicyCounts || {}),
+        [type]: nextCount,
+      },
+    }));
+
+    if (type === HOURLY_LEAVE_TYPE) {
+      setHourlyVariants((prevVariants) => [...prevVariants, createHourlyVariantState()]);
+    } else {
+      setLeaveConfigVariants((prevConfigs) => ({
+        ...prevConfigs,
+        [type]: [...(prevConfigs[type] || []), createLeaveConfigVariantState()],
+      }));
+    }
   };
-  const handlePolicyVariantRemove = (type) => {
+  const handlePolicyVariantRemove = (type, variantIndex) => {
     if (type === LOCKED_LEAVE_TYPE) return;
 
-    setS1((prev) => {
-      const currentCount = prev.typePolicyCounts?.[type] || 0;
+    const currentCount = s1.typePolicyCounts?.[type] || 0;
 
-      if (currentCount <= 0) {
-        return prev;
-      }
+    if (currentCount <= 0) {
+      return;
+    }
 
-      const nextPolicyCounts = { ...(prev.typePolicyCounts || {}) };
+    const nextPolicyCounts = { ...(s1.typePolicyCounts || {}) };
 
-      if (currentCount === 1) {
-        delete nextPolicyCounts[type];
-
-        return {
-          ...prev,
-          selectedTypes: prev.selectedTypes.filter((item) => item !== type),
-          typePolicyCounts: nextPolicyCounts,
-        };
-      } else {
-        nextPolicyCounts[type] = currentCount - 1;
-      }
-
-      return {
+    if (currentCount === 1) {
+      delete nextPolicyCounts[type];
+      setS1((prev) => ({
         ...prev,
+        selectedTypes: prev.selectedTypes.filter((item) => item !== type),
         typePolicyCounts: nextPolicyCounts,
-      };
-    });
+      }));
+
+      if (type === HOURLY_LEAVE_TYPE) {
+        setHourlyVariants([]);
+      } else {
+        setLeaveConfigVariants((prevConfigs) => ({
+          ...prevConfigs,
+          [type]: [],
+        }));
+      }
+
+      return;
+    }
+
+    nextPolicyCounts[type] = currentCount - 1;
+    setS1((prev) => ({
+      ...prev,
+      typePolicyCounts: nextPolicyCounts,
+    }));
+
+    if (type === HOURLY_LEAVE_TYPE) {
+      setHourlyVariants((prevVariants) => prevVariants.filter((_, index) => index !== variantIndex));
+    } else {
+      setLeaveConfigVariants((prevConfigs) => ({
+        ...prevConfigs,
+        [type]: (prevConfigs[type] || []).filter((_, index) => index !== variantIndex),
+      }));
+    }
   };
   const handleBackAction = () => {
     if (step === 1) {
@@ -795,6 +989,7 @@ export default function CreateLeavePolicy({ onBack }) {
 
   return (
     <div className="min-h-screen bg-white text-sm text-[#1e293b]">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="px-6 pt-5">
         <h1 className="m-0 text-xl font-bold text-[#111827]">Create Leave Policy</h1>
         <p className="mb-6 mt-0.5 text-[13px] text-[#9ca3af]">
@@ -895,7 +1090,7 @@ export default function CreateLeavePolicy({ onBack }) {
                             </div>
                             <button
                               type="button"
-                              onClick={() => handlePolicyVariantRemove(type)}
+                              onClick={() => handlePolicyVariantRemove(type, index)}
                               className="flex h-6 w-6 items-center justify-center rounded-full bg-[#176db8] pb-0.5 text-lg leading-none text-white"
                               aria-label={`Remove ${displayType} policy ${index + 1}`}
                             >

@@ -290,7 +290,7 @@ const ApprovalWorkflowList = () => {
 
                   <td className="px-5 py-4 align-middle text-right relative" data-approval-menu>
                     <div className="flex items-center justify-end gap-3">
-                      <button
+                      {/* <button
                         type="button"
                         onClick={() =>
                           navigate(
@@ -301,7 +301,7 @@ const ApprovalWorkflowList = () => {
                         title="Edit workflow"
                       >
                         <FiEdit2 className="h-4 w-4" />
-                      </button>
+                      </button> */}
 
                       <button
                         type="button"
