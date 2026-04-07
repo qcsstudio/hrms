@@ -110,7 +110,6 @@ const Listsalarystructure = () => {
         setLoading(false);
       }
     };
-    
     fetchSalaryStructures();
   }, [axiosInstance]);
 
