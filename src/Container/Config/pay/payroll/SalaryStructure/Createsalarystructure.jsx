@@ -667,6 +667,7 @@ export default function CreateSalaryStructure() {
         mode: getPayloadMode(design.mode),
       },
     };
+    
     if (String(design.mode).toLowerCase() === "fixed") {
       payload.design.fixedAmount = getNumericValue(design.fixedAmount);
     } else {
