@@ -1,9 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 import createAxios from "../../../../../utils/axios.config";
 
-const FORMULA_OPTIONS = [
-  "40% of Basic Pay", "50% of CTC", "Flat Amount", "% of Gross Salary",
-  "% of Basic Pay", "Statutory Formula",
+const FORMULA_GROUPS = [
+  {
+    label: "System Variables",
+    options: ["Annual Package"],
+  },
+  {
+    label: "Payroll Tags",
+    options: ["Handicap", "Metro", "Sixth Schedule Area", "First Employer", "Sector"],
+  },
+  {
+    label: "Conditions",
+    options: ["if", "else", "then"],
+  },
+  {
+    label: "Arithmetic Operators",
+    options: ["+", "-", "*", "/", "%", "(", ")"],
+  },
+  {
+    label: "Relational Operators",
+    options: [">", "<", ">=", "<=", "==", "!=", "&&", "||"],
+  },
 ];
 
 const STEPS = [
@@ -18,6 +37,41 @@ const STEPS = [
 
 const LOP_COLUMNS = ["Loss of Pay", "LOP's Arrears", "Salary Arrears", "New Joinee", "FNF"];
 const LOP_FIELDS = ["lossOfPay", "lopArrears", "salaryArrears", "newJoinee", "fnf"];
+
+const DEFAULT_INCOME_COMPONENTS = [
+  {
+    id: "default-basic-pay",
+    name: "Basic Pay",
+    type: "income",
+    properties: [
+      { label: "Income", enabled: true },
+      { label: "CTC", enabled: true },
+      { label: "Taxed", enabled: true },
+      { label: "Variable", enabled: false },
+      { label: "Accrual", enabled: false },
+      { label: "Statutory", enabled: true },
+      { label: "Statutory Deduction", enabled: true },
+    ],
+    journalVoucher: "-",
+  },
+  {
+    id: "default-special-allowance",
+    name: "Special Allowance",
+    type: "income",
+    properties: [
+      { label: "Income", enabled: true },
+      { label: "CTC", enabled: true },
+      { label: "Taxed", enabled: true },
+      { label: "Variable", enabled: false },
+      { label: "Accrual", enabled: false },
+      { label: "Statutory", enabled: true },
+      { label: "Statutory Deduction", enabled: false },
+    ],
+    journalVoucher: "-",
+  },
+];
+
+const LOCKED_INCOME_COMPONENT_NAMES = new Set(["basic pay", "special allowance"]);
 
 const mapApiComponent = (item = {}) => ({
   id: item?._id || item?.id || item?.componentCode || item?.componentName,
@@ -202,6 +256,53 @@ const S = {
     border: "1px solid #d1d5db", fontSize: 13, color: "#374151",
     background: "#fff", outline: "none", marginTop: 8,
   },
+  formulaLabel: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#111827",
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  formulaInput: {
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: 8,
+    border: "2px solid #3b82f6",
+    fontSize: 14,
+    color: "#111827",
+    background: "#fff",
+    outline: "none",
+    boxSizing: "border-box",
+  },
+  formulaDropdown: {
+    marginTop: 8,
+    border: "1px solid #e5e7eb",
+    borderRadius: 8,
+    background: "#fff",
+    maxHeight: 340,
+    overflowY: "auto",
+  },
+  formulaGroupLabel: {
+    fontSize: 12,
+    textTransform: "uppercase",
+    color: "#9ca3af",
+    padding: "14px 12px 8px",
+  },
+  formulaOption: (active) => ({
+    width: "100%",
+    textAlign: "left",
+    padding: "10px 12px",
+    border: "none",
+    background: active ? "#dbeafe" : "#fff",
+    color: "#374151",
+    fontSize: 14,
+    cursor: "pointer",
+  }),
+  formulaHint: {
+    fontSize: 12,
+    color: "#6b7280",
+    marginTop: 8,
+  },
   table: { width: "100%", borderCollapse: "separate", borderSpacing: 0 },
   th: { fontSize: 13, fontWeight: 600, color: "#6b7280", padding: "10px 12px", textAlign: "center" },
   thLeft: { fontSize: 13, fontWeight: 600, color: "#6b7280", padding: "10px 12px", textAlign: "left" },
@@ -271,9 +372,14 @@ function Stepper({ currentStep }) {
   );
 }
 
-function CompCard({ component, selected, onToggle }) {
+function CompCard({ component, selected, onToggle, disabled = false }) {
   return (
-    <div style={S.compCard(selected)} onClick={() => onToggle(component.id)}>
+    <div
+      style={{ ...S.compCard(selected), cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.95 : 1 }}
+      onClick={() => {
+        if (!disabled) onToggle(component.id);
+      }}
+    >
       <div style={S.compCardHeader(component.type)}>
         {component.type === "income" ? "Income" : "Deduction"}
       </div>
@@ -316,6 +422,73 @@ function Checkbox({ checked, onChange }) {
   );
 }
 
+const appendFormulaToken = (currentValue, token) => {
+  const trimmedValue = currentValue.trimEnd();
+
+  if (!trimmedValue) {
+    return token;
+  }
+
+  if (token === ")" || token === "%") {
+    return `${trimmedValue}${token}`;
+  }
+
+  return `${trimmedValue} ${token}`;
+};
+
+const getPayloadMode = (mode = "") => {
+  if (String(mode).toLowerCase() === "fixed") {
+    return "Fixed";
+  }
+
+  return "Formula";
+};
+
+const getNumericValue = (value) => {
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+};
+
+function FormulaDropdown({ value, onChange, onAppend }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <div style={S.formulaLabel}>Formula:</div>
+      <input
+        style={S.formulaInput}
+        placeholder="Type something and press enter..."
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onClick={() => setIsOpen(true)}
+      />
+      {isOpen && (
+        <div style={S.formulaDropdown}>
+          {FORMULA_GROUPS.map((group, groupIndex) => (
+            <div key={group.label}>
+              <div style={S.formulaGroupLabel}>{group.label}</div>
+              {group.options.map((option, optionIndex) => (
+                <button
+                  key={`${group.label}-${option}`}
+                  type="button"
+                  style={S.formulaOption(groupIndex === 0 && optionIndex === 0)}
+                  onClick={() => {
+                    onAppend(option);
+                    setIsOpen(false);
+                  }}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={S.formulaHint}>Manual type kar sakte hain ya niche se tokens select karke formula build kar sakte hain.</div>
+    </div>
+  );
+}
+
 export default function CreateSalaryStructure() {
   const token = localStorage.getItem("authToken");
   const axiosInstance = useMemo(() => createAxios(token), [token]);
@@ -342,6 +515,7 @@ export default function CreateSalaryStructure() {
   const [lopConfigs, setLopConfigs] = useState({});
   const [grossPay, setGrossPay] = useState("");
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchComponents = async () => {
@@ -370,8 +544,32 @@ export default function CreateSalaryStructure() {
     fetchComponents();
   }, [axiosInstance]);
 
-  const incomeComponents = components.filter((component) => component.type === "income");
+  const incomeComponents = useMemo(() => {
+    const apiIncomeComponents = components.filter((component) => component.type === "income");
+    const existingNames = new Set(apiIncomeComponents.map((component) => component.name.trim().toLowerCase()));
+    const defaultLeading = DEFAULT_INCOME_COMPONENTS.filter(
+      (component) => component.name === "Basic Pay" && !existingNames.has(component.name.toLowerCase())
+    );
+    const defaultTrailing = DEFAULT_INCOME_COMPONENTS.filter(
+      (component) => component.name === "Special Allowance" && !existingNames.has(component.name.toLowerCase())
+    );
+
+    return [...defaultLeading, ...apiIncomeComponents, ...defaultTrailing];
+  }, [components]);
   const deductionComponents = components.filter((component) => component.type === "deduction");
+
+  useEffect(() => {
+    setSelectedIncomeIds((prev) => {
+      const next = new Set(prev);
+      incomeComponents.forEach((component) => {
+        const normalizedName = component.name.trim().toLowerCase();
+        if (normalizedName === "basic pay" || normalizedName === "special allowance") {
+          next.add(component.id);
+        }
+      });
+      return Array.from(next);
+    });
+  }, [incomeComponents]);
 
   const selectedIncomeComponents = incomeComponents.filter((c) => selectedIncomeIds.includes(c.id));
   const selectedDeductionComponents = deductionComponents.filter((c) => selectedDeductionIds.includes(c.id));
@@ -380,7 +578,41 @@ export default function CreateSalaryStructure() {
     ...selectedDeductionComponents.map((c) => c.name),
   ];
 
-  const toggleId = (id, selectedIds, setSelectedIds) => {
+  const resetForm = () => {
+    setCurrentStep(1);
+    setName("");
+    setDescription("");
+    setSelectedIncomeIds(
+      incomeComponents
+        .filter((component) => LOCKED_INCOME_COMPONENT_NAMES.has(component.name.trim().toLowerCase()))
+        .map((component) => component.id)
+    );
+    setIncomeSearch("");
+    setIncomeDesigns({});
+    setActiveIncomeTab("");
+    setSelectedDeductionIds([]);
+    setDeductionSearch("");
+    setDeductionDesigns({});
+    setActiveDeductionTab("");
+    setLopConfigs({});
+    setGrossPay("");
+  };
+
+  const toggleId = (id, selectedIds, setSelectedIds, { singleSelect = false } = {}) => {
+    const targetIncomeComponent = incomeComponents.find((component) => component.id === id);
+    const isLockedIncomeComponent = targetIncomeComponent
+      ? LOCKED_INCOME_COMPONENT_NAMES.has(targetIncomeComponent.name.trim().toLowerCase())
+      : false;
+
+    if (isLockedIncomeComponent && selectedIds.includes(id)) {
+      return;
+    }
+
+    if (singleSelect) {
+      setSelectedIds(selectedIds.includes(id) ? [] : [id]);
+      return;
+    }
+
     setSelectedIds(selectedIds.includes(id) ? selectedIds.filter((i) => i !== id) : [...selectedIds, id]);
   };
 
@@ -422,7 +654,92 @@ export default function CreateSalaryStructure() {
     return { name: componentName, annual, monthly: Math.round(annual / 12) };
   });
 
-  const renderComponentSelection = (list, selectedIds, setSelectedIds, search, setSearch) => {
+  const trialRun = grossPay ? Math.round(getNumericValue(grossPay) / 12) : 0;
+  const annualProration = grossPay ? Math.round(getNumericValue(grossPay)) : 0;
+  const monthlyProration = grossPay ? Math.round(getNumericValue(grossPay) / 12) : 0;
+
+  const buildComponentPayload = (component, designs) => {
+    const design = getDesign(designs, component.id);
+    const payload = {
+      componentId: component.id,
+      componentName: component.name,
+      design: {
+        mode: getPayloadMode(design.mode),
+      },
+    };
+    if (String(design.mode).toLowerCase() === "fixed") {
+      payload.design.fixedAmount = getNumericValue(design.fixedAmount);
+    } else {
+      payload.design.formulaValue = design.formulaValue?.trim() || "";
+    }
+
+    return payload;
+  };
+
+  const primaryLopComponent =
+    selectedIncomeComponents.find((component) => component.name.trim().toLowerCase() === "basic pay") ||
+    selectedIncomeComponents[0] ||
+    selectedDeductionComponents[0] ||
+    null;
+
+  const buildPayload = () => {
+    const income = selectedIncomeComponents.map((component) => buildComponentPayload(component, incomeDesigns));
+    const deduction = selectedDeductionComponents[0]
+      ? buildComponentPayload(selectedDeductionComponents[0], deductionDesigns)
+      : null;
+    const lopConfig = primaryLopComponent ? getLopConfig(primaryLopComponent.name) : getLopConfig("");
+
+    return {
+      name: name.trim(),
+      description: description.trim(),
+      income,
+      deduction,
+      lop: {
+        componentName: primaryLopComponent?.name || "",
+        lossOfPay: Boolean(lopConfig.lossOfPay),
+        lopArrears: Boolean(lopConfig.lopArrears),
+        salaryArrears: Boolean(lopConfig.salaryArrears),
+        newJoinee: Boolean(lopConfig.newJoinee),
+        fnf: Boolean(lopConfig.fnf),
+      },
+      trialRun,
+      annualProration,
+      monthlyProration,
+    };
+  };
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      toast.error("Please enter structure name");
+      setCurrentStep(1);
+      return;
+    }
+
+    if (selectedIncomeComponents.length === 0) {
+      toast.error("Please select at least one income component");
+      setCurrentStep(2);
+      return;
+    }
+
+    const payload = buildPayload();
+
+    try {
+      setIsSaving(true);
+      await axiosInstance.post("/config/create-salaryStructure", payload, {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+      toast.success("Salary structure created successfully");
+      resetForm();
+      setSaved(true);
+    } catch (error) {
+      console.error("Error creating salary structure:", error);
+      toast.error(error?.response?.data?.message || "Failed to create salary structure");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const renderComponentSelection = (list, selectedIds, setSelectedIds, search, setSearch, options = {}) => {
     const filtered = list.filter((component) => component.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
@@ -442,14 +759,21 @@ export default function CreateSalaryStructure() {
           <p style={S.emptyMsg}>No components found.</p>
         ) : (
           <div style={S.compGrid}>
-            {filtered.map((component) => (
-              <CompCard
-                key={component.id}
-                component={component}
-                selected={selectedIds.includes(component.id)}
-                onToggle={(id) => toggleId(id, selectedIds, setSelectedIds)}
-              />
-            ))}
+            {filtered.map((component) => {
+              const isLockedIncomeComponent =
+                component.type === "income" &&
+                LOCKED_INCOME_COMPONENT_NAMES.has(component.name.trim().toLowerCase());
+
+              return (
+                <CompCard
+                  key={component.id}
+                  component={component}
+                  selected={selectedIds.includes(component.id)}
+                  disabled={isLockedIncomeComponent && selectedIds.includes(component.id)}
+                  onToggle={(id) => toggleId(id, selectedIds, setSelectedIds, options)}
+                />
+              );
+            })}
           </div>
         )}
       </div>
@@ -482,18 +806,15 @@ export default function CreateSalaryStructure() {
                   <span style={S.radioLabel}>Formula</span>
                 </div>
                 {design.mode === "formula" && (
-                  <select
-                    style={S.select}
+                  <FormulaDropdown
                     value={design.formulaValue}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      updateDesign(designs, setDesigns, component.id, { formulaValue: e.target.value });
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <option value="">Select any of these</option>
-                    {FORMULA_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
-                  </select>
+                    onChange={(value) => updateDesign(designs, setDesigns, component.id, { formulaValue: value })}
+                    onAppend={(token) =>
+                      updateDesign(designs, setDesigns, component.id, {
+                        formulaValue: appendFormulaToken(getDesign(designs, component.id).formulaValue, token),
+                      })
+                    }
+                  />
                 )}
               </div>
               <div style={S.radioCard(design.mode === "fixed")} onClick={() => updateDesign(designs, setDesigns, component.id, { mode: "fixed" })}>
@@ -552,7 +873,14 @@ export default function CreateSalaryStructure() {
       case 3:
         return renderDesign(selectedIncomeComponents, incomeDesigns, setIncomeDesigns, activeIncomeTab, setActiveIncomeTab);
       case 4:
-        return renderComponentSelection(deductionComponents, selectedDeductionIds, setSelectedDeductionIds, deductionSearch, setDeductionSearch);
+        return renderComponentSelection(
+          deductionComponents,
+          selectedDeductionIds,
+          setSelectedDeductionIds,
+          deductionSearch,
+          setDeductionSearch,
+          { singleSelect: true }
+        );
       case 5:
         return renderDesign(selectedDeductionComponents, deductionDesigns, setDeductionDesigns, activeDeductionTab, setActiveDeductionTab);
       case 6:
@@ -653,7 +981,7 @@ export default function CreateSalaryStructure() {
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
           <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Salary structure saved!</div>
-          <button style={S.btnPrimary} onClick={() => { setSaved(false); setCurrentStep(1); }}>Create Another</button>
+          <button style={S.btnPrimary} onClick={() => { setSaved(false); resetForm(); }}>Create Another</button>
         </div>
       </div>
     );
@@ -674,7 +1002,7 @@ export default function CreateSalaryStructure() {
         </div>
 
         <div style={S.navRow}>
-          <button style={S.btnOutline} onClick={() => { setSaved(false); setCurrentStep(1); }}>Cancel</button>
+          <button style={S.btnOutline} onClick={() => { setSaved(false); resetForm(); }}>Cancel</button>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             {currentStep > 1 && (
               <button style={S.btnOutline} onClick={() => setCurrentStep(currentStep - 1)}>Previous</button>
@@ -685,7 +1013,9 @@ export default function CreateSalaryStructure() {
             {currentStep < 7 ? (
               <button style={S.btnPrimary} onClick={() => setCurrentStep(currentStep + 1)}>Next</button>
             ) : (
-              <button style={S.btnPrimary} onClick={() => setSaved(true)}>Save</button>
+              <button style={S.btnPrimary} onClick={handleSave} disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save"}
+              </button>
             )}
           </div>
         </div>
