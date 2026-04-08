@@ -457,13 +457,13 @@ const Admindashboard = () => {
         <section className='flex items-center justify-between gap-4'>
           <h1 className='text-[20px] font-bold leading-none text-[#212529]'>Employees</h1>
 
-          <button type='button' className='h-[40px] rounded-lg border border-[#E4E9EE] bg-[#0575E6] px-5 text-sm font-medium text-white shadow-none outline-none focus:outline-none focus:ring-0 transition-all duration-200 hover:bg-[#0467CA] active:scale-[0.99]'>
+          {/* <button type='button' className='h-[40px] rounded-lg border border-[#E4E9EE] bg-[#0575E6] px-5 text-sm font-medium text-white shadow-none outline-none focus:outline-none focus:ring-0 transition-all duration-200 hover:bg-[#0467CA] active:scale-[0.99]'>
             <span className='inline-flex items-center gap-2 leading-none'>
               <FaPlus className='text-[14px]' />
               Add Employee
               <FaAngleDown className='text-[13px]' />
             </span>
-          </button>
+          </button> */}
         </section>
 
         <section>
