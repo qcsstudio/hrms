@@ -3,12 +3,13 @@ import discardicon from "/assets/Images/discardicon.png"
 import { FiPlus } from 'react-icons/fi'
 import createAxios from '../../../utils/axios.config'
 import InviteEmployeeModal from './InviteEmployeeModal'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 const AddEmployee = () => {
     const token = localStorage.getItem("authToken")
     console.log("admin token", token)
+    const navigate = useNavigate()
 
     const location = useLocation()
     const openInvitePopup = location.state?.invite || false
@@ -365,9 +366,11 @@ const AddEmployee = () => {
             )
             console.log(res.data)
             setFormData(initialFormData)
+            navigate("/dashboard/employee")
 
         } catch (error) {
             console.log('API Error:', error)
+            toast.error(error?.response?.data?.message || "Failed to add employee")
         }
     }
     const toggle = (key) => {
