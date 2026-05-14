@@ -113,6 +113,7 @@ const AddEmployee = () => {
                 toast.error(error?.response?.data?.message)
             }
         }
+
         // Grade=================================
         const fetchgrade = async () => {
             try {
@@ -367,6 +368,9 @@ const AddEmployee = () => {
             console.log(res.data)
             setFormData(initialFormData)
             navigate("/dashboard/employee")
+            toast.success("Employee added successfully")
+            navigate('/dashboard/employee')
+
 
         } catch (error) {
             console.log('API Error:', error)
