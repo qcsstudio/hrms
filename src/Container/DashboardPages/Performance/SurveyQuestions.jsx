@@ -117,7 +117,7 @@ export default function SurveyQuestions() {
         </div>
       )}
 
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 16px" }}>
+      <div style={{ margin: "0 auto", padding: "24px 16px" }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
           <div>
