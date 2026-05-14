@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { StatsBar } from "./StatsBar";
+import { useNavigate } from "react-router-dom";
+import createAxios from "../../../utils/axios.config";
 
 const PerformanceDashboard = () => {
   const [activeFilter, setActiveFilter] = useState("All Employee");
+  const [isCheckingSurvey, setIsCheckingSurvey] = useState(false);
+  const [surveyError, setSurveyError] = useState("");
+  const navigate = useNavigate();
+  const token = localStorage.getItem("authToken");
+  const axiosInstance = useMemo(() => createAxios(token), [token]);
 
   const stats = [
     { label: "Completion Rate", value: "78%" },
@@ -49,6 +56,55 @@ const PerformanceDashboard = () => {
     },
   ];
 
+  const handleCreateSurvey = async () => {
+    setSurveyError("");
+    setIsCheckingSurvey(true);
+
+    try {
+      const res = await axiosInstance.get("/auth/check-preception", {
+        meta: { auth: "ADMIN_AUTH" },
+      });
+
+      if (res?.data?.success) {
+        const cycleId =
+          res?.data?.data?._id ||
+          res?.data?.data?.id ||
+          res?.data?.data?.cycleId ||
+          res?.data?.data?.surveyId ||
+          res?.data?.data?.[0]?._id ||
+          res?.data?.data?.[0]?.id ||
+          res?.data?.data?.[0]?.cycleId ||
+          res?.data?.data?.[0]?.surveyId ||
+          res?.data?.survey?._id ||
+          res?.data?.survey?.id ||
+          res?.data?.survey?.cycleId ||
+          res?.data?.survey?.surveyId ||
+          res?.data?.preception?._id ||
+          res?.data?.preception?.id ||
+          res?.data?.preception?.cycleId ||
+          res?.data?.preception?.surveyId ||
+          res?.data?._id ||
+          res?.data?.id ||
+          res?.data?.cycleId ||
+          res?.data?.surveyId ||
+          "";
+
+        if (cycleId) {
+          localStorage.setItem("surveyCycleId", cycleId);
+        }
+
+        navigate("/dashboard/survey-questions", { state: { cycleId } });
+      } else {
+        navigate("/dashboard/survey");
+      }
+    } catch (error) {
+      console.error("Check preception API failed:", error);
+      setSurveyError("Survey check failed. Please try again.");
+    } finally {
+      setIsCheckingSurvey(false);
+    }
+  };
+
   return (
     <div className="bg-[#F8F9FA] p-[15px] card-animate">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -64,11 +120,21 @@ const PerformanceDashboard = () => {
           <button className="h-[40px] rounded-lg border border-[#D1D5DB] bg-white px-5 py-2 text-sm font-medium text-[#344054] shadow-none outline-none transition-all duration-200 focus:outline-none focus:ring-0 hover:bg-gray-50 active:scale-[0.99]">
             + Download Report
           </button>
-          <button className="h-[40px] rounded-lg border border-[#E4E9EE] bg-[#0575E6] px-5 py-2 text-sm font-medium text-white shadow-none outline-none transition-all duration-200 focus:outline-none focus:ring-0 hover:bg-[#0467CA] active:scale-[0.99]">
-            + Create Survey
+          <button
+            type="button"
+            onClick={handleCreateSurvey}
+            disabled={isCheckingSurvey}
+            className="h-[40px] rounded-lg border border-[#E4E9EE] bg-[#0575E6] px-5 py-2 text-sm font-medium text-white shadow-none outline-none transition-all duration-200 focus:outline-none focus:ring-0 hover:bg-[#0467CA] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isCheckingSurvey ? "Checking..." : "+ Create Survey"}
           </button>
         </div>
       </div>
+      {surveyError && (
+        <p className="mt-2 text-right text-[12px] font-medium text-[#B91C1C]">
+          {surveyError}
+        </p>
+      )}
 
       <div className="my-5 inline-flex w-fit gap-2 rounded-[9px] border border-[#DEE2E6] bg-[#F4F4F5] p-1">
         {["All Employee", "My Team", "Me"].map((item) => (

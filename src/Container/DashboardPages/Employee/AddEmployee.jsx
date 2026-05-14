@@ -367,6 +367,7 @@ const AddEmployee = () => {
             )
             console.log(res.data)
             setFormData(initialFormData)
+            navigate("/dashboard/employee")
             toast.success("Employee added successfully")
             navigate('/dashboard/employee')
 
