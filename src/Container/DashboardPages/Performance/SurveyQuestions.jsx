@@ -51,6 +51,7 @@ export default function SurveyQuestions() {
     const options = question.options.map((option, optionIndex) => ({
       id: String(optionIndex + 1),
       text: option.text.trim(),
+      isCorrect: question.correctOptionId === option.id,
     }));
     const correctOptionIndex = question.options.findIndex(
       (option) => option.id === question.correctOptionId
