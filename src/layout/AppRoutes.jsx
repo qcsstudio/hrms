@@ -57,6 +57,8 @@ import PerformanceDashboard from "../Container/DashboardPages/Performance/Perfor
 import Announcement from "../Container/Announcement/Announcement";
 import AnnouncementCreate from "../Container/Announcement/AnnouncementCreate";
 import ProfileSettings from '../Container/settings/ProfileSettings'
+import PerformanceSurveyCreate360 from "../Container/DashboardPages/Performance/AppriasalPerformance";
+import SurveyQuestions from "../Container/DashboardPages/Performance/SurveyQuestions";
 // import DashboardPayroll1 from "../Container/Payroll/Payroll/DashboardPayroll1";
 // import PayrollDashboard from "../Container/Payroll/Payroll/PayrollDashboard";
 // import DashboardPayroll2 from "../Container/Payroll/Payroll/DashboardPayroll2";
@@ -342,6 +344,8 @@ const AppRoutes = () => {
           }
         >
           <Route path="performance" element={<PerformanceDashboard />} />
+          <Route path="survey" element={<PerformanceSurveyCreate360 />} />
+          <Route path="survey-questions" element={<SurveyQuestions />} />
           <Route path="Companyadmin-dashboard" element={<Admindashboard />} />
           <Route path="superadmin-dashboard" element={<SuperAdminDashboard />} />
           <Route path="employee" element={
