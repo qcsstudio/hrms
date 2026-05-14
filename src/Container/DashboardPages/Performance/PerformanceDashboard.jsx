@@ -64,36 +64,36 @@ const PerformanceDashboard = () => {
       const res = await axiosInstance.get("/auth/check-preception", {
         meta: { auth: "ADMIN_AUTH" },
       });
+console.log("Check preception API response:", res.data);
+      if (res?.data?.exists) {
+        // const cycleId =
+        //   res?.data?.data?._id ||
+        //   res?.data?.data?.id ||
+        //   res?.data?.data?.cycleId ||
+        //   res?.data?.data?.surveyId ||
+        //   res?.data?.data?.[0]?._id ||
+        //   res?.data?.data?.[0]?.id ||
+        //   res?.data?.data?.[0]?.cycleId ||
+        //   res?.data?.data?.[0]?.surveyId ||
+        //   res?.data?.survey?._id ||
+        //   res?.data?.survey?.id ||
+        //   res?.data?.survey?.cycleId ||
+        //   res?.data?.survey?.surveyId ||
+        //   res?.data?.preception?._id ||
+        //   res?.data?.preception?.id ||
+        //   res?.data?.preception?.cycleId ||
+        //   res?.data?.preception?.surveyId ||
+        //   res?.data?._id ||
+        //   res?.data?.id ||
+        //   res?.data?.cycleId ||
+        //   res?.data?.surveyId ||
+        //   "";
 
-      if (res?.data?.success) {
-        const cycleId =
-          res?.data?.data?._id ||
-          res?.data?.data?.id ||
-          res?.data?.data?.cycleId ||
-          res?.data?.data?.surveyId ||
-          res?.data?.data?.[0]?._id ||
-          res?.data?.data?.[0]?.id ||
-          res?.data?.data?.[0]?.cycleId ||
-          res?.data?.data?.[0]?.surveyId ||
-          res?.data?.survey?._id ||
-          res?.data?.survey?.id ||
-          res?.data?.survey?.cycleId ||
-          res?.data?.survey?.surveyId ||
-          res?.data?.preception?._id ||
-          res?.data?.preception?.id ||
-          res?.data?.preception?.cycleId ||
-          res?.data?.preception?.surveyId ||
-          res?.data?._id ||
-          res?.data?.id ||
-          res?.data?.cycleId ||
-          res?.data?.surveyId ||
-          "";
+        // if (cycleId) {
+        //   localStorage.setItem("surveyCycleId", cycleId);
+        // }
 
-        if (cycleId) {
-          localStorage.setItem("surveyCycleId", cycleId);
-        }
-
-        navigate("/dashboard/survey-questions", { state: { cycleId } });
+        navigate("/dashboard/survey-questions");
       } else {
         navigate("/dashboard/survey");
       }
